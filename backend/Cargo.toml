@@ -1,0 +1,27 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [".", "entity", "migration"]
+
+[dependencies]
+actix-web = "4.4.0"
+async-graphql = "6.0.6"
+async-graphql-actix-web = "6.0.6"
+dotenvy = "0.15"
+sea-orm = { version = "0.12", features = ["runtime-tokio" , "sqlx-postgres", "macros" ] }
+sqlx = { version = "0.7.1", features = ["runtime-tokio"] }
+tokio = {version="1.32.0", features = ["full"]}
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
+entity = { path = "entity" }
+migration = { path = "migration" }
+chrono = "0.4.31"
+argon2 = "0.5.2"
+sha2 = "0.10.7"
+hmac = "0.12.1"
+jwt = "0.16.0"
+actix-cors = "0.6.4"
