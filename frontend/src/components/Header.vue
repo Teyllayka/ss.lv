@@ -1,8 +1,8 @@
 <template>
   <header class="bg-background">
-    <div><router-link to="/">Go to Home</router-link></div>
-    <div><router-link to="/me">Me</router-link></div>
-    <div><router-link to="/create">Create Advert</router-link></div>
+    <div class="text-text"><router-link to="/">Go to Home</router-link></div>
+    <div class="text-text"><router-link to="/me">Me</router-link></div>
+    <div class="text-text"><router-link to="/create">Create Advert</router-link></div>
 
     <v-switch
       inset
