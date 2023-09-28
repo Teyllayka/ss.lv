@@ -4,6 +4,7 @@ import HomeView from "@/views/Home.vue";
 import AdvertView from "@/views/AdvertView.vue";
 import UserView from "@/views/UserView.vue";
 import MeView from "@/views/Me.vue";
+import CreateAdvertView from "@/views/CreateAdvertView.vue";
 
 const routes = [
   {
@@ -29,6 +30,11 @@ const routes = [
         path: "/me",
         name: "me",
         component: MeView,
+      },
+      {
+        path: "/create",
+        name: "create",
+        component: CreateAdvertView,
       },
     ],
   },

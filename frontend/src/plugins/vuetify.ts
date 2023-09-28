@@ -1,17 +1,6 @@
-/**
- * plugins/vuetify.ts
- *
- * Framework documentation: https://vuetifyjs.com`
- */
-
-// Styles
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
-
-// Composables
 import { createVuetify } from "vuetify";
-
-// https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 
 const customDarkTheme = {
   dark: true,
@@ -41,9 +30,22 @@ const customLightTheme = {
   },
 };
 
+let defaultTheme;
+
+if (localStorage.getItem("darkMode") == 'false') {
+  defaultTheme = "customLightTheme";
+} else {
+  defaultTheme = "customDarkTheme";
+}
+
+
+
+console.log(localStorage.getItem("darkMode"));
+console.log(defaultTheme);
+
 export default createVuetify({
   theme: {
-    defaultTheme: "customLightTheme",
+    defaultTheme,
     themes: {
       customDarkTheme,
       customLightTheme,
