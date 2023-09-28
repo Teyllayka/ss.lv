@@ -1,9 +1,9 @@
-import "./assets/main.css";
-
+import vuetify from "./plugins/vuetify";
+import { loadFonts } from "./plugins/webfontloader";
 import { createApp, provide, h } from "vue";
 import { createPinia } from "pinia";
-import { DefaultApolloClient } from "@vue/apollo-composable";
-import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+
+loadFonts();
 
 import App from "./App.vue";
 import router from "./router";
@@ -23,7 +23,6 @@ const app = createApp({
   render: () => h(App),
 });
 
-app.use(createPinia());
-app.use(router);
+app.use(createPinia()).use(router).use(vuetify);
 
 app.mount("#app");
