@@ -1,23 +1,37 @@
 <template>
     <div id="register" class="text-text">
         <form v-if="isRegistering" @submit.prevent="register">
-            <input v-model="name" type="text" placeholder="Name" required />
-            <input v-model="surname" type="text" placeholder="Surname" required />
-            <input v-model="email" type="email" placeholder="Email" required />
-            <input v-model="phone" type="text" placeholder="Phone" required />
-            <input v-model="password" type="password" placeholder="Password" required />
-            <button type="submit">Register</button>
+            <input class="text-text_highlight" v-model="name" type="text" placeholder="Name" required />
+            <input class="text-text_highlight" v-model="surname" type="text" placeholder="Surname" required />
+            <input class="text-text_highlight" v-model="email" type="email" placeholder="Email" required />
+            <input class="text-text_highlight" v-model="phone" type="text" placeholder="Phone" required />
+            <input class="text-text_highlight" v-model="password" type="password" placeholder="Password" required />
+            <button type="submit" class="register-button">Register</button>
         </form>
         <form v-else @submit.prevent="login">
-            <input v-model="email" type="email" placeholder="Email" required />
-            <input v-model="password" type="password" placeholder="Password" required />
-            <button type="submit">Login</button>
+            <input class="text-text_highlight" v-model="email" type="email" placeholder="Email" required />
+            <input class="text-text_highlight" v-model="password" type="password" placeholder="Password" required />
+            <button type="submit" class="register-button">Login</button>
         </form>
         <button @click="toggleForm">
             {{ isRegistering ? 'Switch to Login' : 'Switch to Register' }}
         </button>
     </div>
 </template>
+
+<style>
+.register-button {
+  transition: 0.2s ease;
+  background-color: rgb(var(--v-theme-text));
+  color: rgb(var(--v-theme-background));
+}
+
+.register-button:hover {
+  background-color: rgb(var(--v-theme-text_highlight));
+  
+}
+
+</style>
   
 <script>
   import { useMutation } from '@vue/apollo-composable';

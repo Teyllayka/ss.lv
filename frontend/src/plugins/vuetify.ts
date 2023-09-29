@@ -12,16 +12,12 @@ const customDarkTheme = {
   dark: true,
   colors: {
     background: "#06262c",
-    surface: "#15202b",
-    primary: "#3f51b5",
-    secondary: "#03dac6",
     text: "#5fcea9",
-    error: "#f44336",
-    info: "#2196F3",
-    success: "#4caf50",
-    warning: "#fb8c00",
+    text_highlight: "#46b4a0",
   },
 };
+
+
 
 // #fcfdfd
 // #317a83
@@ -32,14 +28,8 @@ const customLightTheme = {
   dark: false,
   colors: {
     background: "#fcfdfd",
-    surface: "#15202b",
-    primary: "#3f51b5",
-    secondary: "#03dac6",
-    text: "#5fcea9",
-    error: "#f44336",
-    info: "#2196F3",
-    success: "#4caf50",
-    warning: "#fb8c00",
+    text: "#6fd6e2",
+    text_highlight: "#24b9be",
   },
 };
 

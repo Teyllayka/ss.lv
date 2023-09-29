@@ -6,10 +6,9 @@
 
     <v-switch
       inset
-      color="info"
+      color="text"
       v-model="darkMode"
       @change="toggleTheme()"
-      :label="`It's ${darkMode ? 'customDarkTheme' : 'customLightTheme'}!`"
     ></v-switch>
   </header>
 </template>
@@ -24,10 +23,11 @@ const darkMode = ref(localStorage.getItem("darkMode") === "true" || false);
 const toggleTheme = () => {
   theme.global.name.value = darkMode.value ? "customDarkTheme" : "customLightTheme";
   localStorage.setItem("darkMode", darkMode.value);
-  console.log(`Current theme is dark? ${theme.global.current.value.dark}`);
 };
 
 watchEffect(() => {
   localStorage.setItem("darkMode", darkMode.value);
 });
+
+
 </script>
