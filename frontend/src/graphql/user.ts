@@ -39,3 +39,33 @@ export const REGISTER = gql`
     }
   }
 `;
+
+export const LOGIN = gql`
+  mutation login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      refreshToken
+      accessToken
+    }
+  }
+`;
+
+export const ME = gql`
+  query me($access_token: String!) {
+    me(accessToken: $access_token) {
+      phone
+      email
+      name
+      surname
+      phone
+    }
+  }
+`;
+
+export const REFRESH = gql`
+  mutation refresh($refreshToken: String!) {
+    refresh(refreshToken: $refreshToken) {
+      accessToken
+      refreshToken
+    }
+  }
+`;

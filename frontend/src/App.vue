@@ -14,9 +14,10 @@ export default {
 </script>
 
 <template>
-  <myheader/>
+  <myheader v-if="$route.path !== '/register' && $route.path !== '/login'"/>
   <router-view />
-  <myfooter />
+  <myfooter v-if="$route.path !== '/register' && $route.path !== '/login'"/>
 </template>
+
 
 
