@@ -7,6 +7,8 @@ import Me from "@/views/Me.vue";
 import CreateAdvert from "@/views/CreateAdvert.vue";
 import Register from "@/views/Register.vue";
 import Login from "@/views/Login.vue";
+import Favorites from "@/views/Favorites.vue";
+import Adverts from "@/views/Adverts.vue";
 
 import { provideApolloClient, useMutation } from "@vue/apollo-composable";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
@@ -69,6 +71,16 @@ const routes = [
         component: Home,
       },
       {
+        path: "/favorites",
+        name: "favorites",
+        component: Favorites,
+      },
+      {
+        path: "/adverts",
+        name: "adverts",
+        component: Adverts,
+      },
+      {
         path: "/register",
         name: "register",
         component: Register,
@@ -106,7 +118,7 @@ const routes = [
         component: User,
       },
       {
-        path: "/user/:userId/advert/:id",
+        path: "/advert/:id",
         name: "advert",
         component: Advert,
       },
