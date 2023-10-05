@@ -8,7 +8,7 @@
         <router-link to="/create" class="link">Create Advert</router-link>
         <router-link to="/favorites" class="link">Favorites</router-link>
         <!-- <router-link to="/advert">My Adverts</router-link> -->
-        <router-link to="/me">
+        <router-link to="/me" v-if="logedIn">
           <div class="me">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10.0002 10C12.3013 10 14.1668 8.13452 14.1668 5.83334C14.1668 3.53215 12.3013 1.66667 10.0002 1.66667C7.69898 1.66667 5.8335 3.53215 5.8335 5.83334C5.8335 8.13452 7.69898 10 10.0002 10Z" stroke="rgb(var(--v-theme-background))" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -16,7 +16,7 @@
             </svg>
           </div>
         </router-link>
-        <router-link to="/register"><button class="register">Register</button></router-link>
+        <router-link to="/register" v-else><button class="register">Register</button></router-link>
         <v-switch
           inset
           color="text"
@@ -131,6 +131,7 @@ import { useTheme } from "vuetify";
 const theme = useTheme();
 const darkMode = ref(localStorage.getItem("darkMode") === "true" || false);
 const menu = ref(false)
+const logedIn = localStorage.getItem("logedIn");
 
 const toggleTheme = () => {
   theme.global.name.value = darkMode.value ? "customDarkTheme" : "customLightTheme";

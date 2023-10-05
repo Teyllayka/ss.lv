@@ -50,13 +50,18 @@ export const LOGIN = gql`
 `;
 
 export const ME = gql`
-  query me($access_token: String!) {
-    me(accessToken: $access_token) {
+  query me($accessToken: String!) {
+    me(accessToken: $accessToken) {
       phone
       email
       name
       surname
       phone
+      adverts {
+        id
+        price
+        location
+      }
     }
   }
 `;
@@ -64,8 +69,8 @@ export const ME = gql`
 export const REFRESH = gql`
   mutation refresh($refreshToken: String!) {
     refresh(refreshToken: $refreshToken) {
-      accessToken
       refreshToken
+      accessToken
     }
   }
 `;

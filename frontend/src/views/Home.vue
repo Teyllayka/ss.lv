@@ -1,8 +1,10 @@
 <template>
+  <p v-if="error">Something went wrong... {{ error.message }}</p>
+  <p v-if="loading">Loading...</p>
   <div class="title"> <h1>Recently Added:</h1></div>
  
   <section class="adverts">
-    <adverts />
+    <adverts  v-for="advert in result.getAdverts" v-bind:key="advert.id" v-bind="advert" />
   </section>
 </template>
 
@@ -33,6 +35,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useQuery } from '@vue/apollo-composable'
+import { GET_ADVERTS } from "@/graphql/advert";
 
 // Components
 import Adverts from '../components/Adverts.vue';
@@ -41,6 +45,17 @@ export default defineComponent({
   name: 'App',
   components: {
     Adverts
+  },
+  setup() {
+    const { result, loading, error } = useQuery(GET_ADVERTS);
+
+    
+
+    return {
+      result,
+      loading,
+      error,
+    };
   },
 });
 </script>

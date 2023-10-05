@@ -21,18 +21,28 @@ pub struct Model {
     #[graphql(visible = false)]
     pub refresh_token: Option<String>,
     // pub adverts
+    #[sea_orm(ignore)]
+    pub adverts: Vec<super::advert::Model>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::advert::Entity")]
     Advert,
+    #[sea_orm(has_many = "super::favorites::Entity")]
+    Favorites,
 }
 
 // `Related` trait has to be implemented by hand
 impl Related<super::advert::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Advert.def()
+    }
+}
+
+impl Related<super::favorites::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Favorites.def()
     }
 }
 

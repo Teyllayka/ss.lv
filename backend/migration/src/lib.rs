@@ -6,6 +6,8 @@ mod m20230921_173921_relations4;
 mod m20230921_174343_update1;
 mod m20230921_211021_update2;
 mod m20230921_213853_update3;
+mod m20231005_202202_update4;
+mod m20231005_203657_update5;
 
 pub struct Migrator;
 
@@ -18,6 +20,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20230921_174343_update1::Migration),
             Box::new(m20230921_211021_update2::Migration),
             Box::new(m20230921_213853_update3::Migration),
+            Box::new(m20231005_202202_update4::Migration),
+            Box::new(m20231005_203657_update5::Migration),
         ]
     }
 }

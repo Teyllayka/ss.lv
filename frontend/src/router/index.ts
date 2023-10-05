@@ -13,6 +13,7 @@ import Adverts from "@/views/Adverts.vue";
 import { provideApolloClient, useMutation } from "@vue/apollo-composable";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { ME, REFRESH } from "@/graphql/user";
+import { useQuery } from "@vue/apollo-composable";
 
 async function isLoggedIn() {
   const cache = new InMemoryCache();
@@ -26,14 +27,13 @@ async function isLoggedIn() {
   const accessToken = localStorage.getItem("access_token");
 
   if (accessToken) {
-    const { mutate: me } = useMutation(ME);
-    try {
-      await me({ accessToken });
-      console.log("1 true");
-      return true;
-    } catch (error) {
+    const { result, loading, error } = useQuery(ME, { accessToken });
+
+    if (error) {
+      console.error(error);
       localStorage.removeItem("access_token");
-      console.log("1 false");
+    } else {
+      return true;
     }
   }
 
@@ -41,21 +41,21 @@ async function isLoggedIn() {
     const { mutate: refresh } = useMutation(REFRESH);
     try {
       const result = await refresh({ refreshToken });
-      localStorage.setItem("access_token", result?.data.refresh.refreshToken);
+      localStorage.setItem("access_token", result?.data.refresh.accessToken);
       localStorage.setItem("refresh_token", result?.data.refresh.refreshToken);
-      console.log("2 true");
+      localStorage.setItem("logedIn", "true");
       return true;
     } catch (error) {
-      console.log("2 false");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      localStorage.removeItem("logedIn");
+      console.log(error);
       return false;
     }
   }
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
-
-  console.log("bruh");
+  localStorage.setItem("logedIn", "false");
 
   return false;
 }
@@ -85,14 +85,10 @@ const routes = [
         name: "register",
         component: Register,
         beforeEnter: async (to: any, from: any, next: any) => {
-          if (
-            (await !isLoggedIn()) || !localStorage.getItem("access_token")
-              ? true
-              : false
-          ) {
+          if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
           } else {
-            next("/home");
+            next("/me");
           }
         },
       },
@@ -101,14 +97,10 @@ const routes = [
         name: "login",
         component: Login,
         beforeEnter: async (to: any, from: any, next: any) => {
-          if (
-            (await !isLoggedIn()) || !localStorage.getItem("access_token")
-              ? true
-              : false
-          ) {
+          if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
           } else {
-            next("/home");
+            next("/me");
           }
         },
       },

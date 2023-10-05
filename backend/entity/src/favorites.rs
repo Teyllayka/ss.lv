@@ -1,14 +1,15 @@
 use async_graphql::{self, SimpleObject};
+use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
-#[sea_orm(table_name = "specifications")]
-#[graphql(name = "specification")]
+#[sea_orm(table_name = "favorites")]
+#[graphql(name = "favorites")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub key: String,
-    pub value: String,
+    pub created_at: NaiveDateTime,
+    pub user_id: i32,
     pub advert_id: i32,
 }
 
@@ -20,11 +21,23 @@ pub enum Relation {
         to = "super::advert::Column::Id"
     )]
     Advert,
+    #[sea_orm(
+        belongs_to = "super::user::Entity",
+        from = "Column::UserId",
+        to = "super::user::Column::Id"
+    )]
+    User,
 }
 
 impl Related<super::advert::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Advert.def()
+    }
+}
+
+impl Related<super::user::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::User.def()
     }
 }
 

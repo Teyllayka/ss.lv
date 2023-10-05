@@ -8,6 +8,8 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub title: String,
+    pub description: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub available: bool,
@@ -25,11 +27,27 @@ pub enum Relation {
         to = "super::user::Column::Id"
     )]
     User,
+    #[sea_orm(has_many = "super::specification::Entity")]
+    Specification,
+    #[sea_orm(has_many = "super::favorites::Entity")]
+    Favorites,
 }
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
+    }
+}
+
+impl Related<super::specification::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Specification.def()
+    }
+}
+
+impl Related<super::favorites::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Favorites.def()
     }
 }
 

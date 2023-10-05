@@ -1,49 +1,49 @@
 
 <template>
-  
-   <profile v-if="logedIn" />
 
+  <p v-if="error">Something went wrong... {{ error.message }}</p>
+  <p v-if="loading">Loading...</p>
+  <div v-else>
+
+    {{ result }}
+   
+    <!-- <p> email: {{ result.me.email }}</p>
+    <p> name: {{ result.me.name }}</p>
+    <p>surname: {{ result.me.surname }}</p>
+    
+
+    <p> adverts:</p>
+   
+    <ul>
+      <li v-for="advert in result.me.adverts" v-bind:key="advert.id">
+        <div>
+          location: {{ advert.location }}
+          price: {{ advert.price }}
+        </div>
+      </li>
+    </ul -->
+  </div>
+  
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { ME } from "@/graphql/user";
 import { useQuery } from '@vue/apollo-composable'
-import Profile from '../components/Profile.vue';
-import Register from '../components/Register.vue';
 
 export default defineComponent({
   name: 'App',
   setup() {
-      let access_token = localStorage.getItem("access_token");
-      if (access_token !== undefined) {
-        console.log(access_token)
-        const { result, loading, error } = useQuery(ME, { access_token });
+        const accessToken = localStorage.getItem("access_token");
+        const { result, loading, error } = useQuery(ME, { accessToken });
 
-        console.log(result.value);
-
-
-        if (result.value === undefined) {
-          console.log("undefined");
-          return {
-            logedIn: false,
-          }
-        } 
         return {
           result,
           error,
+          loading
         };
-      } else {
-        return {
-          logedIn: false,
-        }
-      }
-
       
     },
-  components: {
-    Profile,
-  },
 });
 </script>
 
