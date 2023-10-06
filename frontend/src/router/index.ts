@@ -15,6 +15,61 @@ import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { ME, REFRESH } from "@/graphql/user";
 import { useQuery } from "@vue/apollo-composable";
 
+// async function isLoggedIn() {
+//   const cache = new InMemoryCache();
+//   const apolloClient = new ApolloClient({
+//     cache,
+//     uri: "http://localhost:8000",
+//   });
+//   provideApolloClient(apolloClient);
+
+//   const refreshToken = localStorage.getItem("refresh_token");
+//   const accessToken = localStorage.getItem("access_token");
+
+//   if (accessToken) {
+//     //const { result, loading, error } = useQuery(ME, { accessToken });
+
+//     const { onError } = useQuery(ME, { accessToken });
+
+//     onError(async (error) => {
+//       if (refreshToken) {
+//         const { mutate: refresh } = useMutation(REFRESH);
+//         try {
+//           const result = await refresh({ refreshToken });
+//           localStorage.setItem(
+//             "access_token",
+//             result?.data.refresh.accessToken
+//           );
+//           localStorage.setItem(
+//             "refresh_token",
+//             result?.data.refresh.refreshToken
+//           );
+//           localStorage.setItem("logedIn", "true");
+//           return true;
+//         } catch (error) {
+//           localStorage.removeItem("access_token");
+//           localStorage.removeItem("refresh_token");
+//           localStorage.removeItem("logedIn");
+//           console.log(error);
+//           return false;
+//         }
+//       }
+//       localStorage.removeItem("access_token");
+//       localStorage.removeItem("refresh_token");
+//       localStorage.setItem("logedIn", "false");
+
+//       return false;
+//     });
+//     return true;
+//     // if (error) {
+//     //   console.error(error);
+//     //   localStorage.removeItem("access_token");
+//     // } else {
+//     //   return true;
+//     // }
+//   }
+// }
+
 async function isLoggedIn() {
   const cache = new InMemoryCache();
   const apolloClient = new ApolloClient({

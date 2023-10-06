@@ -22,11 +22,11 @@ export default {
 
     const register = async function() {
       await registerMutation({
-        name: name.value,
-        surname: surname.value,
-        email: email.value,
-        phone: phone.value,
-        password: password.value,
+        name: this.v$.form.name.$model,
+        surname: this.v$.form.surname.$model,
+        email: this.v$.form.email.$model,
+        phone: this.v$.form.phone.$model,
+        password: this.v$.form.password.$model,
       }).then(({ data, loading, error }) => {
         if (error) {
           console.error(`An error occurred: ${error.message}`);
@@ -51,7 +51,6 @@ export default {
     }
   },
   validations() {
-    const phonePattern = regex('phonePattern',/^\+\d{1,4}\d{6,14}$/)
     return {
       form: {
         email: {
@@ -62,7 +61,7 @@ export default {
         password: {
           required: withMessage('Password is required', required),
           min: withMessage('Password must be at least 6 characters', minLength(6))
-        },
+        }, 
         name: {
           required: withMessage('Name is required', required),
           min: withMessage('Name must be at least 6 characters', minLength(6))
@@ -73,7 +72,7 @@ export default {
         },
         phone: {
           required: withMessage('Phone number is required', required),
-          phonePattern: withMessage('Phone must be valid', phonePattern),
+         //  phonePattern: withMessage('Phone must be valid', phone),
         }
       },
     }
