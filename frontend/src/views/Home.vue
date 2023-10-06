@@ -1,11 +1,16 @@
 <template>
   <p v-if="error">Something went wrong... {{ error.message }}</p>
   <p v-if="loading">Loading...</p>
-  <div class="title"> <h1>Recently Added:</h1></div>
+  <div v-else>
+    <div class="title"> <h1>Recently Added:</h1></div>
+    <section class="adverts">
+
+      <adverts  v-for="advert in result.getAdverts" v-bind:key="advert.id" v-bind="advert" />
+    </section>
+  </div>
  
-  <section class="adverts">
-    <adverts  v-for="advert in result.getAdverts" v-bind:key="advert.id" v-bind="advert" />
-  </section>
+ 
+ 
 </template>
 
 

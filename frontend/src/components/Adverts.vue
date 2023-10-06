@@ -1,3 +1,27 @@
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useQuery } from '@vue/apollo-composable'
+import { GET_ADVERTS } from "@/graphql/advert";
+
+
+export default defineComponent({
+  name: 'App',
+  props: ['location', 'price', 'id', 'title'],
+  setup() {
+    const { result, loading, error } = useQuery(GET_ADVERTS);
+
+    console.log(result)
+
+    return {
+      result,
+      loading,
+      error,
+    };
+  },
+});
+</script>
+
 <template>
 
   
@@ -5,8 +29,8 @@
   <router-link :to="'/advert/' + id" class="link"><img src="https://30.img.avito.st/image/1/1.zjCnc7a4YtmR2qDct2SnJbbRYN8Z0uDR0ddg2xfaatMR.xajaZfbTIv0ViaQVJN-mahjP5knob4APgvyLH6pQDCU" width="100" height="100+" alt=""></router-link>
   
   <div class="description">
-    <div class="title">kia rio car 2023 year lol lol lol</div>
-    <div class="price"> {{ price }} €</div>
+    <div class="title">{{ title }}</div>
+    <div class="price"> {{ price.toFixed(2) }} €</div>
     <div class="details">{{ location }}</div>
     <div class="details">4 september 11:20pm</div>
   </div>
@@ -70,25 +94,3 @@
 </style>
 
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { useQuery } from '@vue/apollo-composable'
-import { GET_ADVERTS } from "@/graphql/advert";
-
-
-export default defineComponent({
-  name: 'App',
-  props: ['location', 'price', 'id'],
-  setup() {
-    const { result, loading, error } = useQuery(GET_ADVERTS);
-
-    console.log(result)
-
-    return {
-      result,
-      loading,
-      error,
-    };
-  },
-});
-</script>

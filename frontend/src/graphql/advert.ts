@@ -6,6 +6,7 @@ export const GET_ADVERTS = gql`
       id
       location
       price
+      title
     }
   }
 `;
