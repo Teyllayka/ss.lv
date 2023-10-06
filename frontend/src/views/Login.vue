@@ -225,7 +225,7 @@ section {
 
 input {
    color: rgba(var(--v-theme-inputText), 0.87);
-
+   outline: none;
 }
 
 input::placeholder {

@@ -6,7 +6,7 @@
       <div class="routes">
         <router-link to="/adverts" class="link">Adverts</router-link>
         <router-link to="/create" class="link">Create Advert</router-link>
-        <router-link to="/favorites" class="link">Favorites</router-link>
+        <router-link to="/Bookmarks" class="link">Bookmarks</router-link>
         <!-- <router-link to="/advert">My Adverts</router-link> -->
         <router-link to="/me" v-if="logedIn">
           <div class="me">

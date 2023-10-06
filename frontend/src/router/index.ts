@@ -7,8 +7,9 @@ import Me from "@/views/Me.vue";
 import CreateAdvert from "@/views/CreateAdvert.vue";
 import Register from "@/views/Register.vue";
 import Login from "@/views/Login.vue";
-import Favorites from "@/views/Favorites.vue";
+import Bookmarks from "@/views/Bookmarks.vue";
 import Adverts from "@/views/Adverts.vue";
+import NotFound from "@/views/NotFound.vue";
 
 import { provideApolloClient, useMutation } from "@vue/apollo-composable";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
@@ -126,9 +127,9 @@ const routes = [
         component: Home,
       },
       {
-        path: "/favorites",
-        name: "favorites",
-        component: Favorites,
+        path: "/bookmarks",
+        name: "Bookmarks",
+        component: Bookmarks,
       },
       {
         path: "/adverts",
@@ -186,6 +187,14 @@ const routes = [
         name: "create",
         component: CreateAdvert,
       },
+      {
+        path: "/404",
+        component: NotFound,
+      },
+      {
+        path: "/:catchAll(.*)",
+        redirect: "/404"
+      }
     ],
   },
 ];
