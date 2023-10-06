@@ -374,6 +374,8 @@ impl MutationRoot {
         access_token: String,
         price: f32,
         location: String,
+        title: String,
+        description: String,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
@@ -395,6 +397,8 @@ impl MutationRoot {
                 updated_at: Set(naive_date_time),
                 price: Set(price),
                 location: Set(location),
+                description: Set(description),
+                title: Set(title),
                 ..Default::default()
             };
             let advert: advert::Model = advert.insert(&my_ctx.db).await?;
