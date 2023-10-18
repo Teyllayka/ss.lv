@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use dotenvy::dotenv;
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, HashMap},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -10,18 +10,28 @@ use async_graphql::{http::GraphiQLSource, EmptySubscription, Object, Schema, Sim
 use async_graphql_actix_web::GraphQL;
 use chrono::Utc;
 use entity::advert::{self, Entity as Advert};
+use entity::favorites::{self, Entity as Favorites};
 use entity::user::{self, Entity as User};
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use jwt::VerifyWithKey;
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{ActiveModelTrait, Database, DatabaseConnection, EntityTrait, ModelTrait, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, DbErr, DeleteResult, EntityTrait,
+    ModelTrait, QueryFilter, Set,
+};
 use sha2::Sha256;
 
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
+
+#[derive(SimpleObject)]
+struct AdvertWithUser {
+    advert: advert::Model,
+    user: user::Model,
+}
 
 const ACCESS_EXPIRATION: usize = 10;
 const REFRESH_EXPIRATION: usize = 180;
@@ -86,7 +96,7 @@ impl QueryRoot {
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
-    ) -> Result<advert::Model, async_graphql::Error> {
+    ) -> Result<AdvertWithUser, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let advert: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
@@ -96,7 +106,14 @@ impl QueryRoot {
             None => return Err(async_graphql::Error::new("advert not found".to_string())),
         };
 
-        return Ok(advert);
+        let user: Option<user::Model> = User::find_by_id(advert.user_id).one(&my_ctx.db).await?;
+
+        let user = match user {
+            Some(user) => user,
+            None => return Err(async_graphql::Error::new("user not found".to_string())),
+        };
+
+        return Ok(AdvertWithUser { advert, user });
     }
 
     async fn get_adverts(
@@ -116,6 +133,57 @@ impl QueryRoot {
         return Ok(advert);
     }
 
+    async fn get_adverts_loged(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        access_token: String,
+    ) -> Result<Vec<advert::Model>, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
+            let id: i32 = claims["id"].parse().unwrap();
+            let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+            let mut user = match user {
+                Some(user) => user,
+                None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+            };
+
+            let adverts: Vec<advert::Model> = Advert::find().all(&my_ctx.db).await?;
+            let favorited_adverts: Vec<favorites::Model> =
+                user.find_related(Favorites).all(&my_ctx.db).await?;
+
+            let mut favorited_adverts_map: HashMap<i32, bool> = HashMap::new();
+            for favorite in favorited_adverts {
+                favorited_adverts_map.insert(favorite.advert_id, true);
+            }
+
+            let mut all_adverts: Vec<advert::Model> = Vec::new();
+            for advert in adverts {
+                let is_favorited = favorited_adverts_map.get(&advert.id).is_some();
+                all_adverts.push(advert::Model {
+                    is_favorited,
+                    ..advert
+                });
+            }
+
+            return Ok(all_adverts);
+        } else {
+            return Err(async_graphql::Error::new(
+                "you are not loged in".to_string(),
+            ));
+        }
+    }
+
     async fn me(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -133,7 +201,6 @@ impl QueryRoot {
             .unwrap()
             .as_secs() as usize;
         if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
-            println!("{}, {}", claims["exp"], now);
             let id: i32 = claims["id"].parse().unwrap();
             let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
@@ -147,6 +214,67 @@ impl QueryRoot {
             user.adverts = adverts;
 
             return Ok(user);
+        } else {
+            return Err(async_graphql::Error::new(
+                "you are not loged in".to_string(),
+            ));
+        }
+    }
+
+    async fn get_favorites(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        access_token: String,
+    ) -> Result<Vec<advert::Model>, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
+            let id: i32 = claims["id"].parse().unwrap();
+            let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+            let user = match user {
+                Some(user) => user,
+                None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+            };
+
+            let favorites: Vec<favorites::Model> =
+                user.find_related(Favorites).all(&my_ctx.db).await?;
+
+            let ids: Vec<i32> = favorites
+                .iter()
+                .map(|favorite| favorite.advert_id)
+                .collect();
+
+            let adverts: Option<Vec<advert::Model>> = Some(
+                Advert::find()
+                    .filter(advert::Column::Id.is_in(ids))
+                    .all(&my_ctx.db)
+                    .await?,
+            );
+
+            let adverts = match adverts {
+                Some(adverts) => adverts,
+                None => return Err(async_graphql::Error::new("There is no adverts".to_string())),
+            };
+
+            let mut all_adverts: Vec<advert::Model> = Vec::new();
+            for advert in adverts {
+                all_adverts.push(advert::Model {
+                    is_favorited: true,
+                    ..advert
+                });
+            }
+
+            return Ok(all_adverts);
         } else {
             return Err(async_graphql::Error::new(
                 "you are not loged in".to_string(),
@@ -283,6 +411,105 @@ impl MutationRoot {
         }
     }
 
+    async fn change_password(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        token: String,
+        old_password: String,
+        new_password: String,
+        repeat_password: String,
+    ) -> Result<String, async_graphql::Error> {
+        return Ok("lol".to_string());
+    }
+
+    async fn add_favorite(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        access_token: String,
+        advert_id: i32,
+    ) -> Result<favorites::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
+            let id: i32 = claims["id"].parse().unwrap();
+            let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+            let user = match user {
+                Some(user) => user,
+                None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+            };
+
+            let favorite = favorites::ActiveModel {
+                advert_id: Set(advert_id),
+                user_id: Set(user.id),
+                string: Set(format!("{}-{}", user.id, advert_id)),
+                created_at: Set(Utc::now().naive_utc()),
+                ..Default::default()
+            };
+
+            let favorite: favorites::Model = favorite.insert(&my_ctx.db).await?;
+
+            return Ok(favorite);
+        } else {
+            return Err(async_graphql::Error::new(
+                "you are not loged in".to_string(),
+            ));
+        }
+    }
+
+    async fn remove_favorite(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        access_token: String,
+        advert_id: i32,
+    ) -> Result<favorites::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
+            let id: i32 = claims["id"].parse().unwrap();
+
+            let favorite_result: Result<Option<favorites::Model>, DbErr> = Favorites::find()
+                .filter(favorites::Column::AdvertId.eq(advert_id))
+                .filter(favorites::Column::UserId.eq(id))
+                .one(&my_ctx.db)
+                .await;
+
+            let favorite = match favorite_result {
+                Ok(favorite_option) => match favorite_option {
+                    Some(favorite) => favorite,
+                    None => return Err(async_graphql::Error::new("Wrong favorite".to_string())),
+                },
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+
+            let _: DeleteResult = favorite.clone().delete(&my_ctx.db).await?;
+
+            return Ok(favorite);
+        } else {
+            return Err(async_graphql::Error::new(
+                "you are not loged in".to_string(),
+            ));
+        }
+    }
+
     async fn refresh(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -376,6 +603,7 @@ impl MutationRoot {
         location: String,
         title: String,
         description: String,
+        category: String,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
@@ -399,6 +627,7 @@ impl MutationRoot {
                 location: Set(location),
                 description: Set(description),
                 title: Set(title),
+                category: Set(category),
                 ..Default::default()
             };
             let advert: advert::Model = advert.insert(&my_ctx.db).await?;

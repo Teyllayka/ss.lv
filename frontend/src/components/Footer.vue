@@ -2,8 +2,8 @@
     <footer>
 
         <div>
-            <p>© Adee 2023</p>
-            <p>Terms And Conditions</p>
+            <router-link to="/home">© Adee 2023</router-link>
+            <router-link to="/tac">Terms And Conditions</router-link>
         </div>
         
         

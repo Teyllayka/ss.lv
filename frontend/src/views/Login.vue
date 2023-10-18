@@ -5,8 +5,8 @@
   import { useTheme } from "vuetify";
   import { LOGIN } from "@/graphql/user";
   import useVuelidate from '@vuelidate/core'
-  import { required, email, minLength, helpers } from '@vuelidate/validators'
-  const { withMessage, regex } = helpers
+  import { required,  helpers } from '@vuelidate/validators'
+  const { withMessage } = helpers
   import { useRouter } from 'vue-router';
 
 
@@ -116,7 +116,7 @@
                   <div class="error-msg">{{ error.$message }}</div>
                </div>
             </div>
-            <button class="press" @click="login">Login</button>
+            <button class="press" :disabled="v$.form.$invalid" @click="login">Login</button>
             <div class="urls">
                <router-link to="/register">Register Instead</router-link>
                <router-link to="/home">Not Now</router-link>

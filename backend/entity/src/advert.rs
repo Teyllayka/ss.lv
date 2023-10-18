@@ -2,12 +2,15 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
+
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[sea_orm(table_name = "advert")]
 #[graphql(name = "Advert")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub category: String,
     pub title: String,
     pub description: String,
     pub created_at: NaiveDateTime,
@@ -16,6 +19,9 @@ pub struct Model {
     pub price: f32,
     pub location: String,
     pub user_id: i32,
+
+    #[sea_orm(ignore)]
+    pub is_favorited: bool,
     // pub adverts
 }
 

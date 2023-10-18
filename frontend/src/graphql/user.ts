@@ -11,6 +11,9 @@ export const GET_USER = gql`
         id
         location
         price
+        createdAt
+        available
+        title
       }
     }
   }
@@ -61,6 +64,9 @@ export const ME = gql`
         id
         price
         location
+        createdAt
+        available
+        title
       }
     }
   }

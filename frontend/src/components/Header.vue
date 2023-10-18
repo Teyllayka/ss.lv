@@ -62,19 +62,15 @@
   width: 48px;
   background-color: rgb(var(--v-theme-text));
   border-radius: 50%;
-  display: inline-block;
+display: flex;
+justify-content: center;
+align-items: center;
   transition: background-color 0.5s ease;
 }
 
 .me:hover {
   background-color: rgb(var(--v-theme-text_highlight));
 }
-
-
-.me svg {
-  margin-top: 12px;
-}
-
 
 .register {
   border-radius: 50px;
