@@ -120,14 +120,8 @@ export default {
       <div class="input-field">
           <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title">
       </div>
-      <div class="input-field">
-          <input type="text" name="" id="description" v-model="v$.form.description.$model" placeholder="Description">
-      </div>
-      
-      
-     
     </div>
-    <div class="input-field">
+    <div class="input-field category">
       Category:
         <select v-model="v$.form.category.$model">
           <option v-for="category in enumerations" :key="category" :value="category">
@@ -135,7 +129,7 @@ export default {
           </option>
         </select>
     </div>
-    <div class="input">
+    <div class="input second">
       <div class="input-field" v-for="field in selectedCategoryFields" :key="field">
         <input type="text" v-model="form[field]" :placeholder="field">
         <div v-if="v$.form[field].$error">
@@ -143,6 +137,9 @@ export default {
         </div>
       </div>
     </div>
+    <textarea id="freeform" name="freeform" rows="4" cols="50" v-model="v$.form.description.$model">
+      Description
+    </textarea>
     <button class="press" :disabled="v$.form.$invalid" @click="create">Create</button>
     </div>
     
@@ -163,16 +160,18 @@ export default {
     /* make inputs 2 in a row, unlimited rows */
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: minmax(100px, auto);
+    grid-auto-rows: minmax(20px, auto);
     grid-gap: 20px;
-
-     
-    
 
   }
 
+  .category {
+    margin-top:50px;
+  }
+
   .input-field {
-      padding: 10px 0;
+    height:40px;
+    padding: 10px 10px;
     border-radius: 50px;
     background-color: transparent;
     border: 1px solid  rgba(var(--v-theme-inputText), 0.3);
@@ -192,14 +191,32 @@ export default {
     justify-self: flex-start;
   }
 
+  input {
+   color: rgba(var(--v-theme-inputText), 0.87);
+   outline: none;
+  }
+
+  .second {
+    margin-top:50px;
+    margin-bottom: 50px;
+
+  }
+
   input::placeholder {
-    color:red;
+    color: rgba(var(--v-theme-inputText), 0.3);
+
   }
 
 .press {
    padding: 10px 60px;
    border-radius: 50px;
    color: rgb(var(--v-theme-background));
+}
+
+textarea {
+  margin-bottom: 50px;
+  background-color: transparent;
+    border: 1px solid  rgba(var(--v-theme-inputText), 0.3);
 }
 
 </style>

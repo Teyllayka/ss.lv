@@ -194,13 +194,13 @@ const routes = [
         path: "/create",
         name: "create",
         component: CreateAdvert,
-        // beforeEnter: async (to: any, from: any, next: any) => {
-        //   if (await isLoggedIn()) {
-        //     next();
-        //   } else {
-        //     next("/login");
-        //   }
-        // },
+        beforeEnter: async (to: any, from: any, next: any) => {
+          if (await isLoggedIn()) {
+            next();
+          } else {
+            next("/login");
+          }
+        },
       },
       {
         path: "/logout",
