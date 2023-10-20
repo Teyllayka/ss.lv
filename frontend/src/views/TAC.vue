@@ -80,7 +80,7 @@ You agree that the original English text shall prevail in the case of a dispute.
 <h1>Contact Us</h1>
 <p>If you have any questions about these Terms and Conditions, You can contact us:</p>
 <ul>
-<li>By visiting this page on our website: <a href="adee.com/contact" rel="external nofollow noopener" target="_blank">adee.com/contact</a></li>
+<li>By visiting this page on our website: <a href="/contact" >Contact page</a></li>
 </ul>
 </div>
 </template>

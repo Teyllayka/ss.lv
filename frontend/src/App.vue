@@ -14,9 +14,9 @@ export default {
 </script>
 
 <template>
-  <myheader v-if="$route.path !== '/register' && $route.path !== '/login'"/>
+  <myheader v-if="!$route.meta.hideNavigation"/>
   <router-view />
-  <myfooter v-if="$route.path !== '/register' && $route.path !== '/login'"/>
+  <myfooter v-if="!$route.meta.hideNavigation" />
 </template>
 
 

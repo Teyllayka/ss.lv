@@ -3,13 +3,14 @@
 import { defineComponent } from 'vue';
 import { GET_FAVORITES } from "@/graphql/advert";
 import { useQuery } from '@vue/apollo-composable'
-
+import Error from '../components/Error.vue';
 import Adverts from '../components/Adverts.vue';
 
 export default defineComponent({
   name: 'App',
   components: {
-    Adverts
+    Adverts,
+    Error
   },
   setup() {
         const accessToken = localStorage.getItem("access_token");
@@ -29,14 +30,13 @@ export default defineComponent({
 
 
 <template>  
-   <p v-if="error">Something went wrong... {{ error.message }}</p>
+   <div v-if="error"><error v-bind="error"/></div>
    <p v-if="loading">Loading...</p>
    <div v-else class="adverts-container">
       <div class="title"> <h1>Bookmarks:</h1></div>
       <section class="adverts">
-        <adverts  v-for="advert in result.getFavorites" v-bind:key="advert.id" v-bind="advert" />
+        <adverts  v-for="advert in result.getFavorites" v-bind:key="advert.id" v-bind="advert" />mnbvvvjk bvnghvbcb
       </section>
-      
    </div>
 </template>
 

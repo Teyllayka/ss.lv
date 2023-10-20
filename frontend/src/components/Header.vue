@@ -7,7 +7,7 @@
         <router-link to="/adverts" class="link">Adverts</router-link>
         <router-link to="/create" class="link">Create Advert</router-link>
         <router-link to="/Bookmarks" class="link">Bookmarks</router-link>
-        <!-- <router-link to="/advert">My Adverts</router-link> -->
+        <router-link to="/contact" class="link">Contact</router-link>
         <router-link to="/me" v-if="logedIn">
           <div class="me">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
