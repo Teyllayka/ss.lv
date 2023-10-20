@@ -1,5 +1,7 @@
 <template>
-  <p v-if="error">Something went wrong... {{ error.message }}</p>
+  <div v-if="error">
+    <error  v-bind="error"/>
+  </div>
   <p v-if="loading">Loading...</p>
   <div v-else>
     <div class="title"> <h1>Recently Added:</h1></div>
@@ -17,6 +19,7 @@ import { defineComponent, ref, reactive, watchEffect } from 'vue';
 import { useQuery } from '@vue/apollo-composable'
 import { GET_ADVERTS, GET_ADVERTS_LOGED } from "@/graphql/advert";
 import Adverts from '../components/Adverts.vue';
+import Error from '../components/Error.vue';
 
 interface Advert {
   id: number;
@@ -32,7 +35,8 @@ interface Advert {
 export default defineComponent({
   name: 'App',
   components: {
-    Adverts
+    Adverts,
+    Error,
   },
   setup() {
     const adverts = reactive({ list: [] as Advert[] });
@@ -44,8 +48,6 @@ export default defineComponent({
       updatedAdverts[index] = { ...updatedAdverts[index], isFavorited };
       adverts.list = updatedAdverts;
     };
-
-
 
     if (logedIn) {
       const accessToken = localStorage.getItem("access_token");

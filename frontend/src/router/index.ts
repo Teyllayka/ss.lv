@@ -148,6 +148,7 @@ const routes = [
         path: "/register",
         name: "register",
         component: Register,
+        meta: {hideNavigation: true},
         beforeEnter: async (to: any, from: any, next: any) => {
           if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
@@ -160,6 +161,7 @@ const routes = [
         path: "/login",
         name: "login",
         component: Login,
+        meta: {hideNavigation: true},
         beforeEnter: async (to: any, from: any, next: any) => {
           if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
@@ -219,6 +221,10 @@ const routes = [
       {
         path: "/404",
         component: NotFound,
+      },
+      {
+        path: '/contact',
+        component: () => import('@/views/Contact.vue'),
       },
       {
         path: "/:catchAll(.*)",

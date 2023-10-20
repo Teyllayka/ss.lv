@@ -165,10 +165,6 @@ export default {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: minmax(100px, auto);
     grid-gap: 20px;
-
-     
-    
-
   }
 
   .input-field {
