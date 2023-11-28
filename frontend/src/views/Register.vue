@@ -5,6 +5,8 @@ import { REGISTER } from "@/graphql/user";
 import { useTheme } from "vuetify";
 import useVuelidate from '@vuelidate/core'
 import { required, email, minLength, helpers } from '@vuelidate/validators'
+import { useRouter } from 'vue-router';
+
 
 const { withMessage, regex } = helpers
 
@@ -12,6 +14,8 @@ export default {
   setup() {
     const { mutate: registerMutation } = useMutation(REGISTER);
 
+
+    const router = useRouter();
     const theme = useTheme();
     const darkMode = ref(localStorage.getItem("darkMode") === "true" || false);
 
@@ -33,6 +37,7 @@ export default {
           return;
         }
         console.log(data);
+        router.push("/login")
       });
     }
 

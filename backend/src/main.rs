@@ -6,7 +6,7 @@ use std::{
 };
 
 use actix_web::{guard, http, web, App, HttpResponse, HttpServer, Result};
-use async_graphql::{http::GraphiQLSource, EmptySubscription, Object, Schema, SimpleObject};
+use async_graphql::{http::GraphiQLSource, EmptySubscription, Json, Object, Schema, SimpleObject};
 use async_graphql_actix_web::GraphQL;
 use chrono::Utc;
 use entity::advert::{self, Entity as Advert};
@@ -116,6 +116,72 @@ impl QueryRoot {
         return Ok(AdvertWithUser { advert, user });
     }
 
+    async fn get_advert_loged(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        id: i32,
+        access_token: String,
+    ) -> Result<AdvertWithUser, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+
+        if claims["sub"] == "someone" && claims["exp"].parse::<usize>().unwrap() >= now {
+            let user_id: i32 = claims["id"].parse().unwrap();
+            let user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
+
+            let user = match user {
+                Some(user) => user,
+                None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+            };
+
+            let favorited_adverts: Vec<favorites::Model> =
+                user.find_related(Favorites).all(&my_ctx.db).await?;
+
+            let mut favorited_adverts_map: HashMap<i32, bool> = HashMap::new();
+            for favorite in favorited_adverts {
+                favorited_adverts_map.insert(favorite.advert_id, true);
+            }
+
+            let advertt: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
+
+            let advertt = match advertt {
+                Some(advertt) => advertt,
+                None => return Err(async_graphql::Error::new("advert not found".to_string())),
+            };
+
+            let user: Option<user::Model> =
+                User::find_by_id(advertt.user_id).one(&my_ctx.db).await?;
+
+            let user = match user {
+                Some(user) => user,
+                None => return Err(async_graphql::Error::new("user not found".to_string())),
+            };
+
+            let is_favorited = favorited_adverts_map.get(&advertt.id).is_some();
+
+            return Ok(AdvertWithUser {
+                advert: advert::Model {
+                    is_favorited,
+                    ..advertt
+                },
+                user: user,
+            });
+        } else {
+            return Err(async_graphql::Error::new(
+                "you are not loged in".to_string(),
+            ));
+        }
+    }
+
     async fn get_adverts(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -131,6 +197,28 @@ impl QueryRoot {
 
         // You can now access the database connection via `&my_ctx.db`
         return Ok(advert);
+    }
+
+    async fn get_adverts_by_category(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        category: String,
+    ) -> Result<Vec<advert::Model>, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let adverts: Option<Vec<advert::Model>> = Some(
+            Advert::find()
+                .filter(advert::Column::Category.eq(category))
+                .all(&my_ctx.db)
+                .await?,
+        );
+
+        let adverts = match adverts {
+            Some(advert) => advert,
+            None => return Err(async_graphql::Error::new("advert not found".to_string())),
+        };
+
+        return Ok(adverts);
     }
 
     async fn get_adverts_loged(
@@ -153,7 +241,7 @@ impl QueryRoot {
             let id: i32 = claims["id"].parse().unwrap();
             let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
-            let mut user = match user {
+            let user = match user {
                 Some(user) => user,
                 None => return Err(async_graphql::Error::new("Wrong token".to_string())),
             };
@@ -604,8 +692,11 @@ impl MutationRoot {
         title: String,
         description: String,
         category: String,
+        data: Json<serde_json::Value>,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        println!("{:?}", data);
 
         let claims: BTreeMap<String, String> =
             match access_token.verify_with_key(&my_ctx.access_key) {

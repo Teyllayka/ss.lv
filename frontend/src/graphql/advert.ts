@@ -12,6 +12,18 @@ export const GET_ADVERTS = gql`
   }
 `;
 
+export const GET_ADVERTS_CATEGORY = gql`
+  query getAdvertsByCategory($category: String!) {
+    getAdvertsByCategory(category: $category) {
+      id
+      location
+      price
+      title
+      createdAt
+    }
+  }
+`;
+
 export const GET_ADVERT = gql`
   query getAdvert($id: Int!) {
     getAdvert(id: $id) {
@@ -24,6 +36,31 @@ export const GET_ADVERT = gql`
         createdAt
         description
         category
+      }
+      user {
+        name
+        surname
+        id
+        phone
+        email
+      }
+    }
+  }
+`;
+
+export const GET_ADVERT_LOGED = gql`
+  query getAdvertLoged($id: Int!, $accessToken: String!) {
+    getAdvertLoged(id: $id, accessToken: $accessToken) {
+      advert {
+        id
+        price
+        location
+        available
+        title
+        createdAt
+        description
+        category
+        isFavorited
       }
       user {
         name
@@ -58,6 +95,7 @@ export const CREATE_ADVERT = gql`
     $title: String!
     $description: String!
     $category: String!
+    $data: JSON!
   ) {
     createAdvert(
       accessToken: $accessToken
@@ -66,6 +104,7 @@ export const CREATE_ADVERT = gql`
       title: $title
       description: $description
       category: $category
+      data: $data
     ) {
       id
       location

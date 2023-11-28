@@ -25,7 +25,7 @@
         ></v-switch>
 
       </div>
-      <div class="burger-menu" @click="openMenu">burger menu</div>
+      <div class="burger-menu" @click="openMenu"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px"><path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"/></svg></div>
 
     </section>
   </header>
@@ -33,7 +33,7 @@
 
 <style scoped>
 
-@media only screen and (max-width: 1000px) {
+@media only screen and (max-width: 1200px) {
 
   .burger-menu {
     display: block !important;
@@ -46,8 +46,20 @@
 
 }
 
+@media only screen and (max-width: 800px) {
+
+  section {
+    padding: 0px 40px !important;
+  }
+
+
+
+
+}
+
 .burger-menu {
   display: none;
+  fill: rgb(var(--v-theme-text));
 }
 
 
@@ -62,9 +74,9 @@
   width: 48px;
   background-color: rgb(var(--v-theme-text));
   border-radius: 50%;
-display: flex;
-justify-content: center;
-align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   transition: background-color 0.5s ease;
 }
 

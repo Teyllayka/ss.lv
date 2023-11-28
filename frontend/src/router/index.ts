@@ -136,8 +136,15 @@ const routes = [
       },
       {
         path: "/bookmarks",
-        name: "Bookmarks",
+        name: "bookmarks",
         component: Bookmarks,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          if (await isLoggedIn()) {
+            next();
+          } else {
+            next("/login");
+          }
+        },
       },
       {
         path: "/adverts",
@@ -148,7 +155,7 @@ const routes = [
         path: "/register",
         name: "register",
         component: Register,
-        meta: {hideNavigation: true},
+        meta: { hideNavigation: true },
         beforeEnter: async (to: any, from: any, next: any) => {
           if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
@@ -161,7 +168,7 @@ const routes = [
         path: "/login",
         name: "login",
         component: Login,
-        meta: {hideNavigation: true},
+        meta: { hideNavigation: true },
         beforeEnter: async (to: any, from: any, next: any) => {
           if (localStorage.getItem("logedIn") == "true" ? false : true) {
             next();
@@ -223,8 +230,8 @@ const routes = [
         component: NotFound,
       },
       {
-        path: '/contact',
-        component: () => import('@/views/Contact.vue'),
+        path: "/contact",
+        component: () => import("@/views/Contact.vue"),
       },
       {
         path: "/:catchAll(.*)",

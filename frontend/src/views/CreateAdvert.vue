@@ -35,6 +35,10 @@ export default {
         formKeys.forEach(key => {
           console.log(key);
 
+          if ( key === 'category' || key === 'price' || key === 'location' || key === 'title' || key === 'description' ) {
+            return;
+          }
+
           try {
             formToSend[key] = this.v$.form[key].$model;
           } catch (error) {
@@ -52,6 +56,7 @@ export default {
           title: this.v$.form.title.$model,
           description: this.v$.form.description.$model,
           category: this.v$.form.category.$model,
+          data: formToSend,
           accessToken
           
         }).then(({ data, loading, error }) => {
@@ -148,6 +153,17 @@ export default {
 
 
 <style scoped>
+
+  textarea {
+    outline: 0;
+    padding: 10px 15px;
+    max-width:428px;
+  }
+
+  select {
+    outline: 0;
+  }
+
   .fields {
       display:flex;
       justify-content:flex-start;
@@ -165,6 +181,11 @@ export default {
 
   }
 
+  option {
+    background-color:rgb(var(--v-theme-background));
+    color: rgb(var(--v-theme-inputText))
+  }
+
   .category {
     margin-top:50px;
   }
@@ -179,6 +200,7 @@ export default {
     justify-content: center;
     align-items: center;
     flex-direction: row;
+    transition: color 0s ease;
   }
 
   .title {

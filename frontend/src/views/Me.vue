@@ -1,7 +1,7 @@
 
 <template>
-   <p v-if="error">Something went wrong... {{ error.message }}</p>
-   <p v-if="loading">Loading...</p>
+   <div v-if="loading"><loading></loading></div>
+   <div v-else-if="error"><error v-bind="error"/></div>
    <section class="profile" v-else>
 
 
@@ -23,7 +23,7 @@
         </div>
         
         <div class="buttons">
-          <button><router-link to="/logout" class="link">Edit</router-link></button>
+          <button><router-link to="/edit" class="link">Edit</router-link></button>
           <button><router-link to="/logout" class="link">Logout</router-link></button>
         </div>
       </div>
@@ -71,6 +71,7 @@
   gap:20px;
   margin-left:30px;
   margin-bottom:100px;
+  color: rgb(var(--v-theme-background));
 }
 
 .switcher button {
@@ -146,12 +147,16 @@
 import { defineComponent, computed, ref } from 'vue';
 import { ME } from "@/graphql/user";
 import { useQuery } from '@vue/apollo-composable'
+import Error from '../components/Error.vue';
 import Adverts from '../components/Adverts.vue';
+import Loading from '../components/Loading.vue';
 
 export default defineComponent({
  name: 'App',
  components: {
-   Adverts
+   Adverts,
+   Error,
+   Loading,
  },
  setup() {
    const accessToken = localStorage.getItem("access_token");

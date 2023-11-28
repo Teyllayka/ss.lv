@@ -698,6 +698,7 @@ dependencies = [
  "jwt",
  "migration",
  "sea-orm",
+ "serde_json",
  "sha2",
  "sqlx",
  "tokio",

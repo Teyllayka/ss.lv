@@ -5,16 +5,21 @@ import { GET_FAVORITES } from "@/graphql/advert";
 import { useQuery } from '@vue/apollo-composable'
 import Error from '../components/Error.vue';
 import Adverts from '../components/Adverts.vue';
+import Loading from '../components/Loading.vue';
 
 export default defineComponent({
   name: 'App',
   components: {
     Adverts,
-    Error
+    Error,
+    Loading
   },
   setup() {
         const accessToken = localStorage.getItem("access_token");
-        const { result, loading, error } = useQuery(GET_FAVORITES, { accessToken });
+        const { result, loading, error } = useQuery(GET_FAVORITES, { accessToken }, { fetchPolicy: 'network-only' });
+
+        
+      
 
         return {
           result,
@@ -30,12 +35,12 @@ export default defineComponent({
 
 
 <template>  
-   <div v-if="error"><error v-bind="error"/></div>
-   <p v-if="loading">Loading...</p>
+   <div v-if="loading"><loading></loading></div>
+  <div v-else-if="error"><error v-bind="error"/></div>
    <div v-else class="adverts-container">
       <div class="title"> <h1>Bookmarks:</h1></div>
       <section class="adverts">
-        <adverts  v-for="advert in result.getFavorites" v-bind:key="advert.id" v-bind="advert" />mnbvvvjk bvnghvbcb
+        <adverts  v-for="advert in result.getFavorites" v-bind:key="advert.id" v-bind="advert" />
       </section>
    </div>
 </template>
@@ -54,9 +59,9 @@ export default defineComponent({
     margin:50px 150px;
   }
 
-.title {
-  display: grid;
-}
+  .title {
+    display: grid;
+  }
 
 h1 {
     color: rgb(var(--v-theme-text));
