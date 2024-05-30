@@ -72,6 +72,28 @@ export const ME = gql`
   }
 `;
 
+export const EDIT = gql`
+  mutation edit(
+    $accessToken: String!
+    $name: String!
+    $surname: String!
+    $phone: String!
+    $password: String!
+  ) {
+    edit(
+      accessToken: $accessToken
+      name: $name
+      surname: $surname
+      phone: $phone
+      password: $password
+    ) {
+      name
+      surname
+      phone
+    }
+  }
+`;
+
 export const REFRESH = gql`
   mutation refresh($refreshToken: String!) {
     refresh(refreshToken: $refreshToken) {

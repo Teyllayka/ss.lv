@@ -8,8 +8,6 @@
 import vuetify from "./vuetify";
 import pinia from "../store";
 import router from "../router";
-import { DefaultApolloClient } from "@vue/apollo-composable";
-import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import VueCookies from "vue-cookies";
 // Types
 import type { App } from "vue";

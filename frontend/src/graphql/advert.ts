@@ -1,13 +1,14 @@
 import gql from "graphql-tag";
 
 export const GET_ADVERTS = gql`
-  query getAdverts {
-    getAdverts {
+  query getAdverts($accessToken: String!, $offset: Int!, $limit: Int!) {
+    getAdverts(accessToken: $accessToken, limit: $limit, offset: $offset) {
       id
       location
       price
       title
       createdAt
+      isFavorited
     }
   }
 `;
@@ -25,32 +26,8 @@ export const GET_ADVERTS_CATEGORY = gql`
 `;
 
 export const GET_ADVERT = gql`
-  query getAdvert($id: Int!) {
-    getAdvert(id: $id) {
-      advert {
-        id
-        price
-        location
-        available
-        title
-        createdAt
-        description
-        category
-      }
-      user {
-        name
-        surname
-        id
-        phone
-        email
-      }
-    }
-  }
-`;
-
-export const GET_ADVERT_LOGED = gql`
-  query getAdvertLoged($id: Int!, $accessToken: String!) {
-    getAdvertLoged(id: $id, accessToken: $accessToken) {
+  query getAdvert($id: Int!, $accessToken: String!) {
+    getAdvert(id: $id, accessToken: $accessToken) {
       advert {
         id
         price
@@ -61,6 +38,10 @@ export const GET_ADVERT_LOGED = gql`
         description
         category
         isFavorited
+        specs {
+          key
+          value
+        }
       }
       user {
         name
@@ -69,6 +50,7 @@ export const GET_ADVERT_LOGED = gql`
         phone
         email
       }
+      isAdmin
     }
   }
 `;
@@ -83,6 +65,18 @@ export const GET_FAVORITES = gql`
       available
       title
       isFavorited
+    }
+  }
+`;
+
+export const DELETE_ADVERT = gql`
+  mutation deleteAdvert($accessToken: String!, $advertId: Int!) {
+    deleteAdvert(accessToken: $accessToken, advertId: $advertId) {
+      id
+      location
+      title
+      description
+      createdAt
     }
   }
 `;
@@ -133,20 +127,6 @@ export const REMOVE_FAVORITE = gql`
       userId
       advertId
       createdAt
-    }
-  }
-`;
-
-export const GET_ADVERTS_LOGED = gql`
-  query getAdvertsLoged($accessToken: String!) {
-    getAdvertsLoged(accessToken: $accessToken) {
-      id
-      price
-      location
-      available
-      title
-      createdAt
-      isFavorited
     }
   }
 `;

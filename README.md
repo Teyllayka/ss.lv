@@ -1,46 +1,39 @@
-# vue-project
+# HOW TO RUN???
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```
+docker compose up --build -d
 ```
 
-### Compile and Hot-Reload for Development
+done(if docker was instaled before)!!!
 
-```sh
-npm run dev
+then navigate to port 3000 and use my service
+
+development tools:
+
+languages:
+
+```
+rust, typescript, javascript, (html, css) not languages lol
 ```
 
-### Type-Check, Compile and Minify for Production
+libs:
 
-```sh
-npm run build
+```
+actix-web, async-graphql, vue, vite, seaorm
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+on top of that:
 
-```sh
-npm run lint
 ```
+docker
+```
+
+tests:
+
+| Test Case Name                                   | Test Case Id | Test Step | Test Data                                                                         | Expected Result   | Actual Result     | Remarks |
+| ------------------------------------------------ | ------------ | --------- | --------------------------------------------------------------------------------- | ----------------- | ----------------- | ------- |
+| Visit website(without login) and favorite advert | FAV_1        | 1         |                                                                                   | Relocate to login | Relocate to login | Pass    |
+| Visit website(without login) and create advert   | CRE_1        | 2         |                                                                                   | Relocate to login | Relocate to login | Pass    |
+| Visit website and register with wrong data       | REG_1        | 3         | Name: a<br>Email: a<br>Password: a <br> surname: a<br> phone: a <br> person: true | Show Error        | Show Error        | Pass    |
+| Visit website and login with wrong info          | LOG_1        | 4         | email: a <br> password: a <br>                                                    | Show error        | Show error        | Pass    |
+| Visit website and favorite advert after login    | FAV_2        | 5         |                                                                                   | Advert favorited  | Advert favorited  | Pass    |

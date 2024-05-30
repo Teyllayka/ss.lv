@@ -11,11 +11,13 @@ import Bookmarks from "@/views/Bookmarks.vue";
 import Adverts from "@/views/Adverts.vue";
 import NotFound from "@/views/NotFound.vue";
 import TAC from "@/views/TAC.vue";
+import Stats from "@/views/Stats.vue";
 
 import { provideApolloClient, useMutation } from "@vue/apollo-composable";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { ME, REFRESH } from "@/graphql/user";
 import { useQuery } from "@vue/apollo-composable";
+import Edit from "@/views/Edit.vue";
 
 async function isLoggedIn() {
   const cache = new InMemoryCache();
@@ -34,7 +36,7 @@ async function isLoggedIn() {
 
     const { onError } = useQuery(ME, { accessToken });
 
-    onError(async (error) => {
+    onError(async (_) => {
       if (refreshToken) {
         const { mutate: refresh } = useMutation(REFRESH);
         try {
@@ -127,12 +129,17 @@ function logout() {
 const routes = [
   {
     path: "/",
+    redirect: "/home",
     component: () => import("@/layouts/default/Default.vue"),
     children: [
       {
         path: "/home",
         name: "home",
         component: Home,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          await isLoggedIn();
+          next();
+        },
       },
       {
         path: "/bookmarks",
@@ -150,6 +157,10 @@ const routes = [
         path: "/adverts",
         name: "adverts",
         component: Adverts,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          await isLoggedIn();
+          next();
+        },
       },
       {
         path: "/register",
@@ -186,11 +197,27 @@ const routes = [
         path: "/advert/:id",
         name: "advert",
         component: Advert,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          await isLoggedIn();
+          next();
+        },
       },
       {
         path: "/me",
         name: "me",
         component: Me,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          if (await isLoggedIn()) {
+            next();
+          } else {
+            next("/login");
+          }
+        },
+      },
+      {
+        path: "/edit",
+        name: "edit",
+        component: Edit,
         beforeEnter: async (to: any, from: any, next: any) => {
           if (await isLoggedIn()) {
             next();
@@ -211,6 +238,7 @@ const routes = [
           }
         },
       },
+
       {
         path: "/logout",
         name: "logout",
@@ -224,6 +252,11 @@ const routes = [
         path: "/tac",
         name: "tac",
         component: TAC,
+      },
+      {
+        path: "/stats",
+        name: "stats",
+        component: Stats,
       },
       {
         path: "/404",

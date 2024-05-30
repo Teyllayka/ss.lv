@@ -124,7 +124,8 @@ export default defineComponent({
   
 
     <div class="downer">
-      <button @click="addToFavorite" v-if="!isFavorited">
+      <div class="price"> {{ price.toFixed(2) }} €</div>
+      <button class="addToFavBtn" @click="addToFavorite" v-if="!isFavorited">
         <svg fill="inherit" height="25" width="25" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
           viewBox="0 0 471.701 471.701" xml:space="preserve" stroke-width="10">
           <g>
@@ -141,7 +142,7 @@ export default defineComponent({
       <button @click="removeFromFavorite" v-else>
         <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="25px" height="25px"><path d="M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z"/></svg>
       </button>
-      <div class="price"> {{ price.toFixed(2) }} €</div>
+      
 
     </div>
   </div>
@@ -150,6 +151,9 @@ export default defineComponent({
 
 <style scoped>
 
+.addToFavBtn {
+  height: 25px;
+}
 
 .advert {
   width: 370px;
@@ -193,8 +197,9 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-direction: row;
   height: 40%;
-  padding: 0px 20px;
+  padding: 0 20px;
   
 }
 
@@ -204,14 +209,12 @@ export default defineComponent({
   stroke: rgb(var(--v-theme-text));
 }
 
-.downer button svg {
-}
 
 
 .price {
   border-radius: 28px;
-  padding: 5px 10px;
-  border: 1px solid rgb(var(--v-theme-text));
+  font-size:24px;
+  /* border: 1px solid rgb(var(--v-theme-text)); */
   /* box-shadow: 0px 0px 24px 0px rgba(253, 230, 63, 0.40); */
 }
 

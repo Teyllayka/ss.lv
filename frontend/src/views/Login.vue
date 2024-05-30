@@ -84,18 +84,12 @@
 
 <template>
    <section class="reigster text-text">
-     <div class="background"></div>
      <div class="right">
       <div class="info">
-         <v-switch
-      inset
-      color="text"
-      v-model="darkMode"
-      @change="toggleTheme()"
-    ></v-switch>
+      
          <div class="messages">
             <h1>Hello Again!</h1>
-            <h4>Welcome Back</h4>
+            <span>Welcome Back</span>
          </div>
          <div class="fields">
             <div class="input-field">
@@ -131,24 +125,33 @@
 
 <style scoped>
 
+.messages {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   width:100%;
+
+   
+
+
+   h1 {
+      text-align: start;
+      font-size:32px;
+      
+   }
+
+   h4 {
+      text-align: start;
+   }
+   
+}
+
 #password {
    margin-left:6px;
 }
 
-.background {
-   width: 70%;
-   height: 100%;
-   background-image: linear-gradient(to top, rgb(var(--v-theme-bg1)), rgb(var(--v-theme-bg2)), rgb(var(--v-theme-bg3)), rgb(var(--v-theme-bg4)), rgb(var(--v-theme-text)));
-}
 
-h1 {
-   margin-bottom: 10px;
-   text-align: start;
-}
-
-h4 {
-   text-align: start;
-}
 
 section {
    height: 100%;
@@ -164,7 +167,7 @@ section {
    justify-content: center;
    align-items: flex-start;
    flex-direction: column;
-   gap:40px;
+   gap:20px;
 }
 
 .right {
@@ -177,9 +180,7 @@ section {
 }
 
 @media only screen and (max-width: 576px) {
-.background {
-  display: none;
-}
+
 .right {
    width: 100%;
    display: flex;
@@ -236,12 +237,10 @@ input::placeholder {
 .urls {
    width: 100%;
    display: flex;
-   justify-content: space-around;
+   justify-content: space-between;
    align-items: center;
    flex-direction: row;
 }
-
-
 
 form {
    display: flex;
