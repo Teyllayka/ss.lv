@@ -3,7 +3,7 @@ use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[sea_orm(table_name = "specifications")]
-#[graphql(name = "specification")]
+#[graphql(name = "specifications")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,

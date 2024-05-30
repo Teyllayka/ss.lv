@@ -2,8 +2,6 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
-
-
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[sea_orm(table_name = "advert")]
 #[graphql(name = "Advert")]
@@ -23,6 +21,8 @@ pub struct Model {
     #[sea_orm(ignore)]
     pub is_favorited: bool,
     // pub adverts
+    #[sea_orm(ignore)]
+    pub specs: Vec<super::specifications::Model>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -33,9 +33,9 @@ pub enum Relation {
         to = "super::user::Column::Id"
     )]
     User,
-    #[sea_orm(has_many = "super::specification::Entity")]
-    Specification,
-    #[sea_orm(has_many = "super::favorites::Entity")]
+    #[sea_orm(has_many = "super::specifications::Entity", on_delete = "Cascade")]
+    Specifications,
+    #[sea_orm(has_many = "super::favorites::Entity", on_delete = "Cascade")]
     Favorites,
 }
 
@@ -45,9 +45,9 @@ impl Related<super::user::Entity> for Entity {
     }
 }
 
-impl Related<super::specification::Entity> for Entity {
+impl Related<super::specifications::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Specification.def()
+        Relation::Specifications.def()
     }
 }
 
