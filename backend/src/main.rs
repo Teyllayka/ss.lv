@@ -434,6 +434,7 @@ impl MutationRoot {
             updated_at: Set(naive_date_time),
             refresh_token: Set(None),
             balance: Set(0.0),
+            avatar_url: Set("".to_string()),
             ..Default::default()
         };
 
@@ -530,6 +531,7 @@ impl MutationRoot {
         name: String,
         surname: String,
         phone: String,
+        avatar_url: String,
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
@@ -577,6 +579,7 @@ impl MutationRoot {
             name: Set(name),
             surname: Set(surname),
             phone: Set(phone),
+            avatar_url: Set(avatar_url),
             ..user.into()
         };
 
@@ -768,6 +771,7 @@ impl MutationRoot {
         title: String,
         description: String,
         category: String,
+        photo_url: String,
         data: Json<serde_json::Value>,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
@@ -800,6 +804,7 @@ impl MutationRoot {
             description: Set(description),
             title: Set(title),
             category: Set(category),
+            photo_url: Set(photo_url),
             ..Default::default()
         };
 
@@ -913,7 +918,7 @@ async fn main() -> std::io::Result<()> {
 
     Migrator::up(&db, None).await.expect("migration ban");
 
-    println!("GraphiQL IDE: http://localhost:8000");
+    println!("GraphiQL IDE: http://localhost:90");
 
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
@@ -929,7 +934,8 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::default()
             .allowed_origin("http://127.0.0.1:3000")
             .allowed_origin("http://localhost:3000")
-            .allowed_origin("http://localhost:8000")
+            .allowed_origin("http://localhost:80")
+            .allowed_origin("https://api-12dpdsprogis.kvalifikacija.rvt.lv/")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
@@ -944,7 +950,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
-    .bind("0.0.0.0:80")?
+    .bind(("0.0.0.0", 80))?
     .run()
     .await
 }

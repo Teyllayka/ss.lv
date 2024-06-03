@@ -111,6 +111,22 @@ export default defineComponent({
 
 
 <style scoped>
+
+  @media (max-width: 768px) {
+    .adverts {
+      margin: 50px 30px !important;
+      justify-content: center !important;
+      gap: 30px !important;
+      flex-direction: column !important;
+    }
+
+    h1 {
+      text-align: center !important;
+      margin: 50px 0 !important;
+      justify-self: center !important;
+    }
+  }
+
   .adverts {
     display:flex;
     justify-content:flex-start;
@@ -126,13 +142,14 @@ export default defineComponent({
   }
 
   .title {
-    display:grid;
+    display: grid;
   }
 
   h1 {
     color: rgb(var(--v-theme-text));
     margin: 50px 150px 20px 150px;
     justify-self: flex-start;
+    text-align: center;
   }
 
   .end {

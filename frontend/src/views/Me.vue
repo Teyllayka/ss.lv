@@ -7,7 +7,7 @@
 
     <section class="info">
       <div class="avatar">
-        <img src="https://30.img.avito.st/image/1/1.zjCnc7a4YtmR2qDct2SnJbbRYN8Z0uDR0ddg2xfaatMR.xajaZfbTIv0ViaQVJN-mahjP5knob4APgvyLH6pQDCU" alt="">
+        <img :src="result.me.avatarUrl" alt="">
       </div>
       <div class="description">
         <div class="data">
@@ -114,8 +114,9 @@
 }
 
 .buttons {
+  width:100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap:20px;
   justify-self: flex-end;

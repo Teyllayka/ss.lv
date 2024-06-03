@@ -13,6 +13,7 @@ pub struct Model {
     pub description: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub photo_url: String,
     pub available: bool,
     pub price: f32,
     pub location: String,

@@ -44,6 +44,7 @@ div {
 p {
     font-size: 40px;
     color: rgba(var(--v-theme-inputText), 0.87);
+    text-align: center;
 }
 
 a {

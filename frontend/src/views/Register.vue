@@ -329,9 +329,15 @@ section {
    align-items: center;
 }
 
+@media only screen and (max-width: 1000px) {
+   .info {
+      width:90% !important;
+   }
+
+}
+
 .info {
-   width: 30%;
-   min-width: 576px;
+   width: 50%;
    display: flex;
    justify-content: center;
    align-items: center;
@@ -385,15 +391,15 @@ section {
    flex-direction: column;
 }
 
+
+
 .input-form {
    border: 1px solid  rgba(var(--v-theme-inputText), 0.3);
    color: rgba(var(--v-theme-inputText), 0.87);
-   padding: 10px 0 10px 10px;
+   padding: 10px 20px;
    border-radius: 50px;
-   width:288px;
-   padding: 10px 0px;
+   width:100%;
    display: flex;
-   justify-content: center;
    align-items: center;
    flex-direction: row;
    gap:5px;
@@ -402,6 +408,7 @@ section {
 
 .input-field svg {
    fill: rgba(var(--v-theme-inputText), 0.3);
+   flex-shrink: 0;
 }
 
 

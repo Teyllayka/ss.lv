@@ -7,7 +7,7 @@
    
     <div class="up">
       <div class="image-container">
-        <img src="https://30.img.avito.st/image/1/1.zjCnc7a4YtmR2qDct2SnJbbRYN8Z0uDR0ddg2xfaatMR.xajaZfbTIv0ViaQVJN-mahjP5knob4APgvyLH6pQDCU" width="300" height="300" alt="">
+        <img :src="result.getAdvert.advert.photoUrl" width="300" height="300" alt="">
       </div>
       <div class="info">
         <h1 class="title"> {{ result.getAdvert.advert.title }}</h1>
@@ -17,7 +17,7 @@
         <p>you can contact him by phone {{ result.getAdvert.user.phone }} or by email {{ result.getAdvert.user.email }}</p>
 
         <div class="buttons">
-          <button>Message</button>
+          <!-- <button>Message</button> -->
           <button v-if="isFavorited && logedIn" @click="removeFromFavorite">Remove from favorites</button>
           <button v-else-if="!isFavorited && logedIn" @click="addToFavorite">Add to favorites</button>
           <button v-if="logedIn && result.getAdvert.isAdmin == true" @click="deleteAdvertDB">Delete</button>
@@ -26,7 +26,7 @@
     </div>
     <h1 class="title">Characteristics:</h1>
     <div v-for="(value, key) in result.getAdvert.advert.specs" :key="key">
-      <p>{{ value.key }}: {{ value.value }}</p>
+      <p>{{ value.key }}: <span class="value">{{ value.value }}</span></p>
     </div>
     <div class="down">
 
@@ -71,7 +71,7 @@ img {
   margin-top:100px;
   width:100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -105,6 +105,12 @@ img {
 
 .down {
   margin-top:100px;
+}
+
+
+.value {
+  font-weight: bold;
+  color: rgb(var(--v-theme-text));
 }
 
 
@@ -231,15 +237,10 @@ export default defineComponent({
             return;
           }
 
-          console.log(data);
-          router.push("/login")
+        
         
         });
-        if (this.$route.name == "Bookmarks") {
-          console.log("bookmarks");
-          document.getElementById(id).remove();
-          
-        }
+      
 
         isFavorited.value = false;
     }

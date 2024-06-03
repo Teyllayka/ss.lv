@@ -23,7 +23,7 @@ async function isLoggedIn() {
   const cache = new InMemoryCache();
   const apolloClient = new ApolloClient({
     cache,
-    uri: "http://localhost:8000",
+    uri: "https://api-12dpdsprogis.kvalifikacija.rvt.lv/",
   });
   provideApolloClient(apolloClient);
 

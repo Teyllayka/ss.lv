@@ -112,7 +112,7 @@ export default defineComponent({
 
   
 <div class="advert" :id="id">
-  <router-link :to="'/advert/' + id" class="link"> <img src="https://30.img.avito.st/image/1/1.zjCnc7a4YtmR2qDct2SnJbbRYN8Z0uDR0ddg2xfaatMR.xajaZfbTIv0ViaQVJN-mahjP5knob4APgvyLH6pQDCU" width="100" height="100+" alt="">
+  <router-link :to="'/advert/' + id" class="link"> <img :src="photoUrl" width="100" height="100+" alt="">
   </router-link>
  
   <div class="description">
@@ -153,6 +153,14 @@ export default defineComponent({
 
 .addToFavBtn {
   height: 25px;
+}
+
+@media only screen and (max-width: 900px) {
+
+  .advert {
+    width: 200px !important;
+    height: 200px !important;
+  }
 }
 
 .advert {

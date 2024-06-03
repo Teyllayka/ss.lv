@@ -161,6 +161,13 @@ section {
    align-items: center;
 }
 
+@media (max-width: 1000px) {
+   .info {
+      width:90% !important;
+   }
+
+}
+
 .info {
    width: 50%;
    display: flex;
@@ -171,8 +178,8 @@ section {
 }
 
 .right {
-   min-width: 576px;
-   width: 30%;
+   
+   width: 50%;
    display: flex;
    justify-content: center;
    align-items: center;
@@ -181,13 +188,13 @@ section {
 
 @media only screen and (max-width: 576px) {
 
-.right {
-   width: 100%;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-  
-}
+   .right {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+   
+   }
 }
 
 .fields {
@@ -209,12 +216,11 @@ section {
 
 .input-field {
    width: 100%;
-   padding: 10px 0;
+   padding: 10px 20px;
    border-radius: 50px;
    background-color: transparent;
    border: 1px solid  rgba(var(--v-theme-inputText), 0.3);
    display: flex;
-   justify-content: center;
    align-items: center;
    flex-direction: row;
    gap: 5px;
@@ -222,11 +228,13 @@ section {
 
 .input-field svg {
    fill: rgba(var(--v-theme-inputText), 0.3);
+   flex-shrink: 0;
 }
 
 input {
    color: rgba(var(--v-theme-inputText), 0.87);
    outline: none;
+   width:100%;
 }
 
 input::placeholder {

@@ -10,7 +10,7 @@ import { useRouter } from 'vue-router';
 export default {
   setup() {
 
-    const formKeys = ['price', 'location', 'title', 'description', 'category', 'model', 'year', 'fuelType', 'brand', 'condition'];
+    const formKeys = ['price', 'location', 'title', 'description', 'category', 'model', 'year', 'fuelType', 'brand', 'condition', 'photoUrl'];
     const router = useRouter();
     const { mutate: createAdvert } = useMutation(CREATE_ADVERT);
     const accessToken = localStorage.getItem("access_token");
@@ -35,7 +35,7 @@ export default {
         formKeys.forEach(key => {
           console.log(key);
 
-          if ( key === 'category' || key === 'price' || key === 'location' || key === 'title' || key === 'description' ) {
+          if ( key === 'category' || key === 'price' || key === 'location' || key === 'title' || key === 'description' || key === 'photoUrl') {
             return;
           }
 
@@ -47,11 +47,12 @@ export default {
           }
         });
 
-        console.log(formToSend);
+        console.log(formToSend, this.v$.form);
 
 
         await createAdvert({
           price: parseFloat(this.v$.form.price.$model),
+          photoUrl: this.v$.form.photoUrl.$model,
           location: this.v$.form.location.$model,
           title: this.v$.form.title.$model,
           description: this.v$.form.description.$model,
@@ -77,6 +78,7 @@ export default {
       form: {
         price: 0.0,
         location: '',
+        photoUrl: '',
         title: '',
         description: '',
         category: '',
@@ -98,6 +100,7 @@ export default {
     return {
       form: {
         price: {required},
+        photoUrl: {required},
         location: {required},
         title: {required},
         description: {required},
@@ -124,6 +127,9 @@ export default {
       </div>
       <div class="input-field">
           <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title">
+      </div>
+      <div class="input-field">
+          <input type="text" name="" id="photoUrl" v-model="v$.form.photoUrl.$model" placeholder="Photo">
       </div>
     </div>
     <div class="input-field category">

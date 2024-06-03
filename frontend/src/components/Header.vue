@@ -34,13 +34,11 @@ watchEffect(() => {
 
   <header>
     <section class="navigation">
-      <div class="left"><router-link to="/home" >Adee</router-link></div>
-      <div class="center">
+      <div class="left"><router-link to="/home" >Adee</router-link>
         <router-link to="/home" class="link">Home</router-link>
         <router-link to="/create" class="link">Create</router-link>
-        <router-link to="/adverts" class="link">About</router-link>
-        <router-link to="/contact" class="link">Contact</router-link>
       </div>
+      
       <div class="right">
         <div class="svgs">
           <router-link :to="logedIn ? '/me' : '/register'">
@@ -190,13 +188,6 @@ section {
   justify-content: space-between;
 }
 
-.center {
-  display:flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap:50px;
-}
 
 .right {
   display: flex;
@@ -211,7 +202,11 @@ section {
   font-size: 32px;
   font-weight: 700;
   transition: color 0.5s ease;
-  width:256px;
+  width:fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap:50px;
 }
 
 

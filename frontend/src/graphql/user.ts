@@ -7,6 +7,7 @@ export const GET_USER = gql`
       email
       name
       surname
+      avatarUrl
       adverts {
         id
         location
@@ -60,6 +61,7 @@ export const ME = gql`
       name
       surname
       phone
+      avatarUrl
       adverts {
         id
         price

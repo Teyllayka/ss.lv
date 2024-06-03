@@ -9,6 +9,7 @@ export const GET_ADVERTS = gql`
       title
       createdAt
       isFavorited
+      photoUrl
     }
   }
 `;
@@ -38,6 +39,7 @@ export const GET_ADVERT = gql`
         description
         category
         isFavorited
+        photoUrl
         specs {
           key
           value
@@ -89,6 +91,7 @@ export const CREATE_ADVERT = gql`
     $title: String!
     $description: String!
     $category: String!
+    $photoUrl: String!
     $data: JSON!
   ) {
     createAdvert(
@@ -98,6 +101,7 @@ export const CREATE_ADVERT = gql`
       title: $title
       description: $description
       category: $category
+      photoUrl: $photoUrl
       data: $data
     ) {
       id

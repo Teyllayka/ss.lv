@@ -8,10 +8,17 @@
         
         
         
-        </footer>
+    </footer>
 </template>
 
 <style scoped>
+
+footer {
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 div {
     display: flex;

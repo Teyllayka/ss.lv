@@ -8,6 +8,7 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub avatar_url: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub name: String,

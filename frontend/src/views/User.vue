@@ -4,7 +4,7 @@
   <section class="profile" v-else>
    <section class="info">
      <div class="avatar">
-       <img src="https://30.img.avito.st/image/1/1.zjCnc7a4YtmR2qDct2SnJbbRYN8Z0uDR0ddg2xfaatMR.xajaZfbTIv0ViaQVJN-mahjP5knob4APgvyLH6pQDCU" alt="">
+       <img src="{{ result.getUser.avatarUrl }}" alt="">
      </div>
      <div class="description">
        <div class="data">
@@ -21,15 +21,18 @@
      </div>
 
    </section>
-   <section class="adverts">
-     <div class="switcher">
-      <button @click="filterType = 'new'">New</button>
+   <section class="adverts" v-if="filteredAdverts.length > 0">
+      <div class="switcher">
+        <button @click="filterType = 'new'">New</button>
         <button @click="filterType = 'finished'">Finished</button>
-     </div>
-     <div class="adverts-container">
-       <adverts  v-for="advert in filteredAdverts" v-bind:key="advert.id" v-bind="advert" />
-     </div>
-   </section>
+      </div>
+      <div class="adverts-container">
+        <adverts  v-for="advert in filteredAdverts" v-bind:key="advert.id" v-bind="advert" />
+      </div>
+    </section>
+    <section class="adverts-else" v-else>
+      <p>This user didnt create any adverts... how did you find it lol?</p>
+    </section>
    <div >
    </div>
  </section>

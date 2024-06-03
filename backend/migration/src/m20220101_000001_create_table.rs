@@ -22,6 +22,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::UpdatedAt).date_time().not_null())
                     .col(ColumnDef::new(User::Name).string().not_null())
                     .col(ColumnDef::new(User::Surname).string().not_null())
+                    .col(ColumnDef::new(User::AvatarUrl).string().not_null())
                     .col(ColumnDef::new(User::Email).string().unique_key().not_null())
                     .col(ColumnDef::new(User::Phone).string().not_null())
                     .col(ColumnDef::new(User::Balance).float().not_null())
@@ -52,6 +53,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::UpdatedAt).date_time().not_null())
                     .col(ColumnDef::new(Advert::Available).boolean().not_null())
                     .col(ColumnDef::new(Advert::Price).float().not_null())
+                    .col(ColumnDef::new(Advert::PhotoUrl).string().not_null())
                     .col(ColumnDef::new(Advert::Location).string().not_null())
                     .col(ColumnDef::new(Advert::Title).string().not_null())
                     .col(ColumnDef::new(Advert::Category).string().not_null())
@@ -164,6 +166,7 @@ enum User {
     Id,
     CreatedAt,
     UpdatedAt,
+    AvatarUrl,
     Name,
     Surname,
     Email,
@@ -182,6 +185,7 @@ enum Advert {
     Description,
     CreatedAt,
     UpdatedAt,
+    PhotoUrl,
     Available,
     Price,
     Location,
