@@ -28,7 +28,7 @@
     </div>
     <h1 class="title">Characteristics:</h1>
     <div v-for="(value, key) in result.getAdvert.advert.specs" :key="key">
-      <p>{{ value.key }}: <span class="value">{{ value.value }}</span></p>
+      <p class="value-key">{{ value.key }}: <span class="value">{{ value.value }}</span></p>
     </div>
     <div class="down">
 
@@ -53,9 +53,27 @@
   flex-direction: row;
 }
 
+.value-key {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  gap:20px;
+}
+
 .advert {
   margin: 100px 150px;
   
+}
+
+.title {
+  max-width: 100%;
+  text-wrap: wrap;
+  white-space: wrap;
+  word-wrap: break-word;
+  max-height: 200px;
+  text-overflow: ellipsis; 
+  overflow: hidden; 
 }
 
 
@@ -118,12 +136,20 @@ img {
 
 .down {
   margin-top:100px;
+  max-width: 100%;
+  text-wrap: wrap;
+  word-wrap: break-word;
+
 }
 
 
 .value {
   font-weight: bold;
   color: rgb(var(--v-theme-text));
+  max-width: 10%;
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+  display: block;
 }
 
 

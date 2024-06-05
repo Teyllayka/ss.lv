@@ -180,8 +180,19 @@ export default defineComponent({
 .advert .title {
   word-wrap: break-word;
   text-align: left;
-  color: rgb(var(--v-theme-text));
-  font-size:20px;
+  color: rgb(var(--v-theme-text)); 
+  font-size: 20px; 
+  width: 350px; 
+  overflow: hidden; 
+  white-space: nowrap; 
+  text-overflow: ellipsis; 
+}
+
+.advert .details {
+  overflow: hidden; 
+  white-space: nowrap; 
+  text-overflow: ellipsis; 
+  width: 350px; 
 }
 
 
