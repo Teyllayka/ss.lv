@@ -72,6 +72,7 @@ export const ME = gql`
         createdAt
         available
         title
+        photoUrl
       }
     }
   }

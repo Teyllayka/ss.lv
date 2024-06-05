@@ -21,7 +21,7 @@
      </div>
 
    </section>
-   <section class="adverts" v-if="filteredAdverts.length > 0">
+   <section class="adverts" v-if="newAdverts.length > 0">
       <div class="switcher">
         <button @click="filterType = 'new'">New</button>
         <button @click="filterType = 'finished'">Finished</button>

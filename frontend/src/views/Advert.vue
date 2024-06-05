@@ -13,10 +13,10 @@
       <div class="info">
         <h1 class="title"> {{ result.getAdvert.advert.title }}</h1>
         <p class="price"> {{ result.getAdvert.advert.price.toFixed(2) }} €</p>
-        
+        <p class="location"><span>Location:</span> <span class="highlight">{{ result.getAdvert.advert.location }}</span></p>
        
         <p class="posted">posted {{ getDate(result.getAdvert.advert.createdAt) }} by <router-link :to="'/user/' + result.getAdvert.user.id" class="link">{{ result.getAdvert.user.name }} {{ result.getAdvert.user.surname }}</router-link></p>
-        <p>you can contact him by phone {{ result.getAdvert.user.phone }} or by email {{ result.getAdvert.user.email }}</p>
+        <p>you can contact him by phone <span class="highlight">{{ result.getAdvert.user.phone }}</span> or by email <span class="highlight">{{ result.getAdvert.user.email }}</span></p>
 
         <div class="buttons">
           <!-- <button>Message</button> -->
@@ -65,6 +65,24 @@
   margin: 100px 150px;
   
 }
+
+.location {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  max-width: 100%;
+  gap:10px;
+  text-wrap: wrap;
+  white-space: wrap;
+  word-wrap: break-word;
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+}
+.highlight {
+  color: rgb(var(--v-theme-text));
+}
+
 
 .title {
   max-width: 100%;
@@ -122,12 +140,13 @@ img {
 }
 
 .title {
-  color: rgb(var(--v-theme-text));
+  /* color: rgb(var(--v-theme-text)); */
   font-size:32px;
 }
 
 .price {
   font-size: 20px;
+  color: rgb(var(--v-theme-text));
 }
 
 .posted {

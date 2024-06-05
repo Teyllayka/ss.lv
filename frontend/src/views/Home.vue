@@ -1,8 +1,7 @@
 <template>
-
   <div v-if="loading"><loading></loading></div>
-  <div v-else-if="error"><error v-bind="error"/></div>
-  <div v-else>
+  <div v-if="error"><error v-bind="error"/></div>
+  <div>
     <div class="title" v-if="!error"> <h1>Recently Added:</h1></div>
     <section class="adverts" >
       
@@ -19,7 +18,7 @@ import { useQuery } from '@vue/apollo-composable'
 import { GET_ADVERTS } from "@/graphql/advert";
 import Adverts from '../components/Adverts.vue';
 import Error from '../components/Error.vue';
-import Loading from '../components/Error.vue';
+import Loading from '../components/Loading.vue';
 
 interface Advert {
  id: number;
@@ -54,6 +53,7 @@ export default defineComponent({
     };
 
     const {result, loading, error, fetchMore} = useQuery(GET_ADVERTS, { accessToken, offset, limit }, { fetchPolicy: 'network-only' });
+
 
     watchEffect(() => {
       if (result.value) {
@@ -101,7 +101,7 @@ export default defineComponent({
     return {
       adverts,
       loading,
-      error,
+      ...(error.value? { error } : {}),
       updateIsFavorited,
       hasMore
     };
