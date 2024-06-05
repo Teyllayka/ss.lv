@@ -1,39 +1,90 @@
 <template>
    <div v-if="loading"><loading></loading></div>
    <div v-else-if="error"><error v-bind="error"/></div>
-   <section class="edit-profile" v-else>
-      <div class="data">
-         <input class="name" v-model="v$.form.name.$model" >
-
-         <div class="input-errors" v-for="(error, index) of v$.form.name.$errors" :key="index">
+   <div class="edit-profile" v-else>
+      <div class="title" v-if="!error"> <h1>Edit Profile:</h1></div>
+      <section class="data">
+    <div class="input-field">
+        <label for="name">Name:</label>
+        <input class="name" v-model="v$.form.name.$model">
+        <div class="input-errors" v-for="(error, index) of v$.form.name.$errors" :key="index">
             <div class="error-msg">{{ error.$message }}</div>
-         </div>
+        </div>
+    </div>
 
-         <input class="surname" v-model="v$.form.surname.$model" >
-
-         <div class="input-errors" v-for="(error, index) of v$.form.surname.$errors" :key="index">
+    <!-- Surname Input -->
+    <div class="input-field">
+        <label for="surname">Surname:</label>
+        <input class="surname" v-model="v$.form.surname.$model">
+        <div class="input-errors" v-for="(error, index) of v$.form.surname.$errors" :key="index">
             <div class="error-msg">{{ error.$message }}</div>
-         </div>
+        </div>
+    </div>
 
-         <input class="email" v-model="v$.form.email.$model" >
-
-         <div class="input-errors" v-for="(error, index) of v$.form.email.$errors" :key="index">
+    <!-- Email Input -->
+    <div class="input-field">
+        <label for="email">Email:</label>
+        <input class="email" v-model="v$.form.email.$model">
+        <div class="input-errors" v-for="(error, index) of v$.form.email.$errors" :key="index">
             <div class="error-msg">{{ error.$message }}</div>
-         </div>
+        </div>
+    </div>
 
-         <input class="phone" v-model="v$.form.phone.$model" >
-
-         <div class="input-errors" v-for="(error, index) of v$.form.phone.$errors" :key="index">
+    <!-- Phone Input -->
+    <div class="input-field">
+        <label for="phone">Phone:</label>
+        <input class="phone" v-model="v$.form.phone.$model">
+        <div class="input-errors" v-for="(error, index) of v$.form.phone.$errors" :key="index">
             <div class="error-msg">{{ error.$message }}</div>
-         </div>
+        </div>
+    </div>
+
+    <!-- Password Input -->
+    <div class="input-field">
+        <label for="password">Password:</label>
+        <input class="password" v-model="v$.form.password.$model">
+        <div class="input-errors" v-for="(error, index) of v$.form.password.$errors" :key="index">
+            <div class="error-msg">{{ error.$message }}</div>
+        </div>
+    </div>
+
+    <button class="press" @click="edit">Edit</button>
+</section>
 
 
-         <input class="password" v-model="v$.form.password.$model" >
-      </div>
-
-      <button class="press" @click="edit" >edit</button>
-    </section>
+    </div>
 </template>
+
+<style scoped>
+
+.data, .title {
+  margin: 50px 150px;
+}
+h1 {
+  color: rgb(var(--v-theme-text));
+
+}
+
+.data {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.input-field {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap:20px;
+}
+
+.error-msg {
+  color: rgb(var(--v-theme-text));
+}
+
+</style>
 
 
 <script >

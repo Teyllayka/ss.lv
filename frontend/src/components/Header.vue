@@ -34,7 +34,8 @@ watchEffect(() => {
 
   <header>
     <section class="navigation">
-      <div class="left"><router-link to="/home" >Adee</router-link>
+      <div class="left">
+        <router-link to="/home" >Adee</router-link>
         <router-link to="/home" class="link">Home</router-link>
         <router-link to="/create" class="link">Create</router-link>
       </div>
@@ -67,8 +68,22 @@ watchEffect(() => {
       <div class="burger-button" @click="openMenu"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px"><path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"/></svg></div>
     
       <div v-if="menu" class="burger-menu">
-        <p>aaa</p>
-        <p>bbb</p>
+        <div class="burger-button" @click="openMenu"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px"><path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"/></svg></div>
+        <div class="items">
+          <router-link to="/home" >Adee</router-link>
+        <router-link to="/home" class="link">Home</router-link>
+        <router-link to="/create" class="link">Create</router-link>
+        <router-link :to="logedIn ? '/me' : '/register'">
+            Account
+          </router-link>
+          <router-link to="/adverts" >
+            Search
+          </router-link>
+          <router-link to="/bookmarks" >
+            Bookmarks
+          </router-link>
+        </div>
+
       </div>
       
     </section>
@@ -76,11 +91,53 @@ watchEffect(() => {
 </template>
 
 <style scoped>
+@media only screen and (max-width: 600px) {
+  .burger-menu {
+    width:100% !important;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .items {
+    justify-content: center;
+    align-items: center;
+    gap:30px;
+  
+  }
+}
+
+
 
 @media only screen and (max-width: 1400px) {
 
+  .navigation {
+    padding: 0px 20px !important;
+  }
+
   .burger-menu {
-    display: block !important;
+      position: absolute;
+      width: 40%;
+      left: 0;
+      top:0;
+      height: 100%;
+      background-color: #121212;
+      z-index: 100;
+      display: flex !important;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 8px 20px;
+      flex-direction: column;
+      
+  }
+
+  .items {
+    display: flex;
+    flex-direction: column;
+    width:100%;
+  }
+
+  .burger-menu a {
+    font-size:32px;
   }
 
   .burger-button {

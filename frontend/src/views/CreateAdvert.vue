@@ -2,9 +2,12 @@
 import { CREATE_ADVERT } from '@/graphql/advert';
 import { useMutation } from '@vue/apollo-composable';
 import useVuelidate from '@vuelidate/core'
-import { required } from '@vuelidate/validators'
 import { useRouter } from 'vue-router';
 import { ref } from "vue";
+import { required, email, minLength, helpers } from '@vuelidate/validators'
+
+
+const { withMessage } = helpers
 
 
 
@@ -15,6 +18,8 @@ export default {
     const router = useRouter();
     const { mutate: createAdvert } = useMutation(CREATE_ADVERT);
     const selectedFile = ref([]);
+
+   
 
     const accessToken = localStorage.getItem("access_token");
     const enumerations = [
@@ -95,7 +100,7 @@ export default {
   
       }
 
-    return {  create, v$: useVuelidate(), enumerations, handleFileUpload }
+    return {  create, v$: useVuelidate(), enumerations, handleFileUpload}
   },
   data() {
     return {
@@ -120,13 +125,16 @@ export default {
     }
   },
   validations() {
+    
     return {
       form: {
-        price: {required},
-        location: {required},
-        title: {required},
-        description: {required},
-        category: {required},
+        price: {
+          required: withMessage('Price is required', required),
+        },
+        location: {required: withMessage('Surname is required', required)},
+        title: {required: withMessage('title is required', required)},
+        description: {required: withMessage('description is required', required)},
+        category: {required: withMessage('category is required', required)},
         ...this.formFields[this.form.category].reduce((acc, field) => {
           acc[field] = {required};
           return acc;
@@ -143,14 +151,18 @@ export default {
     <div class="fields">
       <div class="input">
       <div class="input-field">
-          <input type="number" name="" id="price" v-model="v$.form.price.$model" placeholder="Price" maxlength="6">
+        <input type="number" name="" id="price" v-model="v$.form.price.$model" placeholder="Price">
       </div>
+      
       <div class="input-field">
-          <input type="text" name="" id="location" v-model="v$.form.location.$model" placeholder="Location" maxlength="10">
+        <input type="text" name="" id="location" v-model="v$.form.location.$model" placeholder="Location" maxlength="10">
       </div>
+
       <div class="input-field">
-          <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title" maxlength="20">
+        <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title" maxlength="20">
       </div>
+
+      
    
       
     </div>
@@ -177,15 +189,29 @@ export default {
         <label for="photos">Photos:</label>
         <input type="file" accept="image/*" id="photos" multiple @change="handleFileUpload($event)"  />
       </div>
+      <span class="error" v-if="v$.form.price.$error">Price is required and must be between 0 and 10000.</span>
+      <span class="error" v-if="v$.form.location.$error">Location is required.</span>
+      <span class="error" v-if="v$.form.title.$error">Title is required.</span>
+      
+
+
+
 
     <button class="press" :disabled="v$.form.$invalid" @click="create">Create</button>
     </div>
+    
     
 </template>
 
 
 
 <style scoped>
+
+.error {
+  color: rgb(var(--v-theme-text));
+
+
+}
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
