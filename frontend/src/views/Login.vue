@@ -16,6 +16,8 @@
      
       const router = useRouter();
       const { mutate: loginMutation } = useMutation(LOGIN);
+      const qError = ref(null);
+
   
     
       const theme = useTheme();
@@ -36,11 +38,8 @@
           email: this.v$.form.email.$model,
           password: this.v$.form.password.$model,
           
-        }).then(({ data, loading, error }) => {
-          if (error) {
-            console.error(`An error occurred: ${error.message}`);
-            return;
-          }
+        }).then(({ data }) => {
+          
           console.log(data.login.accessToken);
           localStorage.setItem("access_token", data.login.accessToken);
           console.log(localStorage.getItem("access_token"))
@@ -48,13 +47,18 @@
           localStorage.setItem("logedIn", "true");
           console.log(data);
           router.push("/home")
+         }).catch((err) => {
+            console.log("err", err);
+            qError.value = err;
+
+         
          });
   
       }
 
     
   
-      return { login, toggleTheme, darkMode, v$: useVuelidate() };
+      return { login, toggleTheme, darkMode, v$: useVuelidate(), qError };
     },
     data() {
       return {
@@ -112,6 +116,7 @@
                </div>
             </div>
             <button class="press" :disabled="v$.form.$invalid" @click="login">Login</button>
+            <div v-if="qError" class="apError">Wrong Email Or Password!</div>
             <div class="urls">
                <router-link to="/register">Register Instead</router-link>
                <router-link to="/home">Not Now</router-link>
@@ -125,6 +130,13 @@
 
 
 <style scoped>
+
+
+.apError {
+  color:  rgb(var(--v-theme-text));
+  font-size:24px;
+}
+
 
 .messages {
    display: flex;

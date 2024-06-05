@@ -3,7 +3,7 @@ import { CREATE_ADVERT } from '@/graphql/advert';
 import { useMutation } from '@vue/apollo-composable';
 import useVuelidate from '@vuelidate/core'
 import { useRouter } from 'vue-router';
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { required, email, minLength, helpers } from '@vuelidate/validators'
 
 
@@ -18,6 +18,8 @@ export default {
     const router = useRouter();
     const { mutate: createAdvert } = useMutation(CREATE_ADVERT);
     const selectedFile = ref([]);
+
+   
 
    
 
@@ -125,11 +127,15 @@ export default {
     }
   },
   validations() {
+
+    
     
     return {
       form: {
         price: {
           required: withMessage('Price is required', required),
+          regex: withMessage('Price must be a number', (value) => /^(?!0)[1-9]\d{0,4}$/
+          .test(value)),
         },
         location: {required: withMessage('Surname is required', required)},
         title: {required: withMessage('title is required', required)},
@@ -319,6 +325,7 @@ input::-webkit-inner-spin-button {
    padding: 10px 60px;
    border-radius: 50px;
    color: rgb(var(--v-theme-background));
+    margin-top:50px;
 }
 
 textarea {

@@ -56,8 +56,9 @@
                
           
             </div>
-    <div v-if="qError">Wrong</div>
+    
     <button class="press" @click="edit">Edit</button>
+    <div v-if="qError" class="apError">Wrong Password!</div>
 </section>
 
 
@@ -65,6 +66,11 @@
 </template>
 
 <style scoped>
+
+.apError {
+  color: red;
+  font-size:24px;
+}
 
 
 @media (max-width: 1400px) {
@@ -206,17 +212,13 @@ export default defineComponent({
             password: this.v$.form.password.$model,
             avatarUrl: data.error == 400 ? "" : data.link,
             accessToken,
-         }).then(({ data, loading, error }) => {
-            
-            if (error) {
-               console.error(`An error occurred: ${error.message}`);
-               qError.value = error.message;
-               console.log(qError.value);
-               return;
-            }
+         }).then(({ data }) => {
 
             console.log(data);
             router.push("/")
+         }).catch((err) => {
+            console.log("err", err);
+            qError.value = err;
          });
 
 
