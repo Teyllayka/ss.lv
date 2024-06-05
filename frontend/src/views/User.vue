@@ -171,7 +171,6 @@ export default {
      return [];
     });
 
-    // Computed property for finished adverts
     const finishedAdverts = computed(() => {
       if (result.value && result.value.getUser && result.value.getUser.adverts) {
         return result.value.getUser.adverts.filter((advert: { available: boolean; }) => advert.available === false);

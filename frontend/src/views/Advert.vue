@@ -12,7 +12,8 @@
       </div>
       <div class="info">
         <h1 class="title"> {{ result.getAdvert.advert.title }}</h1>
-        <p class="price"> {{ result.getAdvert.advert.price }} €</p>
+        <p class="price"> {{ result.getAdvert.advert.price.toFixed(2) }} €</p>
+        
        
         <p class="posted">posted {{ getDate(result.getAdvert.advert.createdAt) }} by <router-link :to="'/user/' + result.getAdvert.user.id" class="link">{{ result.getAdvert.user.name }} {{ result.getAdvert.user.surname }}</router-link></p>
         <p>you can contact him by phone {{ result.getAdvert.user.phone }} or by email {{ result.getAdvert.user.email }}</p>

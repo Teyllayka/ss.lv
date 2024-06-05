@@ -927,7 +927,6 @@ async fn main() -> std::io::Result<()> {
 
     println!("GraphiQL IDE: http://localhost:{}/", port);
 
-
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
 

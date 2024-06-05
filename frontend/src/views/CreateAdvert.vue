@@ -143,7 +143,7 @@ export default {
     <div class="fields">
       <div class="input">
       <div class="input-field">
-          <input type="text" name="" id="text" v-model="v$.form.price.$model" placeholder="Price">
+          <input type="number" name="" id="price" v-model="v$.form.price.$model" placeholder="Price">
       </div>
       <div class="input-field">
           <input type="text" name="" id="location" v-model="v$.form.location.$model" placeholder="Location">
@@ -186,6 +186,20 @@ export default {
 
 
 <style scoped>
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#price {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  margin: 0; 
+
+}
 
   .last {
     margin-bottom: 50px;
