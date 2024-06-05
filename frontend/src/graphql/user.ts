@@ -27,6 +27,7 @@ export const REGISTER = gql`
     $password: String!
     $name: String!
     $phone: String!
+    $image: String!
   ) {
     register(
       email: $email
@@ -34,6 +35,7 @@ export const REGISTER = gql`
       password: $password
       name: $name
       phone: $phone
+      image: $image
     ) {
       id
       name

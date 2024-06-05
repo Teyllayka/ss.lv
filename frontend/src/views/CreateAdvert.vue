@@ -4,6 +4,7 @@ import { useMutation } from '@vue/apollo-composable';
 import useVuelidate from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import { useRouter } from 'vue-router';
+import { ref } from "vue";
 
 
 
@@ -13,6 +14,8 @@ export default {
     const formKeys = ['price', 'location', 'title', 'description', 'category', 'model', 'year', 'fuelType', 'brand', 'condition', 'photoUrl'];
     const router = useRouter();
     const { mutate: createAdvert } = useMutation(CREATE_ADVERT);
+    const selectedFile = ref([]);
+
     const accessToken = localStorage.getItem("access_token");
     const enumerations = [
     'Electronics',
@@ -24,6 +27,11 @@ export default {
     'Pets',
     'Services',
     'Other']
+
+    const handleFileUpload = (event) => {
+  console.log("files", event.target.files);
+  selectedFile.value = event.target.files; // Corrected variable name here
+};
 
 
     const create = async function() {
@@ -46,18 +54,34 @@ export default {
             
           }
         });
+        
+        console.log(selectedFile.value);
 
         console.log(formToSend, this.v$.form);
+
+        let urls = [];
+        
+        for (let i = 0; i < selectedFile.value.length; i++) {
+          const formData = new FormData();
+          formData.append('file', selectedFile.value[i]);
+          const response = await fetch('https://gachi.gay/api/upload', {
+            method: 'POST',
+            body: formData,
+         });
+         const data = await response.json();
+          urls.push(data.link);
+        }
+
 
 
         await createAdvert({
           price: parseFloat(this.v$.form.price.$model),
-          photoUrl: this.v$.form.photoUrl.$model,
           location: this.v$.form.location.$model,
           title: this.v$.form.title.$model,
           description: this.v$.form.description.$model,
           category: this.v$.form.category.$model,
           data: formToSend,
+          photos: urls,
           accessToken
           
         }).then(({ data, loading, error }) => {
@@ -71,14 +95,13 @@ export default {
   
       }
 
-    return {  create, v$: useVuelidate(), enumerations }
+    return {  create, v$: useVuelidate(), enumerations, handleFileUpload }
   },
   data() {
     return {
       form: {
         price: 0.0,
         location: '',
-        photoUrl: '',
         title: '',
         description: '',
         category: '',
@@ -100,7 +123,6 @@ export default {
     return {
       form: {
         price: {required},
-        photoUrl: {required},
         location: {required},
         title: {required},
         description: {required},
@@ -110,6 +132,7 @@ export default {
           return acc;
         }, {}),
       },
+      
     }
   },
 }
@@ -128,9 +151,8 @@ export default {
       <div class="input-field">
           <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title">
       </div>
-      <div class="input-field">
-          <input type="text" name="" id="photoUrl" v-model="v$.form.photoUrl.$model" placeholder="Photo">
-      </div>
+   
+      
     </div>
     <div class="input-field category">
       Category:
@@ -151,6 +173,11 @@ export default {
     <textarea id="freeform" name="freeform" rows="4" cols="50" v-model="v$.form.description.$model">
       Description
     </textarea>
+    <div class="input-field last">
+        <label for="photos">Photos:</label>
+        <input type="file" id="photos" multiple @change="handleFileUpload($event)" />
+      </div>
+
     <button class="press" :disabled="v$.form.$invalid" @click="create">Create</button>
     </div>
     
@@ -159,6 +186,12 @@ export default {
 
 
 <style scoped>
+
+  .last {
+    margin-bottom: 50px;
+    max-width: 428px;
+    box-sizing: border-box;
+  }
 
   textarea {
     outline: 0;

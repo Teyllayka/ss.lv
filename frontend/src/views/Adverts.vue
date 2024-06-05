@@ -4,15 +4,23 @@
 
    <div class="filters">
       <div>Select: <select v-model="selectedCategory">
-    <option v-for="category in categories" :key="category" :value="category">
-      {{ category }}
-    </option>
+      <option v-for="category in categories" :key="category" :value="category">
+         {{ category }}
+      </option>
+      <option value=""></option>
    </select></div>
-      <div>Sort by: <select v-model="selectedCategory">
-         <option value="">1</option>
-         <option value="">2</option>
-         <option value="">3</option>
-   </select></div>
+   <div>Sort by: 
+      <select v-model="sortOption">
+         <option value="">Select Sorting Option</option>
+         <option value="price_asc">Price - Ascending</option>
+         <option value="price_desc">Price - Descending</option>
+         <option value="date_created_asc">Date Created - Ascending</option>
+         <option value="date_created_desc">Date Created - Descending</option>
+         <option value="name">Name</option>
+      </select>
+   </div>
+
+
    </div>
    
   
@@ -20,7 +28,7 @@
    <div v-else-if="error"><error v-bind="error"/></div>
    <div v-else>
       <section class="adverts">
-         <adverts  v-for="advert in result.getAdvertsByCategory" v-bind:key="advert.id" v-bind="advert" />
+         <adverts  v-for="advert in adverts" v-bind:key="advert.id" v-bind="advert" />
       </section>
    </div>
    </div>
@@ -54,34 +62,62 @@ select {
       gap:30px 30px;
    }
 </style>
-  
 <script>
-   import { ref, watch } from 'vue';
-   import { useQuery } from '@vue/apollo-composable';
-   import { GET_ADVERTS_CATEGORY } from "@/graphql/advert";
-   import Error from '../components/Error.vue';
-   import Adverts from '../components/Adverts.vue';
-   import Loading from '../components/Loading.vue';
+import { ref, watch } from 'vue';
+import { useQuery } from '@vue/apollo-composable';
+import { GET_ADVERTS } from "@/graphql/advert";
+import Error from '../components/Error.vue';
+import Adverts from '../components/Adverts.vue';
+import Loading from '../components/Loading.vue';
 
-   export default {
-   components: {
+export default {
+  components: {
     Adverts,
     Error,
     Loading
-   },
-   setup() {
-      const selectedCategory = ref('');
-      const categories = ['Cars', 'Electronics', 'Furniture', 'Clothes', 'Books', 'Other'];
+  },
+  setup() {
+    const selectedCategory = ref('');
+    const sortOption = ref('');
+    const displayedAdverts = ref([]);
 
-      const { result, loading, error, refetch } = useQuery(GET_ADVERTS_CATEGORY, { category: selectedCategory.value }, { fetchPolicy: 'network-only' });
+    const categories = ['Cars', 'Electronics', 'Furniture', 'Clothes', 'Books', 'Other'];
+    const accessToken = localStorage.getItem("access_token") || "";
 
-      watch(selectedCategory, () => {
-         refetch({ category: selectedCategory.value });
-      });
+    const {result, loading, error} = useQuery(GET_ADVERTS, { accessToken, offset: 0, limit: 999999 }, { fetchPolicy: 'network-only' });
 
-      return { selectedCategory, categories, result, loading, error };
-   },
-   };
+    watch([result, sortOption, selectedCategory], ([newResult]) => {
+
+
+      let filteredAdverts = [...newResult.getAdverts];
+      let sortedAdverts = [];
+
+      if (selectedCategory.value!== '') {
+         console.log(filteredAdverts)
+        filteredAdverts = filteredAdverts.filter(advert => advert.category === selectedCategory.value);
+      }
+
+      if (sortOption.value!== '') {
+        sortedAdverts = filteredAdverts.sort((a, b) => {
+          if (sortOption.value.includes('price')) {
+            if (sortOption.value.startsWith('price_asc')) return a.price - b.price;
+            if (sortOption.value.startsWith('price_desc')) return b.price - a.price;
+          } else if (sortOption.value.includes('date_created')) {
+            if (sortOption.value.startsWith('date_created_asc')) return new Date(a.createdAt) - new Date(b.createdAt);
+            if (sortOption.value.startsWith('date_created_desc')) return new Date(b.createdAt) - new Date(a.createdAt);
+          } else if (sortOption.value === 'name') {
+            return String(a.name).localeCompare(String(b.name));
+          }
+          return 0;
+        });
+      } else {
+        sortedAdverts = filteredAdverts;
+      }
+
+      displayedAdverts.value = sortedAdverts;
+    });
+
+    return { adverts: displayedAdverts, selectedCategory, categories, loading, error, sortOption };
+  },
+};
 </script>
-  
-  

@@ -9,7 +9,9 @@ export const GET_ADVERTS = gql`
       title
       createdAt
       isFavorited
+      additionalPhotos
       photoUrl
+      category
     }
   }
 `;
@@ -40,6 +42,7 @@ export const GET_ADVERT = gql`
         category
         isFavorited
         photoUrl
+        additionalPhotos
         specs {
           key
           value
@@ -67,6 +70,7 @@ export const GET_FAVORITES = gql`
       available
       title
       isFavorited
+      photoUrl
     }
   }
 `;
@@ -91,8 +95,8 @@ export const CREATE_ADVERT = gql`
     $title: String!
     $description: String!
     $category: String!
-    $photoUrl: String!
     $data: JSON!
+    $photos: [String]!
   ) {
     createAdvert(
       accessToken: $accessToken
@@ -101,7 +105,7 @@ export const CREATE_ADVERT = gql`
       title: $title
       description: $description
       category: $category
-      photoUrl: $photoUrl
+      photos: $photos
       data: $data
     ) {
       id

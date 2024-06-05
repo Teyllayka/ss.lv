@@ -4,6 +4,7 @@
  
   <section class="advert" v-else-if="result.getAdvert">
     <h1 class="title"> {{ result.getAdvert.advert.category  }}</h1>
+
    
     <div class="up">
       <div class="image-container">
@@ -36,10 +37,21 @@
     <div class="down">
       {{ result.getAdvert.advert.description }}
     </div>
+    <div class="other-photos">
+      <img :src="photo" v-for="photo in result.getAdvert.advert.additionalPhotos" v-bind="additionalPhotos" :key="photo" alt="">
+
+    </div>
   </section>
   </template>
 
 <style scoped>
+.other-photos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+
 .advert {
   margin: 100px 150px;
   

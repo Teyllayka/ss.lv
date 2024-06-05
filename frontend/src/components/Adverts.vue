@@ -1,14 +1,13 @@
 
 <script >
 import { defineComponent } from 'vue';
-import { ref } from 'vue';
 import { ADD_FAVORITE, REMOVE_FAVORITE } from "@/graphql/advert";
 import { useMutation } from '@vue/apollo-composable';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'App',
-  props: ['location', 'price', 'id', 'title', 'createdAt', 'available', 'isFavorited'],
+  props: ['location', 'price', 'id', 'title', 'createdAt', 'available', 'isFavorited', 'photoUrl'],
   setup(props, { emit }) {  
     const router = useRouter();
 

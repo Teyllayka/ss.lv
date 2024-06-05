@@ -94,6 +94,8 @@ export default defineComponent({
       window.removeEventListener("scroll", handleScroll);
     });
 
+    console.log("Adverts:", adverts)
+
     
 
     return {

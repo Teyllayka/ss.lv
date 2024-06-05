@@ -14,11 +14,13 @@ export default {
   setup() {
     const { mutate: registerMutation } = useMutation(REGISTER);
     const v$ = useVuelidate();
+    const selectedFile = ref(null);
+
 
     const currentStep = ref(0);
 
     const nextStep = () => {
-      if (currentStep.value < 6) {
+      if (currentStep.value < 7) {
          currentStep.value++;
       }
     };
@@ -28,6 +30,11 @@ export default {
         currentStep.value--;
       }
     };
+
+    const handleImageUpload = (event) => {
+      selectedFile.value = event.target.files[0];
+      };
+
 
 
     const router = useRouter();
@@ -40,8 +47,11 @@ export default {
     };
 
     const register = async function() {
-      console.log(this.v$.form);
+    
+
+     
       if (this.v$.form.$invalid) {
+         
          const invalidField = Object.keys(this.v$.form).find(key => this.v$.form[key].$invalid);
          switch(invalidField) {
             case 'name':
@@ -62,17 +72,31 @@ export default {
             case 'type':
             currentStep.value = 5;
             break;
+            case 'image':
+            currentStep.value = 6;
+            break;
             default:
             break;
          }
       } else {
+         const formData = new FormData();
+         formData.append("file", selectedFile.value);
+         const response = await fetch('https://gachi.gay/api/upload', {
+            method: 'POST',
+            body: formData,
+         });
+         const data = await response.json();
+         console.log(data);
+
          await registerMutation({
-        name: this.v$.form.name.$model,
-        surname: this.v$.form.surname.$model,
-        email: this.v$.form.email.$model,
-        phone: this.v$.form.phone.$model,
-        password: this.v$.form.password.$model,
-        type: this.v$.form.type.$model,
+
+            name: this.v$.form.name.$model,
+            surname: this.v$.form.surname.$model,
+            email: this.v$.form.email.$model,
+            phone: this.v$.form.phone.$model,
+            password: this.v$.form.password.$model,
+            type: this.v$.form.type.$model,
+            image: data.link,
          }).then(({ data, loading, error }) => {
             
          if (error) {
@@ -86,18 +110,18 @@ export default {
 
    }
 
-    return { register, toggleTheme, darkMode, v$, prevStep, nextStep, currentStep };
+    return { register, toggleTheme, darkMode, v$, prevStep, nextStep, currentStep, handleImageUpload };
   },
   data() {
     return {
       form: {
         email: '',
+        image: '',
         password: '',
         name: '',
         surname: '',
         phone: '',
         type: '',
-        repeated_password: '',
       },
     }
   },
@@ -127,7 +151,7 @@ export default {
         phone: {
           required: withMessage('Phone number is required', required),
           regex: withMessage('Phone number must match the format +12300000000', value => /^\+\d{11}$/.test(value)),
-        }
+        },
       },
     }
   },
@@ -215,6 +239,16 @@ export default {
                   <div class="error-msg">{{ error.$message }}</div>
                </div>
             </div>
+            <div class="input-field" v-else-if="currentStep === 6">
+               <span>image</span>
+               <input type="file" name="" id="image" @change="handleImageUpload" placeholder="Image">
+              
+               
+               
+               <div class="input-errors" v-for="(error, index) of v$.form.type.$errors" :key="index">
+                  <div class="error-msg">{{ error.$message }}</div>
+               </div>
+            </div>
            
             
             
@@ -222,8 +256,8 @@ export default {
          
          <div class="buttons">
             <button @click="prevStep">Back</button>
-            <button  @click="nextStep" v-if="currentStep !== 6">Next</button>
-            <button  @click="register" v-if="currentStep == 6">Register</button>
+            <button  @click="nextStep" v-if="currentStep !== 7">Next</button>
+            <button  @click="register" v-if="currentStep == 7">Register</button>
 
          </div>
          <div class="urls">
