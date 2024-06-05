@@ -241,7 +241,7 @@ export default {
             </div>
             <div class="input-field" v-else-if="currentStep === 6">
                <span>image</span>
-               <input type="file" name="" id="image" @change="handleImageUpload" placeholder="Image">
+               <input type="file" accept="image/*" name="" id="image" @change="handleImageUpload" placeholder="Image">
               
                
                

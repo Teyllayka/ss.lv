@@ -135,6 +135,11 @@
  gap:20px 20px;
 }
 
+
+.adverts-else {
+  margin-top:100px;
+}
+
 </style>
 
 <script lang="ts">

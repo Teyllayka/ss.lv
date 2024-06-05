@@ -143,13 +143,13 @@ export default {
     <div class="fields">
       <div class="input">
       <div class="input-field">
-          <input type="number" name="" id="price" v-model="v$.form.price.$model" placeholder="Price">
+          <input type="number" name="" id="price" v-model="v$.form.price.$model" placeholder="Price" maxlength="6">
       </div>
       <div class="input-field">
-          <input type="text" name="" id="location" v-model="v$.form.location.$model" placeholder="Location">
+          <input type="text" name="" id="location" v-model="v$.form.location.$model" placeholder="Location" maxlength="10">
       </div>
       <div class="input-field">
-          <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title">
+          <input type="text" name="" id="title" v-model="v$.form.title.$model" placeholder="Title" maxlength="20">
       </div>
    
       
@@ -164,7 +164,7 @@ export default {
     </div>
     <div class="input second">
       <div class="input-field" v-for="field in selectedCategoryFields" :key="field">
-        <input type="text" v-model="form[field]" :placeholder="field">
+        <input type="text" v-model="form[field]" :placeholder="field" maxlength="15">
         <div v-if="v$.form[field].$error">
           This field is required.
         </div>
@@ -175,7 +175,7 @@ export default {
     </textarea>
     <div class="input-field last">
         <label for="photos">Photos:</label>
-        <input type="file" id="photos" multiple @change="handleFileUpload($event)" />
+        <input type="file" accept="image/*" id="photos" multiple @change="handleFileUpload($event)"  />
       </div>
 
     <button class="press" :disabled="v$.form.$invalid" @click="create">Create</button>

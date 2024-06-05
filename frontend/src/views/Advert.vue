@@ -84,7 +84,14 @@
   word-wrap: break-word;
   text-overflow: ellipsis; 
   overflow: hidden; 
+  word-break: break-all;
 }
+.highlight {
+  max-width: 20ch;
+  text-overflow: ellipsis;
+  overflow: hidden; 
+}
+
 .highlight {
   color: rgb(var(--v-theme-text));
 }
@@ -94,7 +101,7 @@
   max-width: 100%;
   text-wrap: wrap;
   white-space: wrap;
-  word-wrap: break-word;
+  word-break: break-all;
   max-height: 200px;
   text-overflow: ellipsis; 
   overflow: hidden; 

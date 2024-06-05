@@ -136,6 +136,10 @@
  
 }
 
+.adverts-else {
+  margin-top:100px;
+}
+
 .adverts-container {
   display: flex;
   justify-content: center;
