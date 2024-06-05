@@ -407,6 +407,7 @@ impl MutationRoot {
         surname: String,
         name: String,
         phone: String,
+        image: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
         let salt = SaltString::generate(&mut OsRng);
@@ -434,7 +435,7 @@ impl MutationRoot {
             updated_at: Set(naive_date_time),
             refresh_token: Set(None),
             balance: Set(0.0),
-            avatar_url: Set("".to_string()),
+            avatar_url: Set(image),
             ..Default::default()
         };
 
@@ -771,12 +772,10 @@ impl MutationRoot {
         title: String,
         description: String,
         category: String,
-        photo_url: String,
+        photos: Vec<String>,
         data: Json<serde_json::Value>,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-
-        println!("{:?}", data);
 
         let claims: BTreeMap<String, String> =
             match access_token.verify_with_key(&my_ctx.access_key) {
@@ -794,6 +793,10 @@ impl MutationRoot {
 
         let naive_date_time = Utc::now().naive_utc();
 
+        let photo_url = photos[0].clone();
+
+        let additional_photos: Vec<String> = photos[1..].iter().cloned().collect();
+
         let advert = advert::ActiveModel {
             available: Set(true),
             user_id: Set(claims["id"].parse().unwrap()),
@@ -805,6 +808,7 @@ impl MutationRoot {
             title: Set(title),
             category: Set(category),
             photo_url: Set(photo_url),
+            additional_photos: Set(additional_photos),
             ..Default::default()
         };
 
@@ -908,6 +912,9 @@ async fn main() -> std::io::Result<()> {
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("HOME environment variable not found");
     let access_secret = dotenvy::var("ACCESS_SECRET").expect("HOME environment variable not found");
+    let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
+        .parse::<u16>()
+        .expect("port is not a number");
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .with_test_writer()
@@ -947,7 +954,20 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
-    .bind(("0.0.0.0", 80))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
+
+/*
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDfDOw-iZFn8EySVtWf3D3t3g1yp1KZG9o",
+  authDomain: "v-3dcdc.firebaseapp.com",
+  projectId: "v-3dcdc",
+  storageBucket: "v-3dcdc.appspot.com",
+  messagingSenderId: "445567089875",
+  appId: "1:445567089875:web:303e56c669d35c99156826"
+};
+
+*/

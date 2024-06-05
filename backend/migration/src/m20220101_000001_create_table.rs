@@ -55,6 +55,11 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::Price).float().not_null())
                     .col(ColumnDef::new(Advert::PhotoUrl).string().not_null())
                     .col(ColumnDef::new(Advert::Location).string().not_null())
+                    .col(
+                        ColumnDef::new(Advert::AdditionalPhotos)
+                            .array(ColumnType::String(None))
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Advert::Title).string().not_null())
                     .col(ColumnDef::new(Advert::Category).string().not_null())
                     .col(ColumnDef::new(Advert::Description).string().not_null())
@@ -186,6 +191,7 @@ enum Advert {
     CreatedAt,
     UpdatedAt,
     PhotoUrl,
+    AdditionalPhotos,
     Available,
     Price,
     Location,

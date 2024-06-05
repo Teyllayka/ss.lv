@@ -14,6 +14,7 @@ pub struct Model {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub photo_url: String,
+    pub additional_photos: Vec<String>,
     pub available: bool,
     pub price: f32,
     pub location: String,
