@@ -160,6 +160,10 @@ export default defineComponent({
     margin: 4px 0px 0px 8px !important;
   }
 
+  .downer {
+    padding: 0px 8px !important;
+  }
+
   .advert {
     width: 90% !important;
     height: 90% !important;

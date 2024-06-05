@@ -5,7 +5,7 @@
   import { useTheme } from "vuetify";
   import { LOGIN } from "@/graphql/user";
   import useVuelidate from '@vuelidate/core'
-  import { required,  helpers } from '@vuelidate/validators'
+  import { required,  helpers, email } from '@vuelidate/validators'
   const { withMessage } = helpers
   import { useRouter } from 'vue-router';
 
@@ -69,6 +69,7 @@
       form: {
         email: {
           required: withMessage('Email is required', required),
+          email: withMessage('Email must be valid', email),
         },
         password: {
           required: withMessage('Password is required', required),

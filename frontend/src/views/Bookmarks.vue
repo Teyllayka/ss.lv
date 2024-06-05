@@ -48,6 +48,14 @@ export default defineComponent({
 
 <style scoped>
 
+@media (max-width: 1400px) {
+  h1 {
+      text-align: center !important;
+      margin: 50px 20px !important;
+  }
+
+}
+
 
 .adverts {
     display:flex;

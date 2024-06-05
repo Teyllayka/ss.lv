@@ -114,6 +114,17 @@ export default defineComponent({
 
 <style scoped>
 
+@media (max-width: 1400px) {
+  h1 {
+      text-align: center !important;
+      margin: 50px 20px !important;
+  }
+
+  .adverts {
+    margin:50px 20px !important;
+  }
+}
+
   @media (max-width: 768px) {
     .adverts {
       margin: 50px 30px !important;
@@ -122,11 +133,7 @@ export default defineComponent({
       flex-direction: column !important;
     }
 
-    h1 {
-      text-align: center !important;
-      margin: 50px 0 !important;
-      justify-self: center !important;
-    }
+  
   }
 
   .adverts {

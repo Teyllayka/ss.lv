@@ -85,6 +85,7 @@ export const EDIT = gql`
     $surname: String!
     $phone: String!
     $password: String!
+    $avatarUrl: String!
   ) {
     edit(
       accessToken: $accessToken
@@ -92,6 +93,7 @@ export const EDIT = gql`
       surname: $surname
       phone: $phone
       password: $password
+      avatarUrl: $avatarUrl
     ) {
       name
       surname

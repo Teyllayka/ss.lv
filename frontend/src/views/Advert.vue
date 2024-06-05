@@ -49,11 +49,21 @@
   </template>
 
 <style scoped>
+
+@media only screen and (max-width: 1000px) {
+  .other-photos {
+  flex-direction: column !important;
+  gap:30px;
+}
+}
+
 .other-photos {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px 20px;
 }
 
 .value-key {

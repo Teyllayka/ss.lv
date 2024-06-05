@@ -580,9 +580,12 @@ impl MutationRoot {
             name: Set(name),
             surname: Set(surname),
             phone: Set(phone),
-            avatar_url: Set(avatar_url),
             ..user.into()
         };
+
+        if !avatar_url.is_empty() {
+            user.avatar_url = Set(avatar_url);
+        }
 
         let user: user::Model = user.update(&my_ctx.db).await?;
 

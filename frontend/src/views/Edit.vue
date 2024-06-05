@@ -41,13 +41,22 @@
 
     <!-- Password Input -->
     <div class="input-field">
-        <label for="password">Password:</label>
-        <input class="password" v-model="v$.form.password.$model">
+        <label for="password">Your Password:</label>
+        <input class="password" type="password" v-model="v$.form.password.$model">
         <div class="input-errors" v-for="(error, index) of v$.form.password.$errors" :key="index">
             <div class="error-msg">{{ error.$message }}</div>
         </div>
     </div>
 
+    <div class="input-field">
+      <label for="password">Image :</label>
+               <input type="file" accept="image/*" name="" id="image" @change="handleImageUpload" placeholder="Image">
+              
+               
+               
+          
+            </div>
+    <div v-if="qError">Wrong</div>
     <button class="press" @click="edit">Edit</button>
 </section>
 
@@ -57,12 +66,66 @@
 
 <style scoped>
 
+
+@media (max-width: 1400px) {
+  .title, .data, .title {
+      margin: 50px 20px !important;
+  }
+  
+}
+
+@media (max-width: 425px) {
+  .data {
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap:20px;
+  }
+
+  .press {
+    width: 100%;
+  }
+
+  .input-field {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    gap:10px;
+  
+  }
+
+  input {
+    text-align: center;
+  }
+
+ 
+  
+}
+
 .data, .title {
   margin: 50px 150px;
 }
 h1 {
   color: rgb(var(--v-theme-text));
 
+}
+
+label {
+  color: rgb(var(--v-theme-text));
+  font-size:24px;
+}
+
+.press {
+   width: 200px;
+   padding: 10px 0;
+   border-radius: 50px;
+   color: rgb(var(--v-theme-background));
+   margin-top:50px;
+  }
+input {
+  font-size:18px;
 }
 
 .data {
@@ -107,11 +170,19 @@ export default defineComponent({
  },
  setup() {
    const accessToken = localStorage.getItem("access_token");
+   const qError = ref(null);
    const { result, loading, error } = useQuery(ME, { accessToken });
 
    const { mutate: editMutation } = useMutation(EDIT);
    const v$ = useVuelidate();
    const router = useRouter();
+
+   const selectedFile = ref(null);
+
+   const handleImageUpload = (event) => {
+      selectedFile.value = event.target.files[0];
+      };
+
 
 
    const edit = async function() {
@@ -119,17 +190,28 @@ export default defineComponent({
          console.log(this.v$.form);
 
       } else {
+        const formData = new FormData();
+         formData.append("file", selectedFile.value);
+         const response = await fetch('https://gachi.gay/api/upload', {
+            method: 'POST',
+            body: formData,
+         });
+         const data = await response.json();
+         
          await editMutation({
             name: this.v$.form.name.$model,
             surname: this.v$.form.surname.$model,
             email: this.v$.form.email.$model,
             phone: this.v$.form.phone.$model,
             password: this.v$.form.password.$model,
+            avatarUrl: data.error == 400 ? "" : data.link,
             accessToken,
          }).then(({ data, loading, error }) => {
             
             if (error) {
                console.error(`An error occurred: ${error.message}`);
+               qError.value = error.message;
+               console.log(qError.value);
                return;
             }
 
@@ -168,7 +250,9 @@ export default defineComponent({
      form,
      loading,
      edit,
-     v$
+     v$,
+     handleImageUpload,
+     qError
    };
  },
 
@@ -182,6 +266,7 @@ export default defineComponent({
         },
         password: {
           required: withMessage('Password is required', required),
+          min: withMessage('Password must be at least 6 characters', minLength(6))
         }, 
         name: {
           required: withMessage('Name is required', required),
@@ -193,6 +278,7 @@ export default defineComponent({
         },
         phone: {
           required: withMessage('Phone number is required', required),
+          regex: withMessage('Phone number must match the format +12300000000', value => /^\+\d{11}$/.test(value)),
         }
       },
     }

@@ -131,7 +131,6 @@ export default {
         email: {
           required: withMessage('Email is required', required),
           email: withMessage('Email must be valid', email),
-          min: withMessage('Email must be at least 6 characters', minLength(6))
         },
         password: {
           required: withMessage('Password is required', required),
