@@ -8,15 +8,18 @@
    
     <div class="up">
       <div class="image-container">
-        <img :src="result.getAdvert.advert.photoUrl" width="300" height="300" alt="">
+        <img :src="result.getAdvert.advert.photoUrl"  alt="">
       </div>
       <div class="info">
-        <h1 class="title"> {{ result.getAdvert.advert.title }}</h1>
+        <div class="data">
+          <h1 class="title"> {{ result.getAdvert.advert.title }}</h1>
         <p class="price"> {{ result.getAdvert.advert.price.toFixed(2) }} €</p>
         <p class="location"><span>Location:</span> <span class="highlight">{{ result.getAdvert.advert.location }}</span></p>
        
         <p class="posted">posted {{ getDate(result.getAdvert.advert.createdAt) }} by <router-link :to="'/user/' + result.getAdvert.user.id" class="link">{{ result.getAdvert.user.name }} {{ result.getAdvert.user.surname }}</router-link></p>
         <p>you can contact him by phone <span class="highlight">{{ result.getAdvert.user.phone }}</span> or by email <span class="highlight">{{ result.getAdvert.user.email }}</span></p>
+        </div>
+        
 
         <div class="buttons">
           <!-- <button>Message</button> -->
@@ -27,8 +30,8 @@
       </div>
     </div>
     <h1 class="title">Characteristics:</h1>
-    <div v-for="(value, key) in result.getAdvert.advert.specs" :key="key">
-      <p class="value-key">{{ value.key }}: <span class="value">{{ value.value }}</span></p>
+    <div >
+      <p v-for="(value, key) in result.getAdvert.advert.specs" :key="key" class="value-key">{{ value.key }}: <span class="value">{{ value.value }}</span></p>
     </div>
     <div class="down">
 
@@ -63,7 +66,10 @@
 
 .advert {
   margin: 100px 150px;
-  
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
 }
 
 .location {
@@ -98,8 +104,11 @@
 .up {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: row;
+  margin-bottom:50px;
+  height:100%;
+  height: 500px;
 }
 
 img {
@@ -107,17 +116,76 @@ img {
   height: 500px;
 }
 
+.image-container {
+  height:100%;
+}
+
+@media only screen and (max-width: 1400px) {
+
+  img {
+    width:400px !important;
+    height: 400px!important;
+  }
+
+  .up {
+    height: 400px;
+  }
+
+}
+
+@media only screen and (max-width: 1200px) {
+
+img {
+  width:300px !important;
+  height: 300px!important;
+}
+
+.up {
+    height: 300px;
+  }
+
+}
+
+@media only screen and (max-width: 1000px) {
+
+.up {
+    height: 100%;
+    flex-direction: column;
+    width: 100%;
+  }
+.data, .info, .image-container, img {
+  width:100% !important;
+}
+
+.info {
+  height: calc(100% + 100px) !important;
+}
+
+.advert {
+  width:90% !important;
+  margin: 20px;
+}
+
+
+}
+
 .info {
  width: 50%;
  display: flex;
- justify-content: flex-start;
+ justify-content: space-between;
  align-items: flex-start;
  flex-direction: column;
- height: 507px;
+ height: 100%;
+}
+
+.data {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
 }
 
 .info .buttons {
-  margin-top:100px;
   width:100%;
   display: flex;
   justify-content: flex-start;

@@ -111,7 +111,7 @@ export default defineComponent({
 
   
 <div class="advert" :id="id">
-  <router-link :to="'/advert/' + id" class="link"> <img :src="photoUrl" width="100" height="100+" alt="">
+  <router-link :to="'/advert/' + id" class="link"> <img :src="photoUrl"  alt="">
   </router-link>
  
   <div class="description">
@@ -156,9 +156,21 @@ export default defineComponent({
 
 @media only screen and (max-width: 900px) {
 
+  .upper {
+    margin: 4px 0px 0px 8px !important;
+  }
+
   .advert {
-    width: 200px !important;
-    height: 200px !important;
+    width: 90% !important;
+    height: 90% !important;
+  }
+
+  .title  {
+    font-size: 16px !important;
+  }
+
+  .details {
+    font-size: 12px !important;
   }
 }
 
@@ -167,6 +179,8 @@ export default defineComponent({
   height: 370px;
   border: 1px solid black;
   border-radius: 8px 8px 8px 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .advert .description {
@@ -176,13 +190,14 @@ export default defineComponent({
   flex-direction: column;
   height: 65%;
   max-height: 200px;
+  width:100%;
 }
 .advert .title {
   word-wrap: break-word;
   text-align: left;
   color: rgb(var(--v-theme-text)); 
   font-size: 20px; 
-  width: 350px; 
+  width: 90%; 
   overflow: hidden; 
   white-space: nowrap; 
   text-overflow: ellipsis; 
@@ -192,21 +207,22 @@ export default defineComponent({
   overflow: hidden; 
   white-space: nowrap; 
   text-overflow: ellipsis; 
-  width: 350px; 
+  width: 90%; 
 }
 
 
 .advert img {
-  width: 100%;
-  height: 170px;
-  overflow: hidden;
-  border-radius: 8px 8px 0 0 ;
+  border-radius: 8px 8px 0 0;
+  width:100%;
+  height:100px;
+  object-fit:cover;
 }
 
 
 .upper {
   margin: 18px 0px 0px 12px;
   height: 60%;
+  width:100%;
 }
 
 .downer {
@@ -225,6 +241,14 @@ export default defineComponent({
   background-color: transparent;
   fill: rgb(var(--v-theme-text));
   stroke: rgb(var(--v-theme-text));
+}
+
+.link {
+  height:45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 
