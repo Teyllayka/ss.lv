@@ -576,7 +576,7 @@ impl MutationRoot {
             ));
         }
 
-        let user = user::ActiveModel {
+        let mut user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
             phone: Set(phone),
