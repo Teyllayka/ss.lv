@@ -925,7 +925,8 @@ async fn main() -> std::io::Result<()> {
 
     Migrator::up(&db, None).await.expect("migration ban");
 
-    println!("GraphiQL IDE: http://localhost:90");
+    println!("GraphiQL IDE: http://localhost:{}/", port);
+
 
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
