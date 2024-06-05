@@ -5,12 +5,11 @@ WORKDIR /usr/src/my-app
 
 COPY . .
 
-RUN cargo install sea-orm-cli
+#RUN cargo install sea-orm-cli
 
-RUN cargo build
+#RUN cargo build
 
-
-RUN sea-orm-cli migrate
+#RUN sea-orm-cli migrate
 
 
 CMD ["cargo", "run", "dev"]
