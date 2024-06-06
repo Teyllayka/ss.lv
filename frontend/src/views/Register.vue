@@ -96,16 +96,15 @@ export default {
             phone: this.v$.form.phone.$model,
             password: this.v$.form.password.$model,
             type: this.v$.form.type.$model,
-            image: data.link,
+            image: data.link || "",
          }).then(({ data, loading, error }) => {
             
-         if (error) {
-            console.error(`An error occurred: ${error.message}`);
-            return;
-         }
+        
          console.log(data);
          router.push("/login")
-         });
+         }).catch((error) => {
+            console.error(`An error occurred: ${error.message}`);
+         })
     }
 
    }
