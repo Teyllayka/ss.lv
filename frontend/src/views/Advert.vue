@@ -26,6 +26,7 @@
           <button v-if="isFavorited && logedIn" @click="removeFromFavorite">Remove from favorites</button>
           <button v-else-if="!isFavorited && logedIn" @click="addToFavorite">Add to favorites</button>
           <button v-if="logedIn && result.getAdvert.isAdmin == true" @click="deleteAdvertDB">Delete</button>
+          <router-link :to="'/edit_advert/' + result.getAdvert.advert.id" > <button v-if="logedIn && result.getAdvert.belongsToUser == true">Edit</button> </router-link>
         </div>
       </div>
     </div>

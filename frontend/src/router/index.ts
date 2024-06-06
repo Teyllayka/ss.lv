@@ -18,12 +18,14 @@ import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { ME, REFRESH } from "@/graphql/user";
 import { useQuery } from "@vue/apollo-composable";
 import Edit from "@/views/Edit.vue";
+import EditAdvert from "@/views/EditAdvert.vue";
 
 async function isLoggedIn() {
   const cache = new InMemoryCache();
   const apolloClient = new ApolloClient({
     cache,
-    uri: "https://api-12dpdsprogis.kvalifikacija.rvt.lv/",
+    uri: "http://localhost:90/",
+    //uri: "https://api-12dpdsprogis.kvalifikacija.rvt.lv/",
   });
   provideApolloClient(apolloClient);
 
@@ -218,6 +220,18 @@ const routes = [
         path: "/edit",
         name: "edit",
         component: Edit,
+        beforeEnter: async (to: any, from: any, next: any) => {
+          if (await isLoggedIn()) {
+            next();
+          } else {
+            next("/login");
+          }
+        },
+      },
+      {
+        path: "/edit_advert/:id",
+        name: "edit advert",
+        component: EditAdvert,
         beforeEnter: async (to: any, from: any, next: any) => {
           if (await isLoggedIn()) {
             next();

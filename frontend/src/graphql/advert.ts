@@ -32,6 +32,34 @@ export const GET_ADVERTS_CATEGORY = gql`
   }
 `;
 
+export const EDIT_ADVERT = gql`
+  mutation editAdvert(
+    $accessToken: String!
+    $id: Int!
+    $price: Float!
+    $location: String!
+    $title: String!
+    $description: String!
+    $photos: [String]!
+  ) {
+    editAdvert(
+      accessToken: $accessToken
+      id: $id
+      price: $price
+      location: $location
+      title: $title
+      description: $description
+      photos: $photos
+    ) {
+      id
+      location
+      title
+      description
+      createdAt
+    }
+  }
+`;
+
 export const GET_ADVERT = gql`
   query getAdvert($id: Int!, $accessToken: String!) {
     getAdvert(id: $id, accessToken: $accessToken) {
@@ -60,6 +88,7 @@ export const GET_ADVERT = gql`
         email
       }
       isAdmin
+      belongsToUser
     }
   }
 `;

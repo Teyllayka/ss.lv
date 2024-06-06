@@ -35,6 +35,7 @@ struct AdvertWithUser {
     advert: advert::Model,
     user: user::Model,
     is_admin: bool,
+    belongs_to_user: bool,
 }
 
 const ACCESS_EXPIRATION: usize = 100;
@@ -117,7 +118,8 @@ impl QueryRoot {
 
         let advert_count = adverts.clone().count(&my_ctx.db).await?;
 
-        let today = chrono::Utc::now().naive_utc().date().and_hms_opt(0, 0, 0);
+        let today: Option<sea_orm::prelude::DateTime> =
+            chrono::Utc::now().naive_utc().date().and_hms_opt(0, 0, 0);
 
         let today_advert_count = adverts
             .filter(advert::Column::CreatedAt.gt(today))
@@ -169,6 +171,7 @@ impl QueryRoot {
                 advert,
                 user,
                 is_admin: false,
+                belongs_to_user: false,
             });
         }
 
@@ -206,15 +209,18 @@ impl QueryRoot {
             favorite_adverts_map.insert(favorite.advert_id, true);
         }
 
-        let is_favorite = favorite_adverts_map.get(&advert.id).is_some();
+        let is_favorited = favorite_adverts_map.get(&advert.id).is_some();
+
+        let belongs_to_user = user.id == advert.user_id;
 
         return Ok(AdvertWithUser {
             advert: advert::Model {
-                is_favorited: is_favorite,
+                is_favorited,
                 ..advert
             },
             user,
             is_admin,
+            belongs_to_user,
         });
     }
 
@@ -234,10 +240,14 @@ impl QueryRoot {
             .all(&my_ctx.db)
             .await?;
 
+        for advert in &mut adverts {
+            let specs: Vec<specifications::Model> =
+                advert.find_related(Specifications).all(&my_ctx.db).await?;
+            advert.specs = specs;
+        }
         if access_token.is_empty() {
             return Ok(adverts);
         }
-
         for advert in &mut adverts {
             let specs: Vec<specifications::Model> =
                 advert.find_related(Specifications).all(&my_ctx.db).await?;
@@ -529,6 +539,106 @@ impl MutationRoot {
             refresh_token,
             access_token,
         })
+    }
+
+    async fn edit_advert(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        id: i32,
+        access_token: String,
+        price: f32,
+        location: String,
+        title: String,
+        description: String,
+        photos: Vec<String>,
+        // data: Json<serde_json::Value>,
+    ) -> Result<advert::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        if access_token.is_empty() {
+            return Err(async_graphql::Error::new(
+                "you are not logged in".to_string(),
+            ));
+        };
+
+        let claims: BTreeMap<String, String> =
+            match access_token.verify_with_key(&my_ctx.access_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+
+        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+            return Err(async_graphql::Error::new(
+                "you are not logged in".to_string(),
+            ));
+        }
+
+        let user_id: i32 = claims["id"].parse().unwrap();
+
+        let advert: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
+
+        let advert = match advert {
+            Some(advert) => advert,
+            None => return Err(async_graphql::Error::new("advert not found".to_string())),
+        };
+
+        if advert.user_id != user_id {
+            return Err(async_graphql::Error::new("you are not owner".to_string()));
+        }
+
+        // let specs: Vec<specifications::Model> =
+        //     advert.find_related(Specifications).all(&my_ctx.db).await?;
+
+        // let features = data.as_object();
+
+        // match features {
+        //     Some(features) => {
+        //         for (key, value) in features.iter() {
+        //             for spec in &specs {
+        //                 if spec.key == *key && spec.value != value.as_str().unwrap() {
+        //                     let new_spec = specifications::ActiveModel {
+        //                         value: Set(value.as_str().unwrap().to_string()),
+        //                         ..spec.clone().into()
+        //                     };
+
+        //                     new_spec.update(&my_ctx.db).await?;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     _ => (),
+        // }
+
+        let photo_url: String;
+        let additional_photos: Vec<String>;
+
+        if !photos[0].is_empty() {
+            photo_url = photos[0].clone();
+            additional_photos = photos[1..].iter().cloned().collect();
+        } else {
+            photo_url = advert.photo_url.clone();
+            additional_photos = advert.additional_photos.clone();
+        }
+
+        let new_advert = advert::ActiveModel {
+            photo_url: Set(photo_url),
+            additional_photos: Set(additional_photos),
+            price: Set(price),
+            location: Set(location),
+            title: Set(title),
+            description: Set(description),
+            updated_at: Set(Utc::now().naive_utc()),
+            ..advert.into()
+        };
+
+        let adv: advert::Model = new_advert.update(&my_ctx.db).await?;
+
+        return Ok(adv);
     }
 
     async fn edit(
