@@ -6,7 +6,7 @@ docker compose up --build -d
 
 done(if docker was instaled before)!!!
 
-then navigate to port 3000 and use my service
+then navigate to port 3000(or what you setted in .env) and use my service
 
 development tools:
 
