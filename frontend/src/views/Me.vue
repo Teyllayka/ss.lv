@@ -49,6 +49,71 @@
 
 
 <style scoped>
+@media only screen and (max-width: 1400px) {
+  .avatar img {
+    width:400px !important;
+    height:400px !important;
+  }
+
+  .description {
+    height: 400px !important;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .avatar img {
+    width:300px !important;
+    height:300px !important;
+  }
+
+  .description {
+    height: 300px !important;
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  .info {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .profile {
+    margin: 100px 0px !important;
+  }
+
+  .adverts {
+    width: 100% !important;
+  }
+
+  
+
+  .description {
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .adverts-container {
+    margin-top:100px;
+  }
+
+  .buttons, .switcher {
+    justify-content: space-around !important;
+    align-items: center !important;
+    gap:50px !important;
+    margin: 0px !important;
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  
+  .buttons button {
+    padding: 10px 30px !important;
+  }
+}
+
+
 
 .profile {
   margin: 100px 150px;
@@ -62,7 +127,7 @@
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: row;
 }
 

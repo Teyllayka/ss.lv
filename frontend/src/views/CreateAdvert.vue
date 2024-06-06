@@ -213,6 +213,55 @@ export default {
 
 <style scoped>
 
+
+@media  (max-width: 768px) {
+  .fields {
+    margin: 50px 0px !important;
+  }
+
+ 
+}
+
+@media  (max-width: 500px) {
+  .input {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    padding: 0px 10px;
+  }
+
+  .input-field {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  .category {
+    width: 96%;
+  }
+
+  textarea {
+    width: 92%;
+    padding: 0 !important;
+    max-width: unset !important;
+  }
+
+  .last {
+    width: 96% !important;
+    padding: 0px 10px !important;
+    max-width: unset !important;
+  }
+
+  .press {
+    width:96%;
+  }
+
+  .error {
+    width:96%;
+  }
+
+ 
+}
+
 @media (max-width: 1400px) {
   h1 {
       text-align: center !important;

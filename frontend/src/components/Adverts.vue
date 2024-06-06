@@ -124,7 +124,8 @@ export default defineComponent({
 
     <div class="downer">
       <div class="price"> {{ price.toFixed(2) }} €</div>
-      <button class="addToFavBtn" @click="addToFavorite" v-if="!isFavorited">
+      
+      <button class="addToFavBtn" @click="addToFavorite" v-if="!isFavorited && isFavorited != null">
         <svg fill="inherit" height="25" width="25" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
           viewBox="0 0 471.701 471.701" xml:space="preserve" stroke-width="10">
           <g>
@@ -138,7 +139,7 @@ export default defineComponent({
           </g>
         </svg>
       </button>
-      <button @click="removeFromFavorite" v-else>
+      <button @click="removeFromFavorite" v-else-if="isFavorited && isFavorited != null">
         <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="25px" height="25px"><path d="M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z"/></svg>
       </button>
       
@@ -218,13 +219,12 @@ export default defineComponent({
 .advert img {
   border-radius: 8px 8px 0 0;
   width:100%;
-  height:100px;
-  object-fit:cover;
+  height:100%;
 }
 
 
 .upper {
-  margin: 18px 0px 0px 12px;
+  padding: 18px 0px 0px 12px;
   height: 60%;
   width:100%;
 }

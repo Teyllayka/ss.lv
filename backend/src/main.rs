@@ -96,7 +96,7 @@ impl QueryRoot {
             }
         };
 
-        let adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
+        let mut adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
 
         user.adverts = adverts;
 
