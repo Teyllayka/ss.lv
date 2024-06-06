@@ -124,6 +124,11 @@ export default {
 
     const {result, loading, error} = useQuery(GET_ADVERTS, { accessToken, offset: 0, limit: 999999 }, { fetchPolicy: 'network-only' });
 
+    watch(selectedCategory, () => {
+      // Reset filterValues to its initial state
+      Object.assign(filterValues, {});
+    }, { deep: true });
+
     watch([result, sortOption, selectedCategory, selectedName, filterValues], ([newResult]) => {
 
 
@@ -140,12 +145,23 @@ export default {
          console.log(filteredAdverts)
         filteredAdverts = filteredAdverts.filter(advert => advert.category === selectedCategory.value);
       }
-
+      console.log(filterValues)
 
       for (const [key, value] of Object.entries(filterValues)) {
         if (value !== '') {
-            console.log(key, value, filterValues);
-          //filteredAdverts = filteredAdverts.filter(advert => advert[key].toLowerCase().includes(value.toLowerCase()));
+            
+            
+
+            filteredAdverts = filteredAdverts.filter(advert =>
+            {
+
+               for (let spec of advert.specs) {
+                  if (spec.key === key && spec.value.toLowerCase().includes(value.toLowerCase())) {
+                     return true;
+                  }
+               }
+            } );
+            
         }
       }
 

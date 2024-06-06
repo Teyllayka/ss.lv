@@ -12,6 +12,10 @@ export const GET_ADVERTS = gql`
       additionalPhotos
       photoUrl
       category
+      specs {
+        key
+        value
+      }
     }
   }
 `;
