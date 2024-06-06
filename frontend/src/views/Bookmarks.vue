@@ -64,7 +64,7 @@ export default defineComponent({
     flex-direction: row;
     flex-wrap:wrap;
     gap:30px 30px;
-    margin:50px 150px;
+    margin:50px 20px;
   }
 
   .title {

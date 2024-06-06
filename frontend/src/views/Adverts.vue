@@ -8,7 +8,10 @@
          {{ category }}
       </option>
       <option value=""></option>
-   </select></div>
+   </select>
+   <div>Name: <input type="text" v-model="selectedName"></div>
+</div>
+   
    <div>Sort by: 
       <select v-model="sortOption">
          <option value="">Select Sorting Option</option>
@@ -19,6 +22,13 @@
          <option value="name">Name</option>
       </select>
    </div>
+   <div v-if="selectedCategory && categoryFields[selectedCategory]">
+   <div class="cond" v-for="(field, index) in categoryFields[selectedCategory]" :key="index">
+      <label :for="'filter-' + field">{{ field }}</label>
+      <input :id="'filter-' + field" v-model="filterValues[field]" placeholder="Filter by..." />
+   </div>
+   </div>
+
 
 
    </div>
@@ -38,7 +48,22 @@
 
 <style scoped>
 
-option {
+@media only screen and (max-width: 1400px) {
+  
+   .container {
+      margin:50px 20px !important;
+   }
+}
+
+.cond {
+   display: flex;
+   justify-content: flex-start;
+   align-items: center;
+   gap:20px;
+   
+}
+
+option, input {
    background-color: rgb(var(--v-theme-background));
    color: rgb(var(--v-theme-text));
 }
@@ -60,10 +85,11 @@ select {
       flex-direction: row;
       flex-wrap: wrap;
       gap:30px 30px;
+      margin-top: 30px;
    }
 </style>
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch, reactive } from 'vue';
 import { useQuery } from '@vue/apollo-composable';
 import { GET_ADVERTS } from "@/graphql/advert";
 import Error from '../components/Error.vue';
@@ -78,24 +104,52 @@ export default {
   },
   setup() {
     const selectedCategory = ref('');
+    const selectedName = ref('');
     const sortOption = ref('');
     const displayedAdverts = ref([]);
+    const filterValues = reactive({});
+
+
 
     const categories = ['Cars', 'Electronics', 'Furniture', 'Clothes', 'Books', 'Other'];
     const accessToken = localStorage.getItem("access_token") || "";
+    const categoryFields = {
+      Cars: ['model', 'year', 'fuelType'],
+      Electronics: ['brand', 'model', 'condition'],
+      Furniture: ['material', 'size', 'color'],
+      Clothes: ['size', 'color', 'type'],
+      Books: ['author', 'genre', 'publicationYear'],
+      Other: []
+   };
 
     const {result, loading, error} = useQuery(GET_ADVERTS, { accessToken, offset: 0, limit: 999999 }, { fetchPolicy: 'network-only' });
 
-    watch([result, sortOption, selectedCategory], ([newResult]) => {
+    watch([result, sortOption, selectedCategory, selectedName, filterValues], ([newResult]) => {
 
 
       let filteredAdverts = [...newResult.getAdverts];
       let sortedAdverts = [];
 
+      
+      if (selectedName.value!== '') {
+         console.log(filteredAdverts)
+         filteredAdverts = filteredAdverts.filter(advert => advert.title.toLowerCase().includes(selectedName.value.toLowerCase()));
+      }
+
       if (selectedCategory.value!== '') {
          console.log(filteredAdverts)
         filteredAdverts = filteredAdverts.filter(advert => advert.category === selectedCategory.value);
       }
+
+
+      for (const [key, value] of Object.entries(filterValues)) {
+        if (value !== '') {
+            console.log(key, value, filterValues);
+          //filteredAdverts = filteredAdverts.filter(advert => advert[key].toLowerCase().includes(value.toLowerCase()));
+        }
+      }
+
+
 
       if (sortOption.value!== '') {
         sortedAdverts = filteredAdverts.sort((a, b) => {
@@ -114,10 +168,12 @@ export default {
         sortedAdverts = filteredAdverts;
       }
 
+      
+
       displayedAdverts.value = sortedAdverts;
     });
 
-    return { adverts: displayedAdverts, selectedCategory, categories, loading, error, sortOption };
+    return { adverts: displayedAdverts, selectedCategory, categories, loading, error, sortOption, categoryFields, filterValues, selectedName };
   },
 };
 </script>

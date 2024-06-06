@@ -155,18 +155,23 @@ export default defineComponent({
   height: 25px;
 }
 
+
 @media only screen and (max-width: 900px) {
 
   .upper {
-    margin: 4px 0px 0px 8px !important;
+    padding: 4px 0px 0px 8px !important;
   }
 
   .downer {
     padding: 0px 8px !important;
   }
 
+  .advert img {
+    height: 200px !important;
+  }
+
   .advert {
-    width: 90% !important;
+    width: 100% !important;
     height: 90% !important;
   }
 
@@ -186,6 +191,8 @@ export default defineComponent({
   border-radius: 8px 8px 8px 8px;
   display: flex;
   flex-direction: column;
+  display: inline-block;
+
 }
 
 .advert .description {
@@ -215,11 +222,11 @@ export default defineComponent({
   width: 90%; 
 }
 
-
 .advert img {
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
   border-radius: 8px 8px 0 0;
-  width:100%;
-  height:100%;
 }
 
 

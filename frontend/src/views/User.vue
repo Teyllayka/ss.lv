@@ -4,7 +4,7 @@
   <section class="profile" v-else>
    <section class="info">
      <div class="avatar">
-       <img src="{{ result.getUser.avatarUrl }}" alt="">
+       <img :src="result.getUser.avatarUrl" alt="">
      </div>
      <div class="description">
        <div class="data">
@@ -89,20 +89,26 @@
 
   .adverts-container {
     margin-top:100px;
+    padding:0px 20px;
   }
 
   .buttons, .switcher {
     justify-content: space-around !important;
     align-items: center !important;
-    gap:50px !important;
     margin: 0px !important;
+    gap: 0px !important;
   }
 }
 
 @media only screen and (max-width: 400px) {
   
-  .buttons button {
+  button {
     padding: 10px 30px !important;
+  }
+
+  .data {
+    text-align: center !important;
+  
   }
 }
 

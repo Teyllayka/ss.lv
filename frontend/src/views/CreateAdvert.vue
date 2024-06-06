@@ -79,6 +79,10 @@ export default {
           urls.push(data.link);
         }
 
+        if (urls.length == 0) {
+          urls.push('');
+        }
+
 
 
         await createAdvert({

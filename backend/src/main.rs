@@ -96,7 +96,7 @@ impl QueryRoot {
             }
         };
 
-        let mut adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
+        let adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
 
         user.adverts = adverts;
 
@@ -236,6 +236,12 @@ impl QueryRoot {
 
         if access_token.is_empty() {
             return Ok(adverts);
+        }
+
+        for advert in &mut adverts {
+            let specs: Vec<specifications::Model> =
+                advert.find_related(Specifications).all(&my_ctx.db).await?;
+            advert.specs = specs;
         }
 
         let claims: BTreeMap<String, String> =

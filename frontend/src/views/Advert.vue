@@ -7,7 +7,7 @@
 
    
     <div class="up">
-      <div class="image-container">
+      <div class="image-container" v-if="result.getAdvert.advert.photoUrl != ''">
         <img :src="result.getAdvert.advert.photoUrl"  alt="">
       </div>
       <div class="info">
@@ -239,7 +239,7 @@ img {
 }
 
 .down {
-  margin-top:100px;
+  margin-top:10px;
   max-width: 100%;
   text-wrap: wrap;
   word-wrap: break-word;
