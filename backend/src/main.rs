@@ -1078,15 +1078,4 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-/*
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDfDOw-iZFn8EySVtWf3D3t3g1yp1KZG9o",
-  authDomain: "v-3dcdc.firebaseapp.com",
-  projectId: "v-3dcdc",
-  storageBucket: "v-3dcdc.appspot.com",
-  messagingSenderId: "445567089875",
-  appId: "1:445567089875:web:303e56c669d35c99156826"
-};
-
-*/
