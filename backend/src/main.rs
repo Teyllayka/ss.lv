@@ -79,7 +79,7 @@ pub struct QueryRoot;
 
 #[Object]
 impl QueryRoot {
-    async fn get_user(
+    async fn user(
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,

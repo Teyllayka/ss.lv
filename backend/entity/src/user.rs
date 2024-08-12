@@ -13,6 +13,7 @@ pub struct Model {
     pub updated_at: NaiveDateTime,
     pub name: String,
     pub surname: String,
+    pub rating: f32,
     #[sea_orm(unique)]
     pub email: String,
     pub phone: String,
@@ -33,6 +34,8 @@ pub enum Relation {
     Advert,
     #[sea_orm(has_many = "super::favorites::Entity")]
     Favorites,
+    #[sea_orm(has_many = "super::review::Entity", on_delete = "Cascade")]
+    Review,
 }
 
 // `Related` trait has to be implemented by hand

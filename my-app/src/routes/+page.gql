@@ -1,12 +1,7 @@
 
-query Product{
-  product(id: "gid://shopify/Product/7982905098262") {
+query User{
+  user(id: 1) {
     id
-    title
-    description
-    featuredImage {
-      id
-    #   url
-    }
+    email
   }
 }

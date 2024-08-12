@@ -4,7 +4,7 @@
 const config = {
     "schemaPath": "./schema.graphql",
     "watchSchema": {
-        "url": "https://mock.shop/api"
+        "url": "http://localhost:80"
     },
     "plugins": {
         "houdini-svelte": {}
