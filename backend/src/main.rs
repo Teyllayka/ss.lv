@@ -92,7 +92,7 @@ impl QueryRoot {
             Some(user) => user,
             None => {
                 return Err(async_graphql::Error::new(
-                    "Wrong email or password".to_string(),
+                    "No user found".to_string(),
                 ))
             }
         };

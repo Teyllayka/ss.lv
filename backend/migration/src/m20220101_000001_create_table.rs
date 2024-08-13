@@ -64,6 +64,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::Category).string().not_null())
                     .col(ColumnDef::new(Advert::Description).string().not_null())
                     .col(ColumnDef::new(Advert::UserId).integer().not_null())
+                    .col(ColumnDef::new(Advert::SoldTo).integer())
+                    .col(ColumnDef::new(Advert::OldPrice).float().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-advert-user_id")
@@ -141,6 +143,45 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        manager
+            .create_table(
+                Table::create()
+                    .table(Reviews::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Reviews::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Reviews::UserId).integer().not_null())
+                    .col(ColumnDef::new(Reviews::AdvertId).integer().not_null())
+                    .col(
+                        ColumnDef::new(Reviews::String)
+                            .string()
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-reviews-advert_id")
+                            .from(Reviews::Table, Reviews::AdvertId)
+                            .to(Advert::Table, Advert::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-reviews-user_id")
+                            .from(Reviews::Table, Reviews::UserId)
+                            .to(User::Table, User::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
         Ok(())
     }
 
@@ -197,6 +238,8 @@ enum Advert {
     Location,
     UserId,
     Category,
+    SoldTo,
+    OldPrice,
 }
 
 #[derive(DeriveIden)]
@@ -210,6 +253,17 @@ enum Specifications {
 
 #[derive(DeriveIden)]
 enum Favorites {
+    Table,
+    Id,
+    AdvertId,
+    UserId,
+    CreatedAt,
+    String,
+}
+
+
+#[derive(DeriveIden)]
+enum Reviews {
     Table,
     Id,
     AdvertId,

@@ -19,8 +19,8 @@ pub struct Model {
     pub price: f32,
     pub location: String,
     pub user_id: i32,
-    pub location: String,
     pub old_price: f32,
+    pub sold_to: i32,
 
     #[sea_orm(ignore)]
     pub is_favorited: bool,
@@ -41,8 +41,14 @@ pub enum Relation {
     Specifications,
     #[sea_orm(has_many = "super::favorites::Entity", on_delete = "Cascade")]
     Favorites,
-    #[sea_orm(has_one = "super::review::Entity", on_delete = "Cascade")]
+    #[sea_orm(has_one = "super::reviews::Entity", on_delete = "Cascade")]
     Review,
+    // #[sea_orm(
+    //     belongs_to = "super::user::Entity",
+    //     from = "Column::SoldTo",
+    //     to = "super::user::Column::Id"
+    // )]
+    // User,
 }
 
 impl Related<super::user::Entity> for Entity {

@@ -12,8 +12,10 @@ type Advert {
   id: Int!
   isFavorited: Boolean!
   location: String!
+  oldPrice: Float!
   photoUrl: String!
   price: Float!
+  soldTo: Int!
   specs: [specifications!]!
   title: String!
   updatedAt: NaiveDateTime!

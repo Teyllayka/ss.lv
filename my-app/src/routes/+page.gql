@@ -1,7 +1,5 @@
-
-query User{
-  user(id: 1) {
-    id
-    email
-  }
+query User {
+    stats {
+        advertCount
+    }
 }
