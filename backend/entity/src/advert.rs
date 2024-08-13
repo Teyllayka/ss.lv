@@ -24,7 +24,6 @@ pub struct Model {
 
     #[sea_orm(ignore)]
     pub is_favorited: bool,
-    // pub adverts
     #[sea_orm(ignore)]
     pub specs: Vec<super::specifications::Model>,
 }

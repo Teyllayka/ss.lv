@@ -1,5 +1,5 @@
 schema {
-  query: QueryRoot
+  query: Query
   mutation: MutationRoot
 }
 
@@ -58,7 +58,7 @@ ISO 8601 combined date and time without timezone.
 """
 scalar NaiveDateTime
 
-type QueryRoot {
+type Query {
   getAdvert(accessToken: String!, id: Int!): AdvertWithUser!
   getAdverts(accessToken: String!, limit: Int!, offset: Int!): [Advert!]!
   getAdvertsByCategory(category: String!): [Advert!]!
