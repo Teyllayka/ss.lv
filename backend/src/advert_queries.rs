@@ -2,7 +2,7 @@ use std::{
     collections::{BTreeMap, HashMap, HashSet},
     time::{SystemTime, UNIX_EPOCH},
 };
-use crate::{verify_access_token, Context};
+use crate::{verify_access_token, Context, Token};
 
 use actix_web::Result;
 use async_graphql::{Json, Object, SimpleObject};
@@ -39,9 +39,10 @@ impl AdvertQuery {
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
-        access_token: String,
     ) -> Result<AdvertWithUser, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+       
 
         let advert: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
 
@@ -62,15 +63,19 @@ impl AdvertQuery {
             None => return Err(async_graphql::Error::new("user not found".to_string())),
         };
 
-        if access_token.is_empty() {
-            return Ok(AdvertWithUser {
-                advert,
-                user,
-                is_admin: false,
-                belongs_to_user: false,
-            });
-        }
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Ok(AdvertWithUser {
+                    advert,
+                    user,
+                    is_admin: false,
+                    belongs_to_user: false,
+                });
+            }
+        };
 
+  
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
@@ -113,7 +118,6 @@ impl AdvertQuery {
     async fn get_adverts(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         offset: i32,
         limit: i32,
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
@@ -131,9 +135,14 @@ impl AdvertQuery {
                 advert.find_related(Specifications).all(&my_ctx.db).await?;
             advert.specs = specs;
         }
-        if access_token.is_empty() {
-            return Ok(adverts);
-        }
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Ok(adverts);
+            }
+        };
+        
         for advert in &mut adverts {
             let specs: Vec<specifications::Model> =
                 advert.find_related(Specifications).all(&my_ctx.db).await?;
@@ -195,9 +204,17 @@ impl AdvertQuery {
     async fn get_favorites(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -254,7 +271,6 @@ impl AdvertMutation {
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
-        access_token: String,
         price: f32,
         location: String,
         title: String,
@@ -263,10 +279,13 @@ impl AdvertMutation {
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        if access_token.is_empty() {
-            return Err(async_graphql::Error::new(
-                "you are not logged in".to_string(),
-            ));
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
         };
 
         let claims: BTreeMap<String, String> =
@@ -352,10 +371,18 @@ impl AdvertMutation {
     async fn add_favorite(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         advert_id: i32,
     ) -> Result<favorites::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -385,10 +412,18 @@ impl AdvertMutation {
     async fn remove_favorite(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         advert_id: i32,
     ) -> Result<favorites::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -419,7 +454,6 @@ impl AdvertMutation {
     async fn create_advert(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         price: f32,
         location: String,
         title: String,
@@ -429,6 +463,15 @@ impl AdvertMutation {
         data: Json<serde_json::Value>,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -448,7 +491,6 @@ impl AdvertMutation {
             updated_at: Set(naive_date_time),
             price: Set(price),
             old_price: Set(price),
-            sold_to: Set(0),
             location: Set(location),
             description: Set(description),
             title: Set(title),
@@ -497,10 +539,18 @@ impl AdvertMutation {
     async fn delete_advert(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         advert_id: i32,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,

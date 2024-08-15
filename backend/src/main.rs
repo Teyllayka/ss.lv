@@ -7,9 +7,8 @@ use advert_queries::{AdvertMutation, AdvertQuery};
 use std::{collections::BTreeMap, time::{SystemTime, UNIX_EPOCH}};
 use actix_cors::Cors;
 use dotenvy::dotenv;
-use actix_web::{guard, http, web, App, HttpResponse, HttpServer, Result};
+use actix_web::{guard, http::{self, header::HeaderMap}, web, App, HttpResponse, HttpServer, Result};
 use async_graphql::{http::GraphiQLSource, EmptySubscription, MergedObject, Object, Schema, SimpleObject};
-use async_graphql_actix_web::GraphQL;
 use entity::{
     advert::{self, Entity as Advert},
     user::{self, Entity as User},
@@ -22,6 +21,8 @@ use sea_orm::{
 };
 use sha2::Sha256;
 use jwt::VerifyWithKey;
+use actix_web::HttpRequest;
+use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 
 
@@ -90,6 +91,7 @@ impl QueryRoot {
     ) -> Result<Statistics, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
+
         let users = User::find();
 
         let user_count = users.clone().count(&my_ctx.db).await?;
@@ -132,6 +134,45 @@ impl QueryRoot {
     
 // // }
 
+
+#[derive(Debug)]
+pub struct Token(pub String);
+
+
+fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
+    headers
+        .get("authorization")
+        .and_then(|value| value.to_str().map(|s| Token(s.to_string())).ok())
+}
+
+async fn index(
+    schema: web::Data<Schema<Query, Mutation, EmptySubscription>>,
+    req: HttpRequest,
+    gql_request: GraphQLRequest,
+) -> GraphQLResponse {
+    let mut request = gql_request.into_inner();
+    // let mut access_token = String::new();
+    // let mut refresh_token  =String::new();
+    // match req.cookies() {
+    //     Ok(cookies) => {
+    //         for cookie in cookies.iter() {
+    //             if cookie.name() == "accessToken" {
+    //                 access_token = cookie.value().to_string();
+                    
+    //             } else if cookie.name() == "refreshToken" {
+    //                 refresh_token = cookie.value().to_string();
+    //             }
+    //         }
+    //     }
+    //     Err(_) => {}
+    // }
+    // request = request.data(Token(access_token, refresh_token));
+    if let Some(token) = get_token_from_headers(req.headers()) {
+        request = request.data(token);
+    }
+    schema.execute(request).await.into()
+}
+
 async fn index_graphiql() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
@@ -154,10 +195,10 @@ async fn main() -> std::io::Result<()> {
     let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_test_writer()
-        .init();
+    // tracing_subscriber::fmt()
+    //     .with_max_level(tracing::Level::DEBUG)
+    //     .with_test_writer()
+    //     .init();
     let db: DatabaseConnection = Database::connect(db_url)
         .await
         .expect("error with connection");
@@ -186,12 +227,12 @@ async fn main() -> std::io::Result<()> {
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
 
-        App::new()
+        App::new().app_data(web::Data::new(schema))
             .wrap(cors)
             .service(
                 web::resource("/")
                     .guard(guard::Post())
-                    .to(GraphQL::new(schema)),
+                    .to(index),
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })

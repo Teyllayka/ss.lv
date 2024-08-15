@@ -3,7 +3,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{verify_access_token, Context};
+use crate::{verify_access_token, Context, Token};
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -70,9 +70,17 @@ impl UserQuery {
     async fn me(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -221,6 +229,11 @@ impl UserMutation {
         .update(&my_ctx.db)
         .await?;
 
+
+        ctx.append_http_header("Set-Cookie", format!("refresh_token={}", refresh_token));
+        ctx.append_http_header("Set-Cookie", format!("access_token={}", access_token));
+
+
         Ok(LoginResponse {
             refresh_token,
             access_token,
@@ -231,7 +244,6 @@ impl UserMutation {
     async fn edit(
         &self,
         ctx: &async_graphql::Context<'_>,
-        access_token: String,
         name: String,
         surname: String,
         phone: String,
@@ -239,6 +251,15 @@ impl UserMutation {
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,

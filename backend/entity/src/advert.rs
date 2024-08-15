@@ -20,7 +20,7 @@ pub struct Model {
     pub location: String,
     pub user_id: i32,
     pub old_price: f32,
-    pub sold_to: i32,
+    pub sold_to: Option<i32>,
 
     #[sea_orm(ignore)]
     pub is_favorited: bool,

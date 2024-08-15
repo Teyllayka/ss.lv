@@ -10,7 +10,7 @@ type Advert {
   oldPrice: Float!
   photoUrl: String!
   price: Float!
-  soldTo: Int!
+  soldTo: Int
   specs: [specifications!]!
   title: String!
   updatedAt: NaiveDateTime!
@@ -33,15 +33,15 @@ type LoginResponse {
 }
 
 type Mutation {
-  addFavorite(accessToken: String!, advertId: Int!): favorites!
-  createAdvert(accessToken: String!, category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
-  deleteAdvert(accessToken: String!, advertId: Int!): Advert!
-  edit(accessToken: String!, avatarUrl: String!, name: String!, password: String!, phone: String!, surname: String!): User!
-  editAdvert(accessToken: String!, description: String!, id: Int!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
+  addFavorite(advertId: Int!): favorites!
+  createAdvert(category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
+  deleteAdvert(advertId: Int!): Advert!
+  edit(avatarUrl: String!, name: String!, password: String!, phone: String!, surname: String!): User!
+  editAdvert(description: String!, id: Int!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
   login(email: String!, password: String!): LoginResponse!
   refresh(refreshToken: String!): LoginResponse!
   register(email: String!, image: String!, name: String!, password: String!, phone: String!, surname: String!): User!
-  removeFavorite(accessToken: String!, advertId: Int!): favorites!
+  removeFavorite(advertId: Int!): favorites!
 }
 
 """
@@ -54,11 +54,11 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Query {
-  advert(accessToken: String!, id: Int!): AdvertWithUser!
-  getAdverts(accessToken: String!, limit: Int!, offset: Int!): [Advert!]!
+  advert(id: Int!): AdvertWithUser!
+  getAdverts(limit: Int!, offset: Int!): [Advert!]!
   getAdvertsByCategory(category: String!): [Advert!]!
-  getFavorites(accessToken: String!): [Advert!]!
-  me(accessToken: String!): User!
+  getFavorites: [Advert!]!
+  me: User!
   stats: Statistics!
   user(id: Int!): User!
 }
@@ -88,7 +88,6 @@ type favorites {
   advertId: Int!
   createdAt: NaiveDateTime!
   id: Int!
-  string: String!
   userId: Int!
 }
 
