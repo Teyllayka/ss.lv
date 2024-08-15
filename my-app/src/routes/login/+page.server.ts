@@ -1,9 +1,9 @@
 import { graphql } from "$houdini";
-import { fail, redirect } from "@sveltejs/kit";
+import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 import { loginSchema, validateSchema } from "$lib/schemas";
 
 export const actions = {
-  default: async (event: any, cookies: any) => {
+  default: async (event: RequestEvent) => {
     const data = await event.request.formData();
 
     const password = data.get("password")?.toString();
@@ -11,10 +11,9 @@ export const actions = {
 
     const errs = await validateSchema(loginSchema, { email, password });
 
-    if (errs.length > 0) {
+    if (errs.length > 0 || !email || !password) {
       return fail(400, {
         email,
-        password,
         errors: errs,
       });
     }
@@ -29,15 +28,27 @@ export const actions = {
     `);
 
     let res = await login.mutate({ email, password }, { event });
-    console.log(res);
 
     if (!res.errors && res.data) {
       event.cookies.set("accessToken", res.data.login.accessToken, {
         path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 100,
       });
       event.cookies.set("refreshToken", res.data.login.refreshToken, {
         path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 180,
       });
+      event.cookies.set(
+        "expiresAt",
+        (Date.now() + 100 * 60 * 1000).toString(),
+        {
+          path: "/",
+        }
+      );
       redirect(302, "/");
     } else {
       return fail(400, {

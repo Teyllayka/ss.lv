@@ -1,7 +1,18 @@
 query User($id: Int!) {
-    user(id: $id) {
-        id
-        name
-        email
+  user(id: $id) {
+    id
+    name
+    email
+    adverts {
+      id
+      title
+      price
+      description
+      location
+      createdAt
+      photoUrl
+      additionalPhotos
+      oldPrice
     }
+  }
 }

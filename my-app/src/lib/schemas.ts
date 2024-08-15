@@ -5,6 +5,15 @@ export let loginSchema = object({
   password: string().required(),
 });
 
+export let registerSchema = object({
+  email: string().email().required(),
+  password: string().required(),
+  name: string().required(),
+  surname: string().required(),
+  phone: string().required(),
+  image: string().required(),
+});
+
 export async function validateSchema(schema: ObjectSchema<any>, fields: any) {
   const errors: { field: string; message: string }[] = [];
   try {

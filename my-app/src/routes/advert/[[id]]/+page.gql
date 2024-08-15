@@ -1,5 +1,5 @@
-query Advert($id: Int!, $accessToken: String!) {
-  advert(id: $id, accessToken: $accessToken) {
+query Advert($id: Int!) {
+  advert(id: $id) {
     advert {
       id
     }

@@ -10,7 +10,13 @@ const config = {
     },
     "plugins": {
         "houdini-svelte": {}
+    },
+    scalars: {
+        NaiveDateTime: {
+            type: "Date"
+        }
     }
+  
 }
 
 export default config

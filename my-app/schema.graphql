@@ -80,6 +80,7 @@ type User {
   isAdmin: Boolean!
   name: String!
   phone: String!
+  reviews: [reviews!]!
   surname: String!
   updatedAt: NaiveDateTime!
 }
@@ -88,6 +89,15 @@ type favorites {
   advertId: Int!
   createdAt: NaiveDateTime!
   id: Int!
+  userId: Int!
+}
+
+type reviews {
+  advertId: Int!
+  createdAt: NaiveDateTime!
+  id: Int!
+  message: String!
+  rating: Int!
   userId: Int!
 }
 

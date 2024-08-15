@@ -1,5 +1,19 @@
 query me {
   me {
     id
+    name
+    email
+
+    adverts {
+      id
+      title
+      price
+      description
+      location
+      createdAt
+      photoUrl
+      additionalPhotos
+      oldPrice
+    }
   }
 }

@@ -25,6 +25,8 @@ pub struct Model {
     // pub adverts
     #[sea_orm(ignore)]
     pub adverts: Vec<super::advert::Model>,
+    #[sea_orm(ignore)]
+    pub reviews: Vec<super::reviews::Model>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

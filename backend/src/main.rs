@@ -125,16 +125,6 @@ impl QueryRoot {
 }
 
 
-// #[derive(Default)]
-// pub struct MutationRoot;
-
-// // #[Object]
-// // impl MutationRoot {
-    
-    
-// // }
-
-
 #[derive(Debug)]
 pub struct Token(pub String);
 
@@ -195,10 +185,10 @@ async fn main() -> std::io::Result<()> {
     let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
-    // tracing_subscriber::fmt()
-    //     .with_max_level(tracing::Level::DEBUG)
-    //     .with_test_writer()
-    //     .init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_test_writer()
+        .init();
     let db: DatabaseConnection = Database::connect(db_url)
         .await
         .expect("error with connection");
