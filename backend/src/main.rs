@@ -1,12 +1,12 @@
-use actix_cors::Cors;
-use advert_queries::{AdvertMutation, AdvertQuery};
-use dotenvy::dotenv;
-use user_queries::{UserMutation, UserQuery};
-
 mod user_queries;
 mod advert_queries;
 
+use user_queries::{UserMutation, UserQuery};
+use advert_queries::{AdvertMutation, AdvertQuery};
 
+use std::{collections::BTreeMap, time::{SystemTime, UNIX_EPOCH}};
+use actix_cors::Cors;
+use dotenvy::dotenv;
 use actix_web::{guard, http, web, App, HttpResponse, HttpServer, Result};
 use async_graphql::{http::GraphiQLSource, EmptySubscription, MergedObject, Object, Schema, SimpleObject};
 use async_graphql_actix_web::GraphQL;
@@ -21,6 +21,32 @@ use sea_orm::{
     PaginatorTrait, QueryFilter,
 };
 use sha2::Sha256;
+use jwt::VerifyWithKey;
+
+
+
+pub fn verify_access_token(
+    access_token: String,
+    access_key: &Hmac<Sha256>,
+) -> Result<BTreeMap<String, String>, async_graphql::Error> {
+    let claims: BTreeMap<String, String> =
+        match access_token.verify_with_key(access_key) {
+            Ok(res) => res,
+            Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+        };
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as usize;
+
+    if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+        return Err(async_graphql::Error::new(
+            "you are not logged in".to_string(),
+        ));
+    }
+
+    Ok(claims)
+}
 
 
 

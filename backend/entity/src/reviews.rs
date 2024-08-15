@@ -11,7 +11,8 @@ pub struct Model {
     pub created_at: NaiveDateTime,
     pub user_id: i32,
     pub advert_id: i32,
-    pub string: String,
+    pub message: String,
+    pub rating: i8,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

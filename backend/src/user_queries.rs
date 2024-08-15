@@ -3,7 +3,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::Context;
+use crate::{verify_access_token, Context};
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -74,21 +74,10 @@ impl UserQuery {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let claims: BTreeMap<String, String> =
-            match access_token.verify_with_key(&my_ctx.access_key) {
-                Ok(res) => res,
-                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
-            };
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as usize;
-
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
-            return Err(async_graphql::Error::new(
-                "you are not logged in".to_string(),
-            ));
-        }
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
 
         let id: i32 = claims["id"].parse().unwrap();
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
@@ -251,21 +240,10 @@ impl UserMutation {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let claims: BTreeMap<String, String> =
-            match access_token.verify_with_key(&my_ctx.access_key) {
-                Ok(res) => res,
-                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
-            };
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as usize;
-
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
-            return Err(async_graphql::Error::new(
-                "you are not logged in".to_string(),
-            ));
-        }
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
 
         let id: i32 = claims["id"].parse().unwrap();
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;

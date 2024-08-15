@@ -1,8 +1,3 @@
-schema {
-  query: Query
-  mutation: MutationRoot
-}
-
 type Advert {
   additionalPhotos: [String!]!
   available: Boolean!
@@ -37,7 +32,7 @@ type LoginResponse {
   refreshToken: String!
 }
 
-type MutationRoot {
+type Mutation {
   addFavorite(accessToken: String!, advertId: Int!): favorites!
   createAdvert(accessToken: String!, category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
   deleteAdvert(accessToken: String!, advertId: Int!): Advert!
@@ -59,7 +54,7 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Query {
-  getAdvert(accessToken: String!, id: Int!): AdvertWithUser!
+  advert(accessToken: String!, id: Int!): AdvertWithUser!
   getAdverts(accessToken: String!, limit: Int!, offset: Int!): [Advert!]!
   getAdvertsByCategory(category: String!): [Advert!]!
   getFavorites(accessToken: String!): [Advert!]!

@@ -1,0 +1,7 @@
+query Advert($id: Int!, $accessToken: String!) {
+  advert(id: $id, accessToken: $accessToken) {
+    advert {
+      id
+    }
+  }
+}
