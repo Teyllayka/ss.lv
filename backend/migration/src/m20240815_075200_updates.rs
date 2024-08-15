@@ -1,4 +1,8 @@
 use sea_orm_migration::prelude::*;
+// use argon2::{
+//     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+//     Argon2,
+// };
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -170,6 +174,20 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        // let salt = SaltString::generate(&mut OsRng);
+        // let argon2 = Argon2::default();
+
+        // let password_hash = argon2.hash_password("test".as_bytes(), &salt).await?;
+
+        // let insert = Query::insert()
+        //     .into_table(User::Table)
+        //     .columns([User::Name, User::AvatarUrl, User::Surname, User::Email, User::Phone, User::Balance, User::PasswordHash, User::IsAdmin])
+        //     .values_panic(["Test".into(), "".into(), "Test".into(), "Test@Test.com".into(), "123456789".into(), 0.0.into(), password_hash.into(), true.into()])
+        //     .to_owned();
+
+        // manager.exec_stmt(insert).await?;
+
         Ok(())
     }
 

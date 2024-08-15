@@ -1,4 +1,4 @@
-import { object, ObjectSchema, string, date, number, boolean } from "yup";
+import { object, ObjectSchema, string } from "yup";
 
 export let loginSchema = object({
   email: string().email().required(),

@@ -17,3 +17,4 @@ features = [
   "runtime-tokio-rustls", 
   "sqlx-postgres",  
 ]
+argon2 = "0.5.2"

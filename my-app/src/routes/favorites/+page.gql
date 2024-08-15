@@ -1,0 +1,12 @@
+query Favorites {
+  getFavorites {
+    id
+    title
+    description
+    price
+    createdAt
+    location
+    oldPrice
+    isFavorited
+  }
+}

@@ -67,6 +67,6 @@ export function load({ cookies }: any) {
   const logedIn = cookies.get("accessToken");
 
   if (logedIn) {
-    return redirect(302, "/");
+    return redirect(302, "/me");
   }
 }

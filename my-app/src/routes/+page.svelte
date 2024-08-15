@@ -1,9 +1,8 @@
-<!-- <script lang="ts">
-    import type { PageData } from './$houdini'
-    export let data: PageData;
-    $: ({ User } = data);
-</script>
+<section class="main"></section>
 
-{JSON.stringify($User)}
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p> -->
+<style>
+  section {
+    padding: 0px 60px;
+    box-sizing: border-box;
+  }
+</style>
