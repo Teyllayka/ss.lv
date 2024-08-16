@@ -11,7 +11,7 @@ export const actions = {
 
     const errs = await validateSchema(loginSchema, { email, password });
 
-    if (errs.length > 0 || !email || !password) {
+    if (errs.length > 0) {
       return fail(400, {
         email,
         errors: errs,
@@ -27,24 +27,27 @@ export const actions = {
       }
     `);
 
-    let res = await login.mutate({ email, password }, { event });
+    let res = await login.mutate(
+      { email: email ?? "", password: password ?? "" },
+      { event }
+    );
 
     if (!res.errors && res.data) {
       event.cookies.set("accessToken", res.data.login.accessToken, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",
-        maxAge: 60 * 100,
+        expires: new Date(Date.now() + 60 * 100 * 1000),
       });
       event.cookies.set("refreshToken", res.data.login.refreshToken, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",
-        maxAge: 60 * 180,
+        expires: new Date(Date.now() + 60 * 180 * 1000),
       });
       event.cookies.set(
         "expiresAt",
-        (Date.now() + 100 * 60 * 1000).toString(),
+        (Date.now() + 60 * 100 * 1000).toString(),
         {
           path: "/",
         }
@@ -64,7 +67,7 @@ export const actions = {
 };
 
 export function load({ cookies }: any) {
-  const logedIn = cookies.get("accessToken");
+  const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");
 
   if (logedIn) {
     return redirect(302, "/me");

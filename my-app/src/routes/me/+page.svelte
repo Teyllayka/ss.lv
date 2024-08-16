@@ -31,16 +31,29 @@
 {:else}
   {JSON.stringify($me.data)}
 
-  {#each adverts as advert}
-    <Advert
-      title={advert.title}
-      description={advert.description}
-      date={advert.createdAt}
-      location={advert.location}
-      price={advert.price}
-      oldPrice={advert.oldPrice}
-    />
-  {/each}
+  <section class="adverts">
+    {#each adverts as advert}
+      <Advert
+        title={advert.title}
+        description={advert.description}
+        date={advert.createdAt}
+        location={advert.location}
+        price={advert.price}
+        oldPrice={advert.oldPrice}
+      />
+    {/each}
+  </section>
 {/if}
 
 <button on:click={logout}>logout</button>
+
+<style lang="scss">
+  .adverts {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 42px 100px;
+  }
+</style>

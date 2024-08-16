@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+  import { enhance } from "$app/forms";
+
   let inputValue = "";
 
   $: {
@@ -14,4 +16,23 @@
   }
 </script>
 
-<input type="text" name="" id="" bind:value={inputValue} />
+<form method="POST" use:enhance>
+  <input type="text" name="" id="" bind:value={inputValue} />
+
+  <InputField
+    name="email"
+    type="email"
+    placeholder="email"
+    errors={form?.errors || []}
+    value={form?.email}
+  />
+
+  <InputField
+    name="password"
+    type="password"
+    placeholder="password"
+    errors={form?.errors || []}
+  />
+
+  <button type="submit">Login</button>
+</form>

@@ -9,15 +9,13 @@ export const handle = async ({
   event: RequestEvent;
   resolve: any;
 }) => {
-  const user = event.cookies.get("accessToken");
+  let accessToken = event.cookies.get("accessToken");
   const expiresAt = event.cookies.get("expiresAt");
   const refreshToken = event.cookies.get("refreshToken");
 
-  if (!refreshToken) {
-    redirect(302, "/login");
-  }
+  //console.log(event.route, user, expiresAt, refreshToken);
 
-  if (expiresAt && parseInt(expiresAt) < Date.now()) {
+  if (expiresAt && (parseInt(expiresAt) < Date.now() || !accessToken)) {
     const refresh = graphql(`
       mutation refresh($refreshToken: String!) {
         refresh(refreshToken: $refreshToken) {
@@ -27,11 +25,17 @@ export const handle = async ({
       }
     `);
 
+    if (!refreshToken) {
+      event.cookies.delete("accessToken", { path: "/" });
+      event.cookies.delete("refreshToken", { path: "/" });
+      event.cookies.delete("expiresAt", { path: "/" });
+      redirect(302, "/login");
+    }
+
     let res = await refresh.mutate({ refreshToken: refreshToken }, { event });
 
-    console.log(res);
-
     if (!res.errors && res.data) {
+      accessToken = res.data.refresh.accessToken;
       event.cookies.set("accessToken", res.data.refresh.accessToken, {
         path: "/",
         httpOnly: true,
@@ -59,7 +63,7 @@ export const handle = async ({
     }
   }
 
-  setSession(event, { user });
+  setSession(event, { accessToken });
 
   return await resolve(event);
 };

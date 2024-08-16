@@ -1,7 +1,7 @@
 import { HoudiniClient } from "$houdini";
 
 interface Session {
-  user?: string; // or whatever type the user field should be
+  accessToken?: string;
 }
 
 export default new HoudiniClient({
@@ -10,7 +10,7 @@ export default new HoudiniClient({
   fetchParams({ session }: { session?: Session | null }) {
     return {
       headers: {
-        Authorization: `Bearer ${session?.user}`,
+        Authorization: `Bearer ${session?.accessToken}`,
       },
     };
   },

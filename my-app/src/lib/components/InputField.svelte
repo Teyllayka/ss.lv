@@ -3,7 +3,7 @@
   export let type;
   export let placeholder;
   export let errors: any[] = [];
-  export let value = null;
+  export let value: string | undefined | null = null;
 
   let e: any = null;
   $: {

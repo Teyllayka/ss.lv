@@ -92,7 +92,7 @@ export const actions = {
 };
 
 export function load({ cookies }: any) {
-  const logedIn = cookies.get("accessToken");
+  const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");
 
   if (logedIn) {
     return redirect(302, "/me");
