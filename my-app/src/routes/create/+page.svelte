@@ -1,7 +1,19 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import InputField from "$lib/components/InputField.svelte";
 
   let inputValue = "";
+  let selectedCategory = ""; // Track the selected category
+
+  // Define categories and their corresponding fields
+  const categories = {
+    cars: ["fuelType", "assemblyYear", "model", "brand"],
+    // Add other categories here
+  };
+
+  // Reactive statement to update dynamic fields based on selected category
+  $: dynamicFields =
+    categories[selectedCategory as keyof typeof categories] || [];
 
   $: {
     fetch(
@@ -17,22 +29,24 @@
 </script>
 
 <form method="POST" use:enhance>
-  <input type="text" name="" id="" bind:value={inputValue} />
+  <input type="text" bind:value={inputValue} />
 
-  <InputField
-    name="email"
-    type="email"
-    placeholder="email"
-    errors={form?.errors || []}
-    value={form?.email}
-  />
+  <InputField name="price" type="number" placeholder="price" />
+  <InputField name="title" type="text" placeholder="title" />
+  <InputField name="description" type="textfield" placeholder="description" />
 
-  <InputField
-    name="password"
-    type="password"
-    placeholder="password"
-    errors={form?.errors || []}
-  />
+  <!-- Updated select element -->
+  <select bind:value={selectedCategory}>
+    <option value="">Select a category</option>
+    <option value="cars">Cars</option>
+    <!-- Add other options here -->
+  </select>
 
-  <button type="submit">Login</button>
+  <!-- Dynamically generated fields based on selected category -->
+  {#each dynamicFields as field}
+    <label>{field}</label>
+    <input type="text" name={field} placeholder={field} />
+  {/each}
+
+  <button type="submit">Submit</button>
 </form>
