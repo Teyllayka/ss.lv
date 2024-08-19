@@ -1,14 +1,27 @@
-import { validateSchema } from "$lib/schemas";
-import { redirect, type RequestEvent } from "@sveltejs/kit";
+import { advertSchema, validateSchema } from "$lib/schemas";
+import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
 export const actions = {
   default: async (event: RequestEvent) => {
-    const data = await event.request.formData();
+    const formData = await event.request.formData();
 
-    const password = data.get("password")?.toString();
-    const email = data.get("email")?.toString();
+    const data: any = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
 
-    // const errs = await validateSchema(loginSchema, { email, password });
+
+    const errs = await validateSchema(advertSchema, data);
+    console.log(formData, errs);
+
+    if(errs.length > 0){
+      
+      return fail(400, {
+        data,
+        errors: errs,
+      })
+    }
+
 
     // if (errs.length > 0 || !email || !password) {
     //   return fail(400, {

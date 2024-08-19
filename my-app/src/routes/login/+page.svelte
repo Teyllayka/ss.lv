@@ -10,7 +10,7 @@
     type="email"
     placeholder="email"
     errors={form?.errors || []}
-    value={form?.email}
+    value={form?.data.email}
   />
 
   <InputField

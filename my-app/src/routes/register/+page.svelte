@@ -10,13 +10,20 @@
     type="email"
     placeholder="email"
     errors={form?.errors || []}
-    value={form?.email}
+    value={form?.data.email}
   />
 
   <InputField
     name="password"
     type="password"
     placeholder="password"
+    errors={form?.errors || []}
+  />
+
+  <InputField
+    name="repeatPassword"
+    type="password"
+    placeholder="repeatPassword"
     errors={form?.errors || []}
   />
 

@@ -1,4 +1,8 @@
 use sea_orm_migration::prelude::*;
+// use argon2::{
+//     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+//     Argon2,
+// };
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -120,12 +124,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Favorites::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(Favorites::UserId).integer().not_null())
                     .col(ColumnDef::new(Favorites::AdvertId).integer().not_null())
-                    .col(
-                        ColumnDef::new(Favorites::String)
-                            .string()
-                            .unique_key()
-                            .not_null(),
-                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-favorites-advert_id")
@@ -159,12 +157,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(Reviews::UserId).integer().not_null())
                     .col(ColumnDef::new(Reviews::AdvertId).integer().not_null())
-                    .col(
-                        ColumnDef::new(Reviews::String)
-                            .string()
-                            .unique_key()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(Reviews::Rating).integer().not_null())
+                    .col(ColumnDef::new(Reviews::Message).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-reviews-advert_id")
@@ -182,6 +176,20 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        // let salt = SaltString::generate(&mut OsRng);
+        // let argon2 = Argon2::default();
+
+        // let password_hash = argon2.hash_password("test".as_bytes(), &salt).await?;
+
+        // let insert = Query::insert()
+        //     .into_table(User::Table)
+        //     .columns([User::Name, User::AvatarUrl, User::Surname, User::Email, User::Phone, User::Balance, User::PasswordHash, User::IsAdmin])
+        //     .values_panic(["Test".into(), "".into(), "Test".into(), "Test@Test.com".into(), "123456789".into(), 0.0.into(), password_hash.into(), true.into()])
+        //     .to_owned();
+
+        // manager.exec_stmt(insert).await?;
+
         Ok(())
     }
 
@@ -258,7 +266,6 @@ enum Favorites {
     AdvertId,
     UserId,
     CreatedAt,
-    String,
 }
 
 
@@ -269,5 +276,6 @@ enum Reviews {
     AdvertId,
     UserId,
     CreatedAt,
-    String,
+    Rating,
+    Message,
 }

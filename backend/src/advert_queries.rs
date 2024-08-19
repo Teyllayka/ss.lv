@@ -8,10 +8,7 @@ use actix_web::Result;
 use async_graphql::{Json, Object, SimpleObject};
 use chrono::Utc;
 use entity::{
-    advert::{self, Entity as Advert},
-    favorites::{self, Entity as Favorites},
-    specifications::{self, Entity as Specifications},
-    user::{self, Entity as User},
+    advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews, specifications::{self, Entity as Specifications}, user::{self, Entity as User}
 };
 use jwt::VerifyWithKey;
 use sea_orm::{
@@ -583,6 +580,46 @@ impl AdvertMutation {
         advert.clone().delete(&my_ctx.db).await?;
 
         return Ok(advert);
+    }
+
+    async fn write_review(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        advert_id: i32,
+        rating: i8,
+        message: String,
+    ) -> Result<reviews::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
+
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
+
+        let user_id = claims["id"].parse::<i32>().unwrap();
+
+        let review = reviews::ActiveModel {
+            advert_id: Set(advert_id),
+            user_id: Set(user_id),
+            rating: Set(rating),
+            message: Set(message),
+            created_at: Set(Utc::now().naive_utc()),
+            ..Default::default()
+        };
+
+        let review: reviews::Model = review.insert(&my_ctx.db).await?;
+
+
+        return Ok(review);
     }
 
     

@@ -47,7 +47,7 @@ pub enum Relation {
     //     from = "Column::SoldTo",
     //     to = "super::user::Column::Id"
     // )]
-    // User,
+    // SoldTo,
 }
 
 impl Related<super::user::Entity> for Entity {
@@ -55,6 +55,13 @@ impl Related<super::user::Entity> for Entity {
         Relation::User.def()
     }
 }
+
+// impl Related<super::user::Entity> for Entity {
+//     fn to() -> RelationDef {
+//         Relation::SoldTo.def() // The user who bought the advert
+//     }
+// }
+
 
 impl Related<super::specifications::Entity> for Entity {
     fn to() -> RelationDef {

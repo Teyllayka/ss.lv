@@ -4,41 +4,22 @@ import { registerSchema, validateSchema } from "$lib/schemas";
 
 export const actions = {
   default: async (event: RequestEvent) => {
-    const data = await event.request.formData();
+    const formData = await event.request.formData();
 
-    const password = data.get("password")?.toString();
-    const email = data.get("email")?.toString();
-    const name = data.get("name")?.toString();
-    const surname = data.get("surname")?.toString();
-    const phone = data.get("phone")?.toString();
-    const image = data.get("image")?.toString();
-
-    const errs = await validateSchema(registerSchema, {
-      email,
-      password,
-      name,
-      surname,
-      phone,
-      image,
+    const data: any = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
     });
+
+    const errs = await validateSchema(registerSchema, data);
 
     console.log(errs);
 
     if (
-      errs.length > 0 ||
-      !email ||
-      !password ||
-      !name ||
-      !surname ||
-      !phone ||
-      !image
+      errs.length > 0
     ) {
       return fail(400, {
-        email,
-        name,
-        surname,
-        phone,
-        image,
+        data,
         errors: errs,
       });
     }
@@ -68,7 +49,7 @@ export const actions = {
     `);
 
     let res = await register.mutate(
-      { email, password, name, surname, image, phone },
+      { email: data.email, password: data.password, name: data.name, surname: data.surname, image: data.image, phone: data.phone },
       { event }
     );
     console.log(res);
@@ -77,11 +58,7 @@ export const actions = {
       redirect(302, "/login");
     } else {
       return fail(400, {
-        email,
-        name,
-        surname,
-        phone,
-        image,
+        data,
         errors: [
           { field: "email", message: "Invalid email or password" },
           { field: "password", message: "Invalid email or password" },
