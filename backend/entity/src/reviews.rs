@@ -10,9 +10,10 @@ pub struct Model {
     pub id: i32,
     pub created_at: NaiveDateTime,
     pub user_id: i32,
+    #[sea_orm(unique)]
     pub advert_id: i32,
     pub message: String,
-    pub rating: i8,
+    pub rating: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

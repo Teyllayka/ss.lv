@@ -63,6 +63,7 @@ pub struct Context {
     pub db: DatabaseConnection,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
+    pub brevo_key: String,
 }
 
 impl Context {
@@ -70,11 +71,13 @@ impl Context {
         db: DatabaseConnection,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
+        brevo_key: String,
     ) -> Self {
         Self {
             db,
             access_key,
             refresh_key,
+            brevo_key
         }
     }
 }
@@ -182,6 +185,7 @@ async fn main() -> std::io::Result<()> {
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("HOME environment variable not found");
     let access_secret = dotenvy::var("ACCESS_SECRET").expect("HOME environment variable not found");
+    let brevo_key = dotenvy::var("BREVO_API_KEY").expect("HOME environment variable not found");
     let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
@@ -208,6 +212,7 @@ async fn main() -> std::io::Result<()> {
                 db.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
+                brevo_key.clone(),
             ))
             .finish();
         let cors = Cors::default()

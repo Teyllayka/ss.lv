@@ -61,7 +61,7 @@ impl AdvertQuery {
         };
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Ok(AdvertWithUser {
                     advert,
@@ -134,7 +134,7 @@ impl AdvertQuery {
         }
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Ok(adverts);
             }
@@ -205,7 +205,7 @@ impl AdvertQuery {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -268,7 +268,7 @@ impl AdvertMutation {
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
-        price: f32,
+        #[graphql(validator(minimum = 0))] price: f32,
         location: String,
         title: String,
         description: String,
@@ -277,7 +277,7 @@ impl AdvertMutation {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -373,7 +373,7 @@ impl AdvertMutation {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -414,7 +414,7 @@ impl AdvertMutation {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -451,7 +451,7 @@ impl AdvertMutation {
     async fn create_advert(
         &self,
         ctx: &async_graphql::Context<'_>,
-        price: f32,
+        #[graphql(validator(minimum = 0))] price: f32,
         location: String,
         title: String,
         description: String,
@@ -462,7 +462,7 @@ impl AdvertMutation {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -541,7 +541,7 @@ impl AdvertMutation {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -586,13 +586,13 @@ impl AdvertMutation {
         &self,
         ctx: &async_graphql::Context<'_>,
         advert_id: i32,
-        rating: i8,
+        #[graphql(validator(maximum = 5, minimum = 1))] rating: i32,
         message: String,
     ) -> Result<reviews::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -606,6 +606,20 @@ impl AdvertMutation {
         };
 
         let user_id = claims["id"].parse::<i32>().unwrap();
+
+        let adv = Advert::find_by_id(advert_id).one(&my_ctx.db).await?;
+        
+        let new_advert = match adv {
+            Some(a) => a,
+            None => return Err(async_graphql::Error::new("advert not found".to_string())),
+        };
+
+
+        if new_advert.user_id == user_id {
+            return Err(async_graphql::Error::new("You can't review your own advert".to_string()));
+        }
+
+        
 
         let review = reviews::ActiveModel {
             advert_id: Set(advert_id),

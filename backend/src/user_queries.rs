@@ -23,6 +23,7 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
+use serde_json::json;
 
 
 const ACCESS_EXPIRATION: usize = 100;
@@ -112,7 +113,7 @@ impl UserMutation {
     async fn register(
         &self,
         ctx: &async_graphql::Context<'_>,
-        email: String,
+        #[graphql(validator(email))] email: String,
         password: String,
         surname: String,
         name: String,
@@ -150,6 +151,37 @@ impl UserMutation {
         };
 
         let user: user::Model = user.insert(&my_ctx.db).await?;
+
+        
+        let payload = json!({
+            "sender": {
+                "name": "John Doe",
+                "email": "johndoe@example.com"
+            },
+            "to": [
+                {
+                    "email": user.email,
+                }
+            ],
+            "subject": "Hello from Sendinblue",
+            "htmlContent": "<p>This is a test email</p>"
+        });
+
+        
+
+        let client = reqwest::Client::new();
+        let response = client
+            .post("https://api.sendinblue.com/v3/smtp/email")
+            .header("api-key", my_ctx.brevo_key.clone())
+            .header("Accept", "application/json")
+            .json(&payload)
+            .send()
+            .await?;
+
+        println!("{:?}", response);
+
+        // Handle the response here
+
 
         return Ok(user);
     }

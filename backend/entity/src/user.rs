@@ -18,6 +18,7 @@ pub struct Model {
     pub phone: String,
     pub balance: f32,
     pub is_admin: bool,
+    pub email_verified: bool,
     #[graphql(visible = false)]
     pub password_hash: String,
     #[graphql(visible = false)]

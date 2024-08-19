@@ -38,6 +38,12 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default("false"),
                     )
+                    .col(
+                        ColumnDef::new(User::EmailVerified)
+                            .boolean()
+                            .not_null()
+                            .default("false"),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -156,7 +162,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(Reviews::UserId).integer().not_null())
-                    .col(ColumnDef::new(Reviews::AdvertId).integer().not_null())
+                    .col(ColumnDef::new(Reviews::AdvertId).integer().not_null().unique_key())
                     .col(ColumnDef::new(Reviews::Rating).integer().not_null())
                     .col(ColumnDef::new(Reviews::Message).string().not_null())
                     .foreign_key(
@@ -229,6 +235,7 @@ enum User {
     PasswordHash,
     RefreshToken,
     IsAdmin,
+    EmailVerified,
 }
 
 #[derive(DeriveIden)]
