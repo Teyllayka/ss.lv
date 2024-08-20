@@ -63,7 +63,9 @@ pub struct Context {
     pub db: DatabaseConnection,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
-    pub brevo_key: String,
+    pub email_key: Hmac<Sha256>,
+    pub username: String,
+    pub password: String,
 }
 
 impl Context {
@@ -71,13 +73,17 @@ impl Context {
         db: DatabaseConnection,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
-        brevo_key: String,
+        email_key: Hmac<Sha256>,
+        username: String,
+        password: String,
     ) -> Self {
         Self {
             db,
             access_key,
             refresh_key,
-            brevo_key
+            email_key,
+            username,
+            password,
         }
     }
 }
@@ -185,7 +191,8 @@ async fn main() -> std::io::Result<()> {
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("HOME environment variable not found");
     let access_secret = dotenvy::var("ACCESS_SECRET").expect("HOME environment variable not found");
-    let brevo_key = dotenvy::var("BREVO_API_KEY").expect("HOME environment variable not found");
+    let username = dotenvy::var("MAILJET_USERNAME").expect("HOME environment variable not found");
+    let password = dotenvy::var("MAILJET_PASSWORD").expect("HOME environment variable not found");
     let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
@@ -203,7 +210,7 @@ async fn main() -> std::io::Result<()> {
 
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
-
+    let email_key: Hmac<Sha256> = Hmac::new_from_slice(username.as_bytes()).unwrap();
    
 
     HttpServer::new(move || {
@@ -212,7 +219,9 @@ async fn main() -> std::io::Result<()> {
                 db.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
-                brevo_key.clone(),
+                email_key.clone(),
+                username.clone(),
+                password.clone()
             ))
             .finish();
         let cors = Cors::default()

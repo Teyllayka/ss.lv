@@ -152,28 +152,50 @@ impl UserMutation {
 
         let user: user::Model = user.insert(&my_ctx.db).await?;
 
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        let expiration = now + (ACCESS_EXPIRATION * 60); // 1 minutes from now
+        let expiration = expiration.to_string();
+        let mut email_verif = BTreeMap::new();
+        email_verif.insert("sub", "someone");
+        email_verif.insert("email", &user.email);
+        email_verif.insert("exp", &expiration);
+        let verification = match email_verif.sign_with_key(&my_ctx.email_key) {
+            Ok(token) => token,
+            Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+        };
+
         
         let payload = json!({
-            "sender": {
-                "name": "John Doe",
-                "email": "johndoe@example.com"
-            },
-            "to": [
+            "Messages": [
                 {
-                    "email": user.email,
+                    "From": {
+                        "Email": &user.email,
+                        "Name": "Adee"
+                    },
+                    "To": [
+                        {
+                            "Email": "teyylayt@gmail.com",
+                            "Name": "You"
+                        }
+                    ],
+                    "Subject": "My first Mailjet Email!",
+                    "TextPart": "Greetings from Mailjet!",
+                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/\">Mailjet</a>!</h3><br />May the delivery force be with you! {:?}", verification)
                 }
-            ],
-            "subject": "Hello from Sendinblue",
-            "htmlContent": "<p>This is a test email</p>"
-        });
+            ]
+        }
+        );
 
         
 
         let client = reqwest::Client::new();
         let response = client
-            .post("https://api.sendinblue.com/v3/smtp/email")
-            .header("api-key", my_ctx.brevo_key.clone())
-            .header("Accept", "application/json")
+            .post("https://api.mailjet.com/v3.1/send")
+            .header("Accept", "application/json").basic_auth(my_ctx.username.clone(), Some(my_ctx.password.clone()))
             .json(&payload)
             .send()
             .await?;
@@ -419,6 +441,56 @@ impl UserMutation {
             refresh_token,
             access_token,
         });
+    }
+
+
+
+    async fn verify_email(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        token: String,
+    ) -> Result<String, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let claims: BTreeMap<String, String> =
+            match token.verify_with_key(&my_ctx.email_key) {
+                Ok(res) => res,
+                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+            };
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+
+        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+            return Err(async_graphql::Error::new(
+                "wrong token".to_string(),
+            ));
+        }
+
+        let email = claims["email"].clone();
+
+        let user: Option<user::Model> = User::find_by_email(email).one(&my_ctx.db).await?;
+
+        let user = match user {
+            Some(user) => user,
+            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        };
+
+        if user.email_verified {
+            return Err(async_graphql::Error::new("Email already verified".to_string()));
+        }
+
+        user::ActiveModel {
+            id: Set(user.id),
+            email_verified: Set(true),
+            ..Default::default()
+        }
+        .update(&my_ctx.db)
+        .await?;
+
+        return Ok("Email verified".to_string());
     }
 
     
