@@ -1,9 +1,15 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { writable } from "svelte/store";
   import type { LayoutData } from "./$houdini";
+  import { setContext } from "svelte";
   export let data: LayoutData;
 
   $: ({ HeaderMe } = data);
+
+  $: emailVerified.set($HeaderMe.data?.me.emailVerified || false);
+
+  const emailVerified = writable(false);
 </script>
 
 <header>

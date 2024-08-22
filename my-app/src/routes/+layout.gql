@@ -3,6 +3,7 @@ query HeaderMe {
     id
     name
     email
+    emailVerified
 
     adverts {
       id
