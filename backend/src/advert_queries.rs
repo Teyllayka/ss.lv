@@ -475,6 +475,19 @@ impl AdvertMutation {
             Err(err) => return Err(err),
         };
 
+        let id = claims["id"].parse::<i32>().unwrap();
+
+        let user_q: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+        match user_q {
+            Some(user) => {
+                if !user.email_verified {
+                    return Err(async_graphql::Error::new("You are not verified".to_string()));
+                }
+            }
+            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        }
+
         let naive_date_time = Utc::now().naive_utc();
 
         let photo_url = photos[0].clone();

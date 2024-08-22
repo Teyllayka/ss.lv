@@ -184,7 +184,7 @@ impl UserMutation {
                     ],
                     "Subject": "My first Mailjet Email!",
                     "TextPart": "Greetings from Mailjet!",
-                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/\">Mailjet</a>!</h3><br />May the delivery force be with you! {:?}", verification)
+                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/{}\">Mailjet</a>!</h3><br />May the delivery force be with you! ", verification)
                 }
             ]
         }
