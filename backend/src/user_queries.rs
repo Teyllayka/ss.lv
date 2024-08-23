@@ -168,17 +168,19 @@ impl UserMutation {
             Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
+        println!("{:?}", verification);
+
         
         let payload = json!({
             "Messages": [
                 {
                     "From": {
-                        "Email": &user.email,
+                        "Email": "kris06383@gmail.com",
                         "Name": "Adee"
                     },
                     "To": [
                         {
-                            "Email": "teyylayt@gmail.com",
+                            "Email": &user.email,
                             "Name": "You"
                         }
                     ],

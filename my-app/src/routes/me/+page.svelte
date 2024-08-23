@@ -3,6 +3,10 @@
   export let data: PageData;
   import Advert from "$lib/components/Advert.svelte";
 
+  function verify() {
+
+  }
+
   $: ({ me } = data);
 
   $: adverts = $me.data?.me.adverts || [];
@@ -30,6 +34,11 @@
   err...
 {:else}
   {JSON.stringify($me.data)}
+
+  {#if !$me?.data?.me.emailVerified}
+    <h1>Your email is not verified</h1>
+    <button on:click={() => verify()}>verify</button>
+  {/if}
 
   <section class="adverts">
     {#each adverts as advert}

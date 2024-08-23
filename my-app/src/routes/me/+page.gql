@@ -3,6 +3,7 @@ query me {
     id
     name
     email
+    emailVerified
 
     adverts {
       id

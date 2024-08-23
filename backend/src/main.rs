@@ -187,13 +187,13 @@ struct Mutation(UserMutation, AdvertMutation);
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().expect(".env file not found");
-    let db_url = dotenvy::var("DATABASE_URL").expect("HOME environment variable not found");
+    let db_url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
     let refresh_secret =
-        dotenvy::var("REFRESH_SECRET").expect("HOME environment variable not found");
-    let access_secret = dotenvy::var("ACCESS_SECRET").expect("HOME environment variable not found");
-    let username = dotenvy::var("MAILJET_USERNAME").expect("HOME environment variable not found");
-    let password = dotenvy::var("MAILJET_PASSWORD").expect("HOME environment variable not found");
-    let port = (dotenvy::var("BACKEND_PORT").expect("HOME environment variable not found"))
+        dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
+    let access_secret = dotenvy::var("ACCESS_SECRET").expect("ACCESS_SECRET environment variable not found");
+    let username = dotenvy::var("MAILJET_USERNAME").expect("MAILJET_USERNAME environment variable not found");
+    let password = dotenvy::var("MAILJET_PASSWORD").expect("MAILJET_PASSWORD environment variable not found");
+    let port = (dotenvy::var("BACKEND_PORT").expect("BACKEND_PORT environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
     tracing_subscriber::fmt()
