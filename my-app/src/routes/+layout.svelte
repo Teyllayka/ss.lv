@@ -8,7 +8,6 @@
   $: ({ HeaderMe } = data);
   
 
-  $: console.log($HeaderMe.data);
 
   $: user.set({
     emailVerified: $HeaderMe.data?.me.emailVerified || false,

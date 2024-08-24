@@ -1,4 +1,6 @@
-import { redirect, type RequestEvent } from "@sveltejs/kit";
+import { graphql } from "$houdini";
+import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
+import { user } from "$lib/userStore";
 
 export function load({ cookies }: any) {
   const logedIn = cookies.get("accessToken");
@@ -9,45 +11,43 @@ export function load({ cookies }: any) {
 }
 
 export const actions = {
-  // verify: async (event: RequestEvent) => {
-  //   const register = graphql(`
-  //     mutation register(
-  //       $email: String!
-  //       $image: String!
-  //       $name: String!
-  //       $password: String!
-  //       $phone: String!
-  //       $surname: String!
-  //     ) {
-  //       register(
-  //         email: $email
-  //         image: $image
-  //         name: $name
-  //         password: $password
-  //         phone: $phone
-  //         surname: $surname
-  //       ) {
-  //         id
-  //       }
-  //     }
-  //   `);
+  verify: async (event: RequestEvent) => {
 
-  //   let res = await register.mutate(
-  //     { email: data.email, password: data.password, name: data.name, surname: data.surname, image: data.image, phone: data.phone },
-  //     { event }
-  //   );
-  //   console.log(res);
+    console.log("verify");
 
-  //   if (!res.errors && res.data) {
-  //     redirect(302, "/login");
-  //   } else {
-  //     return fail(400, {
-  //       data,
-  //       errors: [
-  //         { field: "email", message: "Invalid email or password" },
-  //         { field: "password", message: "Invalid email or password" },
-  //       ],
-  //     });
-  //   }
-  // },
+    let userValue: any;
+  
+    user.subscribe((value) => {
+      userValue = value;
+    });
+    
+    
+    console.log(userValue);
+    
+    if(userValue?.emailVerified) {
+      return {success: false}
+    }
+
+
+
+    const resendEmail = graphql(`
+      mutation resendEmail {
+        resendEmail
+      }
+    `);
+
+    let res = await resendEmail.mutate(
+      null,
+      { event }
+    );
+    console.log(res);
+
+    if (!res.errors && res.data) {
+      return {sucess: true}
+    } else {
+      return fail(400, {
+        errors: res.errors,
+      });
+    }
+  },
 };

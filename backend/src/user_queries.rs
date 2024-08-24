@@ -495,5 +495,93 @@ impl UserMutation {
         return Ok("Email verified".to_string());
     }
 
+
+    async fn resend_email(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> Result<String, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
+
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
+
+        let id: i32 = claims["id"].parse().unwrap();
+        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+        let user = match user {
+            Some(user) => user,
+            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        };
+
+        if user.email_verified {
+            return Err(async_graphql::Error::new("Email already verified".to_string()));
+        }
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        let expiration = now + (ACCESS_EXPIRATION * 60); // 1 minutes from now
+        let expiration = expiration.to_string();
+        let mut email_verif = BTreeMap::new();
+        email_verif.insert("sub", "someone");
+        email_verif.insert("email", &user.email);
+        email_verif.insert("exp", &expiration);
+        let verification = match email_verif.sign_with_key(&my_ctx.email_key) {
+            Ok(token) => token,
+            Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+        };
+
+        println!("{:?}", verification);
+
+        let payload = json!({
+            "Messages": [
+                {
+                    "From": {
+                        "Email": "kris06383@gmail.com",
+                        "Name": "Adee"
+                    },
+                    "To": [
+                        {
+                            "Email": &user.email,
+                            "Name": "You"
+                        }
+                    ],
+                    "Subject": "My first Mailjet Email!",
+                    "TextPart": "Greetings from Mailjet!",
+                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/{}\">Mailjet</a>!</h3><br />May the delivery force be with you! ", verification)
+                }
+            ]
+        }
+        );
+
+        
+
+        let client = reqwest::Client::new();
+        let response = client
+            .post("https://api.mailjet.com/v3.1/send")
+            .header("Accept", "application/json").basic_auth(my_ctx.username.clone(), Some(my_ctx.password.clone()))
+            .json(&payload)
+            .send()
+            .await?;
+
+        println!("{:?}", response);
+
+
+
+        return Ok("Email sent".to_string());
+    }
+
     
 }

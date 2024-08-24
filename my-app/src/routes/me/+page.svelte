@@ -4,7 +4,12 @@
   import Advert from "$lib/components/Advert.svelte";
 
   function verify() {
-
+    fetch('?/verify', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }).then((res) => res.json()).then((data) => {
+      console.log(data);
+    });
   }
 
   $: ({ me } = data);

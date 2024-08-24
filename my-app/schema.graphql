@@ -42,6 +42,7 @@ type Mutation {
   refresh(refreshToken: String!): LoginResponse!
   register(email: String!, image: String!, name: String!, password: String!, phone: String!, surname: String!): User!
   removeFavorite(advertId: Int!): favorites!
+  resendEmail: String!
   verifyEmail(token: String!): String!
   writeReview(advertId: Int!, message: String!, rating: Int!): reviews!
 }
