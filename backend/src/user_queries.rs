@@ -1,9 +1,9 @@
 use std::{
-    collections::BTreeMap,
-    time::{SystemTime, UNIX_EPOCH},
+    collections::BTreeMap,  time::{SystemTime, UNIX_EPOCH}
 };
 
 use crate::{verify_access_token, Context, Token};
+use lettre::{message::{header, MultiPart, SinglePart}, transport::smtp::authentication::Credentials, Message, SmtpTransport, Transport};
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -24,6 +24,7 @@ use argon2::{
     Argon2,
 };
 use serde_json::json;
+
 
 
 const ACCESS_EXPIRATION: usize = 100;
@@ -170,39 +171,39 @@ impl UserMutation {
 
         println!("{:?}", verification);
 
-        
-        let payload = json!({
-            "Messages": [
-                {
-                    "From": {
-                        "Email": "kris06383@gmail.com",
-                        "Name": "Adee"
-                    },
-                    "To": [
-                        {
-                            "Email": &user.email,
-                            "Name": "You"
-                        }
-                    ],
-                    "Subject": "My first Mailjet Email!",
-                    "TextPart": "Greetings from Mailjet!",
-                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/{}\">Mailjet</a>!</h3><br />May the delivery force be with you! ", verification)
-                }
-            ]
-        }
-        );
+
 
         
+     let body = json!({
+        "from": {
+           "email":"mailtrap@demomailtrap.com",
+           "name":"Mailtrap Test"
+        },
+        "to": [
+            {
+                "email": "teyylayt@gmail.com",
+            }
+        ],
+        "subject": "You are awesome!",
+        "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", user.name, verification),
+        "category": "Integration Test"
+    });
 
-        let client = reqwest::Client::new();
-        let response = client
-            .post("https://api.mailjet.com/v3.1/send")
-            .header("Accept", "application/json").basic_auth(my_ctx.username.clone(), Some(my_ctx.password.clone()))
-            .json(&payload)
-            .send()
-            .await?;
+    let response = reqwest::Client::new()
+        .post("https://send.api.mailtrap.io/api/send")
+        .bearer_auth("d794d8c07332f65148182a29622b0b8e")
+        .json(&body)
+        .send()
+        .await?;
 
-        println!("{:?}", response);
+    if response.status().is_success() {
+        println!("Email sent successfully!");
+    } else {
+        println!("Failed to send email: {}", response.text().await?);
+    }
+
+
+        
 
         // Handle the response here
 
@@ -545,38 +546,34 @@ impl UserMutation {
 
         println!("{:?}", verification);
 
-        let payload = json!({
-            "Messages": [
+        let body = json!({
+            "from": {
+               "email":"mailtrap@demomailtrap.com",
+               "name":"Mailtrap Test"
+            },
+            "to": [
                 {
-                    "From": {
-                        "Email": "kris06383@gmail.com",
-                        "Name": "Adee"
-                    },
-                    "To": [
-                        {
-                            "Email": &user.email,
-                            "Name": "You"
-                        }
-                    ],
-                    "Subject": "My first Mailjet Email!",
-                    "TextPart": "Greetings from Mailjet!",
-                    "HTMLPart": format!("<h3>Dear passenger 1, welcome to <a href=\"http://localhost:5173/verify_email/{}\">Mailjet</a>!</h3><br />May the delivery force be with you! ", verification)
+                    "email": "teyylayt@gmail.com",
                 }
-            ]
-        }
-        );
-
-        
-
-        let client = reqwest::Client::new();
-        let response = client
-            .post("https://api.mailjet.com/v3.1/send")
-            .header("Accept", "application/json").basic_auth(my_ctx.username.clone(), Some(my_ctx.password.clone()))
-            .json(&payload)
+            ],
+            "subject": "You are awesome!",
+            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", user.name, verification),
+            "category": "Integration Test"
+        });
+    
+        let response = reqwest::Client::new()
+            .post("https://send.api.mailtrap.io/api/send")
+            .bearer_auth("d794d8c07332f65148182a29622b0b8e")
+            .json(&body)
             .send()
             .await?;
-
-        println!("{:?}", response);
+    
+        if response.status().is_success() {
+            println!("Email sent successfully!");
+        } else {
+            println!("Failed to send email: {}", response.text().await?);
+        }
+    
 
 
 
