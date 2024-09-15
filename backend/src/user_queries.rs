@@ -3,7 +3,6 @@ use std::{
 };
 
 use crate::{verify_access_token, Context, Token};
-use lettre::{message::{header, MultiPart, SinglePart}, transport::smtp::authentication::Credentials, Message, SmtpTransport, Transport};
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -140,9 +139,9 @@ impl UserMutation {
         let user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
-            email: Set(email),
-            phone: Set(phone),
-            password_hash: Set(parsed_hash.to_string()),
+            email: Set(Some(email)),
+            phone: Set(Some(phone)),
+            password_hash: Set(Some(parsed_hash.to_string())),
             created_at: Set(naive_date_time),
             updated_at: Set(naive_date_time),
             refresh_token: Set(None),
@@ -162,7 +161,7 @@ impl UserMutation {
         let expiration = expiration.to_string();
         let mut email_verif = BTreeMap::new();
         email_verif.insert("sub", "someone");
-        email_verif.insert("email", &user.email);
+        email_verif.insert("email", user.email.as_deref().unwrap_or("default_email"));
         email_verif.insert("exp", &expiration);
         let verification = match email_verif.sign_with_key(&my_ctx.email_key) {
             Ok(token) => token,
@@ -232,12 +231,17 @@ impl UserMutation {
 
         let argon2 = Argon2::default();
 
-        let response = argon2
-            .verify_password(
-                password.as_bytes(),
-                &PasswordHash::new(&user.password_hash).unwrap(),
-            )
-            .is_ok();
+        let response = if let Some(password_hash) = &user.password_hash {
+            argon2
+                .verify_password(
+                    password.as_bytes(),
+                    &PasswordHash::new(password_hash).unwrap(),
+                )
+                .is_ok()
+        } else {
+            false // Handle case when password_hash is None or contains None
+        };
+        
 
         if !response {
             return Err(async_graphql::Error::new(
@@ -256,7 +260,7 @@ impl UserMutation {
         let expiration2 = expiration2.to_string();
 
         let id = user.id.to_string();
-        let email = user.email.to_string();
+        let email = user.email.expect("Email should not be None").to_string();
 
         refresh_claims.insert("sub", "someone");
         refresh_claims.insert("id", &id);
@@ -333,12 +337,16 @@ impl UserMutation {
 
         let argon2 = Argon2::default();
 
-        let response = argon2
-            .verify_password(
-                password.as_bytes(),
-                &PasswordHash::new(&user.password_hash).unwrap(),
-            )
-            .is_ok();
+        let response = if let Some(password_hash) = &user.password_hash {
+            argon2
+                .verify_password(
+                    password.as_bytes(),
+                    &PasswordHash::new(password_hash).unwrap(),
+                )
+                .is_ok()
+        } else {
+            false // Handle case when password_hash is None or contains None
+        };
 
         if !response {
             return Err(async_graphql::Error::new(
@@ -349,7 +357,7 @@ impl UserMutation {
         let mut user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
-            phone: Set(phone),
+            phone: Set(Some(phone)),
             ..user.into()
         };
 
@@ -410,7 +418,7 @@ impl UserMutation {
         let expiration2 = expiration2.to_string();
 
         let id = user.id.to_string();
-        let email = user.email.to_string();
+        let email = user.email.expect("Email should not be None").to_string();
 
         refresh_claims.insert("sub", "someone");
         refresh_claims.insert("id", &id);
@@ -537,7 +545,7 @@ impl UserMutation {
         let expiration = expiration.to_string();
         let mut email_verif = BTreeMap::new();
         email_verif.insert("sub", "someone");
-        email_verif.insert("email", &user.email);
+        email_verif.insert("email", user.email.as_deref().unwrap_or("default_email"));
         email_verif.insert("exp", &expiration);
         let verification = match email_verif.sign_with_key(&my_ctx.email_key) {
             Ok(token) => token,
