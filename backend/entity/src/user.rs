@@ -2,8 +2,6 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
-/// The `User` entity represents the `user` table in the database.
-/// It integrates with GraphQL via `async_graphql` and SeaORM for ORM functionality.
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[sea_orm(table_name = "user")]
 #[graphql(name = "User")]
@@ -24,8 +22,6 @@ pub struct Model {
     pub email_verified: bool,
     #[graphql(visible = false)]
     pub password_hash: Option<String>,
-    #[graphql(visible = false)]
-    pub refresh_token: Option<String>,
     #[sea_orm(ignore)]
     pub adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]

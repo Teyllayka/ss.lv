@@ -456,7 +456,7 @@ impl AdvertMutation {
         title: String,
         description: String,
         category: String,
-        photos: Vec<String>,
+        #[graphql(validator(list, min_items=1))]  photos: Vec<String>,
         data: Json<serde_json::Value>,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();

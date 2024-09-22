@@ -23,6 +23,10 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
+use stripe::{
+    Client, CreatePaymentLink, CreatePaymentLinkLineItems, CreatePrice, CreateProduct, Currency,
+    IdOrCreate, PaymentLink, Price, Product,
+};
 use serde_json::json;
 
 
@@ -145,7 +149,6 @@ impl UserMutation {
             password_hash: Set(Some(parsed_hash.to_string())),
             created_at: Set(naive_date_time),
             updated_at: Set(naive_date_time),
-            refresh_token: Set(None),
             balance: Set(0.0),
             avatar_url: Set(image),
             ..Default::default()
@@ -594,6 +597,74 @@ impl UserMutation {
 
 
         return Ok("Email sent".to_string());
+    }
+
+
+    async fn top_up_balance(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        amount: i32,
+    ) -> Result<user::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
+
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
+
+        let id: i32 = claims["id"].parse().unwrap();
+        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+        let mut user = match user {
+            Some(user) => user,
+            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        };
+
+        let client = Client::new(my_ctx.stripe_secret.clone());
+
+        let product = {
+            let mut create_product = CreateProduct::new("Top up");
+            Product::create(&client, create_product).await.unwrap()
+        };
+    
+
+
+        let price = {
+            let mut create_price = CreatePrice::new(Currency::EUR);
+            create_price.product = Some(IdOrCreate::Id(&product.id));
+            create_price.unit_amount = Some((amount * 100).into());
+            create_price.expand = &["product"];
+            create_price.metadata = Some(json!({"user_id": user.id}));
+            Price::create(&client, create_price).await.unwrap()
+        };
+    
+      
+    
+        let payment_link = PaymentLink::create(
+            &client,
+            CreatePaymentLink::new(vec![CreatePaymentLinkLineItems {
+                quantity: 1,
+                price: price.id.to_string(),
+                ..Default::default()
+            }]),
+        )
+        .await
+        .unwrap();
+
+
+        println!("{:?}", payment_link);
+
+
+        return Ok(user);
     }
 
     

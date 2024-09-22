@@ -27,7 +27,6 @@ use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use deadpool_redis::{Config, Pool, Runtime};
 
 
-
 pub fn verify_access_token(
     access_token: String,
     access_key: &Hmac<Sha256>,
@@ -64,6 +63,7 @@ pub struct Statistics {
 pub struct Context {
     pub db: DatabaseConnection,
     pub redis_pool: Pool,
+    pub stripe_secret: String,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
     pub email_key: Hmac<Sha256>,
@@ -75,6 +75,7 @@ impl Context {
     pub fn new(
         db: DatabaseConnection,
         redis_pool: Pool,
+        stripe_secret: String,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
         email_key: Hmac<Sha256>,
@@ -84,6 +85,7 @@ impl Context {
         Self {
             db,
             redis_pool,
+            stripe_secret,
             access_key,
             refresh_key,
             email_key,
@@ -182,6 +184,15 @@ async fn index(
     schema.execute(request).await.into()
 }
 
+
+async fn webhook(req: HttpRequest) -> HttpResponse {
+    let body = req.body();
+    let body = web::block(move || async move { body }).await.unwrap();
+    let body = String::from_utf8(body.to_vec()).unwrap();
+    println!("Webhook body: {}", body);
+    HttpResponse::Ok().finish()
+}
+
 async fn index_graphiql() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
@@ -199,6 +210,7 @@ async fn main() -> std::io::Result<()> {
     dotenv().expect(".env file not found");
     let db_url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
     let redis_url = dotenvy::var("REDIS_URL").expect("REDIS_URL environment variable not found");
+    let stripe = dotenvy::var("STRIPE_SECRET").expect("STRIPE_SECRET environment variable not found");
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
     let access_secret = dotenvy::var("ACCESS_SECRET").expect("ACCESS_SECRET environment variable not found");
@@ -215,7 +227,7 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("error with connection");
 
-    Migrator::up(&db, None).await.expect("migration ban");
+    Migrator::up(&db, None).await.expect("Migration error");
 
     println!("GraphiQL IDE: http://localhost:{}/", port);
 
@@ -232,6 +244,7 @@ async fn main() -> std::io::Result<()> {
             .data(Context::new(
                 db.clone(),
                 pool.clone(),
+                stripe.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
                 email_key.clone(),
@@ -252,6 +265,9 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/")
                     .guard(guard::Post())
                     .to(index),
+                
+            ).service(
+                web::resource("/webhook").guard(guard::Post()).to(webhook),
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })

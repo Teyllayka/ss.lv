@@ -21,7 +21,6 @@ class User(Base):
     phone = Column(String, nullable=False)
     balance = Column(Float, nullable=False, default=0.0)
     password_hash = Column(String, nullable=False)
-    refresh_token = Column(String, nullable=True)
     is_admin = Column(Boolean, nullable=False, default=False)
     email_verified = Column(Boolean, nullable=False, default=False)
     telegram_id = Column(Integer, nullable=True)
