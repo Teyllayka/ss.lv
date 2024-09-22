@@ -4,6 +4,7 @@ mod advert_queries;
 use user_queries::{UserMutation, UserQuery};
 use advert_queries::{AdvertMutation, AdvertQuery};
 
+
 use std::{collections::BTreeMap, time::{SystemTime, UNIX_EPOCH}};
 use actix_cors::Cors;
 use dotenvy::dotenv;
@@ -23,6 +24,7 @@ use sha2::Sha256;
 use jwt::VerifyWithKey;
 use actix_web::HttpRequest;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
+use deadpool_redis::{Config, Pool, Runtime};
 
 
 
@@ -61,6 +63,7 @@ pub struct Statistics {
 
 pub struct Context {
     pub db: DatabaseConnection,
+    pub redis_pool: Pool,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
     pub email_key: Hmac<Sha256>,
@@ -71,6 +74,7 @@ pub struct Context {
 impl Context {
     pub fn new(
         db: DatabaseConnection,
+        redis_pool: Pool,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
         email_key: Hmac<Sha256>,
@@ -79,6 +83,7 @@ impl Context {
     ) -> Self {
         Self {
             db,
+            redis_pool,
             access_key,
             refresh_key,
             email_key,
@@ -100,6 +105,11 @@ impl QueryRoot {
     ) -> Result<Statistics, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
+        // let mut conn = my_ctx.redis_pool.get().await.unwrap();
+        // cmd("SET")
+        // .arg(&["deadpool/test_key", "42"])
+        // .query_async::<()>(&mut conn)
+        // .await.unwrap();
 
         let users = User::find();
 
@@ -188,6 +198,7 @@ struct Mutation(UserMutation, AdvertMutation);
 async fn main() -> std::io::Result<()> {
     dotenv().expect(".env file not found");
     let db_url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
+    let redis_url = dotenvy::var("REDIS_URL").expect("REDIS_URL environment variable not found");
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
     let access_secret = dotenvy::var("ACCESS_SECRET").expect("ACCESS_SECRET environment variable not found");
@@ -211,12 +222,16 @@ async fn main() -> std::io::Result<()> {
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
     let email_key: Hmac<Sha256> = Hmac::new_from_slice(username.as_bytes()).unwrap();
+    let cfg = Config::from_url(redis_url);
+    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+
    
 
     HttpServer::new(move || {
         let schema = Schema::build(Query::default(), Mutation::default(), EmptySubscription)
             .data(Context::new(
                 db.clone(),
+                pool.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
                 email_key.clone(),

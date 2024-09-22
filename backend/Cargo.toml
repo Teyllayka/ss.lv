@@ -29,3 +29,5 @@ serde_json = "1.0.125"
 serde = "1.0.208"
 reqwest = {version = "0.12.6", features = ["json"]}
 lettre = "0.10.0-rc.3"
+deadpool-redis = "0.18.0"
+

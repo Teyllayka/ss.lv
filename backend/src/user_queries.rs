@@ -3,6 +3,7 @@ use std::{
 };
 
 use crate::{verify_access_token, Context, Token};
+use deadpool_redis::redis::cmd;
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -200,13 +201,6 @@ impl UserMutation {
     } else {
         println!("Failed to send email: {}", response.text().await?);
     }
-
-
-        
-
-        // Handle the response here
-
-
         return Ok(user);
     }
 
@@ -282,13 +276,20 @@ impl UserMutation {
             Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
-        user::ActiveModel {
-            id: Set(user.id),
-            refresh_token: Set(Some(refresh_token.clone())),
-            ..Default::default()
-        }
-        .update(&my_ctx.db)
-        .await?;
+        // user::ActiveModel {
+        //     id: Set(user.id),
+        //     refresh_token: Set(Some(refresh_token.clone())),
+        //     ..Default::default()
+        // }
+        // .update(&my_ctx.db)
+        // .await?;
+
+
+        let mut conn = my_ctx.redis_pool.get().await.unwrap();
+        cmd("SET")
+        .arg(&[user.id.to_string(), refresh_token.clone(), "EX".to_string(), expiration2.to_string()])
+        .query_async::<()>(&mut conn)
+        .await.unwrap();
 
 
         ctx.append_http_header("Set-Cookie", format!("refresh_token={}", refresh_token));
@@ -403,7 +404,17 @@ impl UserMutation {
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         };
 
-        if user.refresh_token != Some(refresh_token.clone()) {
+
+        let mut conn = my_ctx.redis_pool.get().await.unwrap();
+        let token: String = cmd("GET")
+            .arg(&[user.id.to_string()])
+            .query_async(&mut conn)
+            .await.unwrap();
+
+
+
+
+        if refresh_token != token {
             return Err(async_graphql::Error::new("Wrong token".to_string()));
         }
 
@@ -440,13 +451,10 @@ impl UserMutation {
             Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
-        user::ActiveModel {
-            id: Set(user.id),
-            refresh_token: Set(Some(refresh_token.clone())),
-            ..Default::default()
-        }
-        .update(&my_ctx.db)
-        .await?;
+        cmd("SET")
+        .arg(&[user.id.to_string(), refresh_token.clone(),  "EX".to_string(), expiration2.to_string()])
+        .query_async::<()>(&mut conn)
+        .await.unwrap();
 
         return Ok(LoginResponse {
             refresh_token,
