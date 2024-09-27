@@ -15,6 +15,7 @@ use chrono::Utc;
 use entity::{
     advert::{self, Entity as Advert},
     user::{self, Entity as User},
+    payment::{self, Entity as Payment},
 };
 use jwt::SignWithKey;
 use jwt::VerifyWithKey;
@@ -604,7 +605,7 @@ impl UserMutation {
         &self,
         ctx: &async_graphql::Context<'_>,
         amount: i32,
-    ) -> Result<user::Model, async_graphql::Error> {
+    ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
@@ -624,7 +625,7 @@ impl UserMutation {
         let id: i32 = claims["id"].parse().unwrap();
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
-        let mut user = match user {
+        let  user = match user {
             Some(user) => user,
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         };
@@ -632,7 +633,7 @@ impl UserMutation {
         let client = Client::new(my_ctx.stripe_secret.clone());
 
         let product = {
-            let mut create_product = CreateProduct::new("Top up");
+            let  create_product = CreateProduct::new("Top up");
             Product::create(&client, create_product).await.unwrap()
         };
     
@@ -643,15 +644,19 @@ impl UserMutation {
             create_price.product = Some(IdOrCreate::Id(&product.id));
             create_price.unit_amount = Some((amount * 100).into());
             create_price.expand = &["product"];
-            create_price.metadata = Some(json!({"user_id": user.id}));
+            create_price.metadata = Some(std::collections::HashMap::from([(
+                String::from("user_id"),
+                user.id.to_string(),
+            )]));
             Price::create(&client, create_price).await.unwrap()
         };
     
       
-    
+        
         let payment_link = PaymentLink::create(
             &client,
             CreatePaymentLink::new(vec![CreatePaymentLinkLineItems {
+
                 quantity: 1,
                 price: price.id.to_string(),
                 ..Default::default()
@@ -661,10 +666,19 @@ impl UserMutation {
         .unwrap();
 
 
-        println!("{:?}", payment_link);
+        let payment = payment::ActiveModel {
+            order_id: Set(payment_link.id.to_string()),
+            user_id: Set(user.id),
+            amount: Set(amount as f32),
+            status: Set("pending".to_string()),
+            ..Default::default()
+        };
 
 
-        return Ok(user);
+        let payment: payment::Model = payment.insert(&my_ctx.db).await?;
+
+
+        return Ok(payment_link.url);
     }
 
     

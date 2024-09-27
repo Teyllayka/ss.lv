@@ -34,6 +34,9 @@ pub enum Relation {
     #[sea_orm(has_many = "super::advert::Entity")]
     Advert,
 
+    #[sea_orm(has_many = "super::payment::Entity")]
+    Payment,
+
     /// Defines a one-to-many relationship between `User` and `Favorites` via `user_id`.
     #[sea_orm(has_many = "super::favorites::Entity")]
     Favorites,

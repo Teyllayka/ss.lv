@@ -1,6 +1,7 @@
 mod user_queries;
 mod advert_queries;
 
+use stripe::{CheckoutSession, EventObject, EventType, Webhook, WebhookError};
 use user_queries::{UserMutation, UserQuery};
 use advert_queries::{AdvertMutation, AdvertQuery};
 
@@ -13,12 +14,13 @@ use async_graphql::{http::GraphiQLSource, EmptySubscription, MergedObject, Objec
 use entity::{
     advert::{self, Entity as Advert},
     user::{self, Entity as User},
+    payment::{self, Entity as Payment},
 };
 use hmac::{Hmac, Mac};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{
     ColumnTrait, Database, DatabaseConnection, EntityTrait,
-    PaginatorTrait, QueryFilter,
+    PaginatorTrait, QueryFilter, Set,ActiveModelTrait
 };
 use sha2::Sha256;
 use jwt::VerifyWithKey;
@@ -185,13 +187,118 @@ async fn index(
 }
 
 
-async fn webhook(req: HttpRequest) -> HttpResponse {
-    let body = req.body();
-    let body = web::block(move || async move { body }).await.unwrap();
-    let body = String::from_utf8(body.to_vec()).unwrap();
-    println!("Webhook body: {}", body);
+async fn handle_webhook(req: HttpRequest, payload: web::Bytes,  ctx: web::Data<Context>) -> HttpResponse {
+    let payload_str = std::str::from_utf8(&payload).unwrap();
+
+    let stripe_signature = get_header_value(&req, "Stripe-Signature").unwrap_or_default();
+
+    if let Ok(event) = Webhook::construct_event(payload_str, stripe_signature, "whsec_8ae96f7644564cca47b0a534d34590fac5a4df98933620999f25460001c5df2a") {
+        match event.type_ {
+            EventType::AccountUpdated => {
+                if let EventObject::Account(account) = event.data.object {
+                    handle_account_updated(account).expect("Failed to handle account updated event");
+                }
+            }
+            EventType::CheckoutSessionCompleted => {
+                if let EventObject::CheckoutSession(session) = event.data.object {
+                    if let Err(err) = handle_checkout_session(session, ctx.clone()).await {
+                        println!("Error handling checkout session: {:?}", err);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+            _ => {
+                println!("Unknown event encountered in webhook: {:?}", event.type_);
+            }
+        }
+    } else {
+        println!("Failed to construct webhook event, ensure your webhook secret is correct.");
+    }
+
     HttpResponse::Ok().finish()
 }
+
+fn get_header_value<'b>(req: &'b HttpRequest, key: &'b str) -> Option<&'b str> {
+    req.headers().get(key)?.to_str().ok()
+}
+
+fn handle_account_updated(account: stripe::Account) -> Result<(), WebhookError> {
+    println!("Received account updated webhook for account: {:?}", account.id);
+    Ok(())
+}
+
+async fn handle_checkout_session(
+    session: CheckoutSession,
+    ctx: web::Data<Context>,
+) -> Result<(), async_graphql::Error> {
+    println!(
+        "Received checkout session completed webhook with id: {:?}",
+        session.id
+    );
+
+    // Extract necessary information from the session
+    let stripe_session_id = session.payment_link.unwrap();
+    let payment_status = match session.payment_status.as_str() {
+        "paid" => "Completed",
+        "unpaid" => "Failed",
+        other => other, // Handle other statuses as needed
+    };
+
+    // Access the database connection
+    let db = &ctx.db;
+
+    let payment = Payment::find()
+        .filter(payment::Column::OrderId.eq(&*stripe_session_id.id()))
+        .one(db)
+        .await
+        .expect("Failed to find payment by order id");
+
+
+    // Update the payment status
+
+    let payment = match payment {
+            Some(payment) => payment,
+            None => return Err(async_graphql::Error::new("payment not found".to_string())),
+    };
+
+
+    let new_payment: payment::ActiveModel = payment::ActiveModel {
+        status: Set(payment_status.to_string()),
+        ..payment.into()
+    };
+      
+
+    let adv: payment::Model = new_payment.update(db).await?;
+
+
+    let user = User::find().filter(user::Column::Id.eq(adv.user_id)).one(db).await?;
+
+    let user = match user {
+        Some(user) => user,
+        None => return Err(async_graphql::Error::new("user not found".to_string())),
+    };
+
+
+    let new_user: user::ActiveModel = user::ActiveModel {
+        balance: Set(user.balance + adv.amount),
+        ..user.into()
+    };
+
+
+    let user: user::Model = new_user.update(db).await?;
+
+
+
+    return Ok(());
+
+
+
+    
+
+    
+}
+
+
 
 async fn index_graphiql() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
@@ -252,6 +359,19 @@ async fn main() -> std::io::Result<()> {
                 password.clone()
             ))
             .finish();
+
+
+        let context_data = web::Data::new(Context::new(
+            db.clone(),
+            pool.clone(),
+            stripe.clone(),
+            access_key.clone(),
+            refresh_key.clone(),
+            email_key.clone(),
+            username.clone(),
+            password.clone()
+        ));
+
         let cors = Cors::default()
             .allow_any_origin()
             .allowed_methods(vec!["GET", "POST"])
@@ -260,6 +380,7 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
 
         App::new().app_data(web::Data::new(schema))
+            .app_data(context_data)
             .wrap(cors)
             .service(
                 web::resource("/")
@@ -267,7 +388,7 @@ async fn main() -> std::io::Result<()> {
                     .to(index),
                 
             ).service(
-                web::resource("/webhook").guard(guard::Post()).to(webhook),
+                web::resource("/webhook").guard(guard::Post()).to(handle_webhook),
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
