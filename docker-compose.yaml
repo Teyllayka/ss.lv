@@ -34,6 +34,12 @@ services:
       - .env
     environment:
       - RUST_BACKTRACE=1
+  telegram:
+    build: ./telegram-bot
+    env_file:
+      - .env
+    depends_on:
+      - backend
 #     depends_on:
 #       - db
 
