@@ -13,13 +13,19 @@ development tools:
 languages:
 
 ```
-rust, typescript, javascript, (html, css) not languages lol
+rust, typescript, python
 ```
 
 libs:
 
 ```
-actix-web, async-graphql, vue, vite, seaorm
+actix-web, async-graphql, svelte, vite, seaorm, pytelegrambotapi, stripe
+```
+
+db:
+
+```
+redis, postgre
 ```
 
 on top of that:
