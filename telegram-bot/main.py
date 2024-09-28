@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 import models
 from sqlalchemy.exc import IntegrityError
+import redis
+import random
+import string
 
+redis_url = os.getenv("REDIS_URL")
+r = redis.from_url(redis_url)
 
 load_dotenv()
 
@@ -31,6 +36,7 @@ def send_welcome(message: telebot.types.Message):
         if user:
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton('Create Advert', callback_data='create_advert'))
+            keyboard.add(InlineKeyboardButton('Connect Account', callback_data='connect'))
 
             bot.send_message(chat_id, 
                              f"Welcome back, {user.name} {user.surname}!\n"
@@ -48,6 +54,46 @@ def send_welcome(message: telebot.types.Message):
     except Exception as e:
         bot.send_message(chat_id, "An error occurred. Please try again later.")
         print(f"Error querying user: {e}")
+
+
+def generate_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'connect')
+def handle_connect(call: telebot.types.CallbackQuery):
+    bot.answer_callback_query(call.id)
+    chat_id = call.message.chat.id
+    user_id = call.from_user.id
+    code = generate_code()
+    r.set(code, user_id, ex=300)
+    r.set(f"generated_code:{user_id}", code, ex=300)
+    bot.send_message(chat_id, f"Ваш код для связывания аккаунтов: {code}")
+
+    bot.send_message(chat_id, "Введите код для подтверждения:")
+
+    bot.register_next_step_handler_by_chat_id(chat_id, check_code)
+
+def check_code(message):
+    chat_id = message.chat.id
+    user_code = message.text
+    user_id = message.from_user.id
+
+    generated_code = r.get(f"generated_code:{user_id}")
+
+    if generated_code and generated_code.decode('utf-8') == user_code:
+        bot.send_message(chat_id, "Вы не можете использовать тот же код, который только что был сгенерирован.")
+        return
+
+    user_id = r.get(user_code)
+
+
+    if user_id:
+        bot.send_message(chat_id, f"Код подтвержден. Связанный user_id: {user_id.decode('utf-8')}")
+        r.delete(user_code)
+    else:
+        bot.send_message(chat_id, "Неверный или просроченный код, попробуйте снова.")
+
 
 @bot.callback_query_handler(func=lambda call: call.data == 'create_advert')
 def handle_create_advert(call: telebot.types.CallbackQuery):

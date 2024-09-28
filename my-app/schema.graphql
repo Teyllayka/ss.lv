@@ -34,6 +34,7 @@ type LoginResponse {
 
 type Mutation {
   addFavorite(advertId: Int!): favorites!
+  connectAccount(code: String!): String!
   createAdvert(category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
   deleteAdvert(advertId: Int!): Advert!
   edit(avatarUrl: String!, name: String!, password: String!, phone: String!, surname: String!): User!
@@ -43,6 +44,7 @@ type Mutation {
   register(email: String!, image: String!, name: String!, password: String!, phone: String!, surname: String!): User!
   removeFavorite(advertId: Int!): favorites!
   resendEmail: String!
+  topUpBalance(amount: Int!): String!
   verifyEmail(token: String!): String!
   writeReview(advertId: Int!, message: String!, rating: Int!): reviews!
 }
@@ -78,14 +80,15 @@ type User {
   avatarUrl: String!
   balance: Float!
   createdAt: NaiveDateTime!
-  email: String!
+  email: String
   emailVerified: Boolean!
   id: Int!
   isAdmin: Boolean!
   name: String!
-  phone: String!
+  phone: String
   reviews: [reviews!]!
   surname: String!
+  telegramId: String
   updatedAt: NaiveDateTime!
 }
 

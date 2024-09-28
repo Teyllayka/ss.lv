@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import "../app.css";
   import { writable } from "svelte/store";
   import type { LayoutData } from "./$houdini";
     import { user } from "$lib/userStore";
@@ -73,7 +74,7 @@
         <img
           on:click={() => goto("/me")}
           alt="profile"
-          src="https://s3-alpha-sig.figma.com/img/1e0e/dbb6/4df60f0f1091c0f288b0179c0fb89953?Expires=1724630400&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=D3ZQv5uqYDas2RSKx4pbTsrtrbR8xry1v~IAWmOU29N70G1C4hmZfWXpniNaG7r0-O-X4IDPLS79XG0GmdTsefpoTpvcbZO6dZz3IyGJzPYwic2T1GqIasp2DOGctYx0ohzJ08idKqrejDqWUDRD-YnyiAHrtkZ7wiGf00DsxwrkYUh-L8suuhdUzBbmZ2Mt0ylTnHdbdrSU9za0yVHebQ603112clEZMBhz1ayPwPPwKPwqR0p6HVFa-vPwyJc-vxl3oT1aHimq-QY9Z9MNoomjzOw3FtWKo-MhZsSvqZXheQkKD55KJyaX2YDrnZ~Cy2Q58VZo4GCYShC6POEiog__"
+          src=""
         />
       </button>
     {/if}

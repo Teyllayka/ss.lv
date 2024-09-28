@@ -3,7 +3,8 @@ use std::{
 };
 
 use crate::{verify_access_token, Context, Token};
-use deadpool_redis::redis::cmd;
+use deadpool_redis::redis::{cmd, RedisError};
+use rand::{distributions::Alphanumeric, Rng};
 use sea_orm::{
     ActiveModelTrait, EntityTrait,
     ModelTrait, Set,
@@ -681,5 +682,89 @@ impl UserMutation {
         return Ok(payment_link.url);
     }
 
+
+
+
+    async fn connect_account(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        code: String,
+    ) -> Result<String, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+
+
+
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
+        };
+
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
+
+        let id: i32 = claims["id"].parse().unwrap();
+        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+       match user {
+            Some(_) => (),
+            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        };
+
+
+        let mut conn = my_ctx.redis_pool.get().await.unwrap();
+        let redis_code: Result<String, RedisError>  = cmd("GET")
+            .arg(&[code.clone()])
+            .query_async(&mut conn)
+            .await;
+
+
+
+        match redis_code {
+            Ok(_) => (),
+            Err(_) => return Err(async_graphql::Error::new("Wrong code".to_string())),
+        };
+
+        let _: () = cmd("DEL")
+            .arg(&[code])
+            .query_async(&mut conn)
+            .await
+            .map_err(|_| async_graphql::Error::new("Failed to delete the previous code"))?;
+
+        // Generate a new unique code
+        let new_code: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(6) // Length of the new code, adjust as needed
+            .map(char::from)
+            .collect();
+
+
+
+        let _: () = cmd("SET")
+            .arg(&[&new_code, &id.to_string()])
+            .query_async(&mut conn)
+            .await
+            .map_err(|_| async_graphql::Error::new("Failed to set new code in Redis"))?;
+    
+
+        let _: () = cmd("EXPIRE")
+            .arg(&[&new_code, "300"]) // 300 seconds = 5 minutes
+            .query_async(&mut conn)
+            .await
+            .map_err(|_| async_graphql::Error::new("Failed to set expiration for new code"))?;
+
+
+      
+
+        return Ok(new_code);
+    }
+
     
 }
+
+

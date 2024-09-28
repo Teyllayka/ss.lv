@@ -31,3 +31,4 @@ reqwest = {version = "0.12.6", features = ["json"]}
 lettre = "0.10.0-rc.3"
 deadpool-redis = "0.18.0"
 async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper"] }
+rand = "0.8.5"
