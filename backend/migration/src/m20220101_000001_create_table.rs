@@ -1,4 +1,3 @@
-use extension::postgres::Type;
 use sea_orm::{ActiveEnum, DbBackend, DeriveActiveEnum, EnumIter, Schema};
 use sea_orm_migration::prelude::*;
 // use argon2::{ /* ... */ };

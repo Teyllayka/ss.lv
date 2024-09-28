@@ -676,7 +676,7 @@ impl UserMutation {
         };
 
 
-        let payment: payment::Model = payment.insert(&my_ctx.db).await?;
+        let _: payment::Model = payment.insert(&my_ctx.db).await?;
 
 
         return Ok(payment_link.url);

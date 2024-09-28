@@ -238,11 +238,7 @@ async fn handle_checkout_session(
 
     // Extract necessary information from the session
     let stripe_session_id = session.payment_link.unwrap();
-    let payment_status = match session.payment_status.as_str() {
-        "paid" => "Completed",
-        "unpaid" => "Failed",
-        other => other, // Handle other statuses as needed
-    };
+  
 
     // Access the database connection
     let db = &ctx.db;
@@ -286,7 +282,7 @@ async fn handle_checkout_session(
     };
 
 
-    let user: user::Model = new_user.update(db).await?;
+    let _: user::Model = new_user.update(db).await?;
 
 
 
