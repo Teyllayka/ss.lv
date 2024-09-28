@@ -1,3 +1,5 @@
+use extension::postgres::Type;
+use sea_orm::{ActiveEnum, DbBackend, DeriveActiveEnum, EnumIter, Schema};
 use sea_orm_migration::prelude::*;
 // use argon2::{ /* ... */ };
 
@@ -37,7 +39,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Balance).float().not_null())
                     // Authentication Details (PasswordHash Nullable)
                     .col(ColumnDef::new(User::PasswordHash).string().null())
-                    .col(ColumnDef::new(User::RefreshToken).string().null())
                     // Administrative Flags
                     .col(
                         ColumnDef::new(User::IsAdmin)
@@ -181,6 +182,45 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+            let schema = Schema::new(DbBackend::Postgres);
+
+
+            manager.create_type(
+                schema.create_enum_from_active_enum::<Status>(),
+            ).await?;
+
+
+            manager
+            .create_table(
+                Table::create()
+                    .table(Payment::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Payment::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Payment::OrderId).string().not_null())
+                    .col(ColumnDef::new(Payment::UserId).integer().not_null())
+                    .col(ColumnDef::new(Payment::Amount).float().not_null())
+                    .col(
+                        ColumnDef::new(Payment::Status).custom(Status::name()).not_null()
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-payment-user_id")
+                            .from(Payment::Table, Payment::UserId)
+                            .to(User::Table, User::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+        
+        
         
         // Create Reviews Table
         manager
@@ -295,10 +335,9 @@ enum User {
     Surname,
     Email,
     Phone,
-    TelegramId,      // Newly Added Column
+    TelegramId,      
     Balance,
     PasswordHash,
-    RefreshToken,
     IsAdmin,
     EmailVerified,
 }
@@ -349,4 +388,29 @@ enum Reviews {
     CreatedAt,
     Rating,
     Message,
+}
+
+
+#[derive(DeriveIden)]
+
+enum Payment {
+    Table,
+    Id,
+    OrderId,
+    UserId,
+    Amount,
+    Status,
+}
+
+#[derive(EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "status")]
+enum Status {
+    #[sea_orm(string_value = "P")]
+    Pending,
+
+    #[sea_orm(string_value = "C")]
+    Completed,
+
+    #[sea_orm(string_value = "F")]
+    Failed,
 }

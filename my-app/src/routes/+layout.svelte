@@ -3,17 +3,41 @@
   import "../app.css";
   import { writable } from "svelte/store";
   import type { LayoutData } from "./$houdini";
-    import { user } from "$lib/userStore";
+  import { user } from "$lib/userStore";
+  import Footer from "$lib/components/Footer.svelte";
+  import { onMount } from "svelte";
   export let data: LayoutData;
 
   $: ({ HeaderMe } = data);
-  
-
 
   $: user.set({
     emailVerified: $HeaderMe.data?.me.emailVerified || false,
   });
 
+  let isDarkMode = false;
+
+  // On component mount, check for user's preferred theme
+  onMount(() => {
+    if (localStorage.getItem("theme") === "dark") {
+      isDarkMode = true;
+      document.documentElement.classList.add("dark");
+    } else {
+      isDarkMode = false;
+      document.documentElement.classList.remove("dark");
+    }
+  });
+
+  // Function to toggle theme
+  function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }
 </script>
 
 <header>
@@ -71,19 +95,26 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <button>
-        <img
-          on:click={() => goto("/me")}
-          alt="profile"
-          src=""
-        />
+        <img on:click={() => goto("/me")} alt="profile" src="" />
       </button>
     {/if}
+    <button
+      on:click={toggleTheme}
+      class="absolute top-4 right-4 p-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none"
+      aria-label="Toggle Theme"
+    >
+      {#if isDarkMode}
+        🌞 Light Mode
+      {:else}
+        🌜 Dark Mode
+      {/if}
+    </button>
   </div>
 </header>
 
 <slot />
 
-<footer>footer</footer>
+<Footer />
 
 <style lang="scss">
   header {

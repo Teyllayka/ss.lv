@@ -262,8 +262,9 @@ async fn handle_checkout_session(
     };
 
 
+
     let new_payment: payment::ActiveModel = payment::ActiveModel {
-        status: Set(payment_status.to_string()),
+        status: Set(payment::Status::Completed),
         ..payment.into()
     };
       

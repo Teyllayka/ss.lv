@@ -671,7 +671,7 @@ impl UserMutation {
             order_id: Set(payment_link.id.to_string()),
             user_id: Set(user.id),
             amount: Set(amount as f32),
-            status: Set("pending".to_string()),
+            status: Set(payment::Status::Pending),
             ..Default::default()
         };
 
