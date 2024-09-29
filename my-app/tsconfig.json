@@ -9,11 +9,14 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": true,
+        "types": ["svelte", "vite/client"],
         "moduleResolution": "bundler",
         "rootDirs": [
             ".",
             "./.svelte-kit/types",
             "./$houdini/types"
         ]
-    }
+    },
+    "include": ["src/**/*", "svelte.d.ts"]
+
 }

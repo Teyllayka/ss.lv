@@ -2,12 +2,12 @@
   import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
 </script>
 
-<footer class="bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
+<footer class="bg-white dark:bg-gray-800 transition-colors duration-300">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
       <div class="space-y-4">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          Marketplace
+          Adee
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-300">
           Your one-stop shop for everything you need.

@@ -281,18 +281,9 @@ impl UserMutation {
             Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
-        // user::ActiveModel {
-        //     id: Set(user.id),
-        //     refresh_token: Set(Some(refresh_token.clone())),
-        //     ..Default::default()
-        // }
-        // .update(&my_ctx.db)
-        // .await?;
-
-
         let mut conn = my_ctx.redis_pool.get().await.unwrap();
         cmd("SET")
-        .arg(&[user.id.to_string(), refresh_token.clone(), "EX".to_string(), expiration2.to_string()])
+        .arg(&[user.id.to_string(), refresh_token.clone(), "EX".to_string(), expiration2])
         .query_async::<()>(&mut conn)
         .await.unwrap();
 
@@ -351,7 +342,7 @@ impl UserMutation {
                 )
                 .is_ok()
         } else {
-            false // Handle case when password_hash is None or contains None
+            false 
         };
 
         if !response {
@@ -736,10 +727,9 @@ impl UserMutation {
             .await
             .map_err(|_| async_graphql::Error::new("Failed to delete the previous code"))?;
 
-        // Generate a new unique code
         let new_code: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(6) // Length of the new code, adjust as needed
+            .take(6)
             .map(char::from)
             .collect();
 
@@ -753,7 +743,7 @@ impl UserMutation {
     
 
         let _: () = cmd("EXPIRE")
-            .arg(&[&new_code, "300"]) // 300 seconds = 5 minutes
+            .arg(&[&new_code, "300"]) 
             .query_async(&mut conn)
             .await
             .map_err(|_| async_graphql::Error::new("Failed to set expiration for new code"))?;

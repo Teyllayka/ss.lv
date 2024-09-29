@@ -236,11 +236,9 @@ async fn handle_checkout_session(
         session.id
     );
 
-    // Extract necessary information from the session
     let stripe_session_id = session.payment_link.unwrap();
   
 
-    // Access the database connection
     let db = &ctx.db;
 
     let payment = Payment::find()
@@ -250,7 +248,6 @@ async fn handle_checkout_session(
         .expect("Failed to find payment by order id");
 
 
-    // Update the payment status
 
     let payment = match payment {
             Some(payment) => payment,
@@ -287,12 +284,6 @@ async fn handle_checkout_session(
 
 
     return Ok(());
-
-
-
-    
-
-    
 }
 
 
