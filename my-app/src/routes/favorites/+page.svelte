@@ -27,6 +27,7 @@
 {#if $Favorites.fetching}
   loading...
 {:else if $Favorites.errors}
+  {JSON.stringify($Favorites.errors)}
   err...
 {:else}
   {#each adverts as advert}

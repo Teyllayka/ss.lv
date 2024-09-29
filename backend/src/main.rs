@@ -33,6 +33,7 @@ pub fn verify_access_token(
     access_token: String,
     access_key: &Hmac<Sha256>,
 ) -> Result<BTreeMap<String, String>, async_graphql::Error> {
+    let access_token = access_token.replace("Bearer ", "");
     let claims: BTreeMap<String, String> =
         match access_token.verify_with_key(access_key) {
             Ok(res) => res,

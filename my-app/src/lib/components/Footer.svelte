@@ -41,10 +41,10 @@
           Customer Service
         </h4>
         <ul class="space-y-2">
-          {#each ["Contact Us", "FAQs", "Shipping", "Returns"] as item}
+          {#each ["Contact", "FAQ", "Shipping", "Returns"] as item}
             <li>
               <a
-                href="#{item.toLowerCase().replace(' ', '-')}"
+                href="{item.toLowerCase().replace(' ', '-')}"
                 class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
               >
                 {item}

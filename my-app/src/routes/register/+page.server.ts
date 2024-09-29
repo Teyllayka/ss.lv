@@ -13,7 +13,6 @@ export const actions = {
 
     const errs = await validateSchema(registerSchema, data);
 
-    console.log(errs);
 
     if (
       errs.length > 0
@@ -29,19 +28,17 @@ export const actions = {
     const register = graphql(`
       mutation register(
         $email: String!
-        $image: String!
-        $name: String!
+        $name: String
         $password: String!
-        $phone: String!
-        $surname: String!
+        $surname: String
+        $companyName: String
       ) {
         register(
           email: $email
-          image: $image
           name: $name
           password: $password
-          phone: $phone
           surname: $surname
+          companyName: $companyName
         ) {
           id
         }
@@ -49,7 +46,7 @@ export const actions = {
     `);
 
     let res = await register.mutate(
-      { email: data.email, password: data.password, name: data.name, surname: data.surname, image: data.image, phone: data.phone },
+      { email: data.email, password: data.password, name: data.name, surname: data.surname, companyName: data.companyName },
       { event }
     );
     console.log(res);

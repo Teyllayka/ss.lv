@@ -26,9 +26,10 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::CreatedAt).date_time().not_null())
                     .col(ColumnDef::new(User::UpdatedAt).date_time().not_null())
                     // User Details
-                    .col(ColumnDef::new(User::Name).string().not_null())
-                    .col(ColumnDef::new(User::Surname).string().not_null())
-                    .col(ColumnDef::new(User::AvatarUrl).string().not_null())
+                    .col(ColumnDef::new(User::AvatarUrl).string().null())
+                    .col(ColumnDef::new(User::Name).string().null()) // Made nullable
+                    .col(ColumnDef::new(User::Surname).string().null()) // Made nullable
+                    .col(ColumnDef::new(User::CompanyName).string().null()) // Added company_name
                     // Contact Information (Nullable)
                     .col(ColumnDef::new(User::Email).string().unique_key().null())
                     .col(ColumnDef::new(User::Phone).string().null())
@@ -60,6 +61,10 @@ impl MigrationTrait for Migration {
                         Expr::cust("(password_hash IS NOT NULL OR telegram_id IS NOT NULL)")
                             .to_owned(),
                     )
+                    .check(
+                        Expr::cust("((name IS NOT NULL AND surname IS NOT NULL) OR company_name IS NOT NULL)")
+                            .to_owned(),
+                    ) // Added new CHECK constraint
                     .to_owned(),
             )
             .await?;
@@ -332,6 +337,7 @@ enum User {
     AvatarUrl,
     Name,
     Surname,
+    CompanyName,
     Email,
     Phone,
     TelegramId,      

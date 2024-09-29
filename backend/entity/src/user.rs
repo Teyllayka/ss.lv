@@ -8,11 +8,12 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub avatar_url: String,
+    pub avatar_url: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub name: String,
-    pub surname: String,
+    pub name: Option<String>,
+    pub surname: Option<String>,
+    pub company_name: Option<String>,
     #[sea_orm(unique)]
     pub email: Option<String>,
     pub phone: Option<String>,

@@ -2,6 +2,8 @@ query me {
   me {
     id
     name
+    surname
+    companyName
     email
     emailVerified
 

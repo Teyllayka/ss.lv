@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { Menu, X, Search, MapPin, Heart, User, Plus } from "lucide-svelte";
+  import { Menu, X, Search, MapPin, Heart, User, Plus, Building2 } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { clickOutside } from "../helpers/clickOutside";
+  import { getContext } from "svelte";
+  import type { Writable } from "svelte/store";
+  import { user } from "$lib/userStore";
+
+
+  const region: Writable<String> = getContext("region");
 
   let isMenuOpen = false;
   let searchQuery = "";
-  let selectedRegion = "Select Region";
   let isCategoriesOpen = false;
   let isRegionsOpen = false;
 
@@ -25,11 +30,10 @@
 
   function handleSearch() {
     console.log("Searching for:", searchQuery);
-    // Implement your search logic here
   }
 
-  function selectRegion(region: any) {
-    selectedRegion = region;
+  function selectRegion(rg: any) {
+    region.set(rg);
     isRegionsOpen = false;
   }
 
@@ -55,10 +59,9 @@
           <img
             class="h-8 w-auto sm:h-10"
             src="/placeholder.svg"
-            alt="Marketplace Logo"
           />
           <span class="ml-2 text-xl font-bold text-gray-800 dark:text-white"
-            >YourMarket</span
+            >Adee</span
           >
         </a>
       </div>
@@ -107,7 +110,7 @@
           {#if isCategoriesOpen}
             <div
               transition:fly={{ y: -10, duration: 200 }}
-              class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none"
+              class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
               use:clickOutside
               on:click_outside={() => (isCategoriesOpen = false)}
             >
@@ -154,7 +157,7 @@
           >
             <MapPin class="h-5 w-5 mr-2" />
             <span class="inline-block min-w-[100px] text-left"
-              >{selectedRegion}</span
+              >{$region}</span
             >
             <svg
               class="ml-2 h-5 w-5 text-gray-400 group-hover:text-gray-500"
@@ -174,7 +177,7 @@
           {#if isRegionsOpen}
             <div
               transition:fly={{ y: -10, duration: 200 }}
-              class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none"
+              class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
               use:clickOutside
               on:click_outside={() => (isRegionsOpen = false)}
             >
@@ -202,17 +205,21 @@
           <Heart class="h-6 w-6" />
         </a>
         <a
-          href="/profile"
+          href="/me"
           class="ml-8 whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
         >
+          {#if $user.isCompany}
+          <Building2 class="h-6 w-6" />
+          {:else}
           <User class="h-6 w-6" />
+          {/if}
         </a>
         <a
-          href="/create-ad"
+          href="/create"
           class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
         >
           <Plus class="h-5 w-5 mr-2" />
-          Create Ad
+          Create
         </a>
       </div>
     </div>

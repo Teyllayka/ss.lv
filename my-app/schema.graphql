@@ -37,11 +37,11 @@ type Mutation {
   connectAccount(code: String!): String!
   createAdvert(category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
   deleteAdvert(advertId: Int!): Advert!
-  edit(avatarUrl: String!, name: String!, password: String!, phone: String!, surname: String!): User!
+  edit(avatarUrl: String, companyName: String, name: String, password: String!, phone: String!, surname: String): User!
   editAdvert(description: String!, id: Int!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
   login(email: String!, password: String!): LoginResponse!
   refresh(refreshToken: String!): LoginResponse!
-  register(email: String!, image: String!, name: String!, password: String!, phone: String!, surname: String!): User!
+  register(companyName: String, email: String!, name: String, password: String!, surname: String): User!
   removeFavorite(advertId: Int!): favorites!
   resendEmail: String!
   topUpBalance(amount: Int!): String!
@@ -77,17 +77,18 @@ type Statistics {
 
 type User {
   adverts: [Advert!]!
-  avatarUrl: String!
+  avatarUrl: String
   balance: Float!
+  companyName: String
   createdAt: NaiveDateTime!
   email: String
   emailVerified: Boolean!
   id: Int!
   isAdmin: Boolean!
-  name: String!
+  name: String
   phone: String
   reviews: [reviews!]!
-  surname: String!
+  surname: String
   telegramId: String
   updatedAt: NaiveDateTime!
 }

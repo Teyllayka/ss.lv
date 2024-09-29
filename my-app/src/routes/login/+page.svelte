@@ -7,12 +7,11 @@
 </script>
 
 <div
-  class="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center p-4 transition-colors duration-300"
+  class="min-h-[58vh] bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center p-4 transition-colors duration-300"
 >
   <div
     class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 w-full max-w-md transition-colors duration-300"
     in:fade={{ duration: 300, delay: 300 }}
-    out:fade={{ duration: 300 }}
   >
     <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">
       Welcome Back

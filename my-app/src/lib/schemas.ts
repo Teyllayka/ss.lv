@@ -5,15 +5,65 @@ export let loginSchema = object({
   password: string().required(),
 });
 
-export let registerSchema = object({
-  email: string().email().required(),
-  password: string().required(),
-  name: string().required(),
-  surname: string().required(),
-  phone: string().required(),
-  image: string().required(),
-  repeatPassword: string().oneOf([ref('password')], 'Passwords must match').required(),
-});
+interface RegisterFormValues {
+  email: string;
+  password: string;
+  repeatPassword: string;
+  companyName?: string;
+  name?: string;
+  surname?: string;
+}
+
+export const registerSchema: ObjectSchema<RegisterFormValues> = object({
+  email: string()
+    .email("Invalid email format")
+    .required("Email is required"),
+  
+  password: string()
+    .required("Password is required"),
+  
+  repeatPassword: string()
+    .oneOf([ref('password')], 'Passwords must match')
+    .required("Please confirm your password"),
+  
+  companyName: string()
+    .trim(),
+  
+  name: string()
+    .trim()
+    .when('companyName', {
+      is: (companyName: string | undefined) => !companyName || companyName.trim() === '',
+      then: (schema) => schema.required('Name is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  
+  surname: string()
+    .trim()
+    .when('companyName', {
+      is: (companyName: string | undefined) => !companyName || companyName.trim() === '',
+      then: (schema) => schema.required('Surname is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+})
+.test(
+  'either-company-or-name-surname',
+  'You must provide either a company name or both name and surname.',
+  function (values) {
+    const { companyName, name, surname } = values as RegisterFormValues;
+    const hasCompany = companyName && companyName.trim() !== '';
+    const hasName = name && name.trim() !== '';
+    const hasSurname = surname && surname.trim() !== '';
+
+    if (!hasCompany && (!hasName || !hasSurname)) {
+      return this.createError({
+        path: 'companyName',
+        message: 'Company name is required',
+      });
+    }
+
+    return true;
+  }
+);
 
 export let advertSchema = object({
   title: string().required(),

@@ -1,23 +1,29 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import "../app.css";
-  import { writable } from "svelte/store";
   import type { LayoutData } from "./$houdini";
   import { user } from "$lib/userStore";
   import Footer from "$lib/components/Footer.svelte";
-  import { onMount } from "svelte";
+  import { onMount, setContext } from "svelte";
   import Header from "$lib/components/Header.svelte";
+  import { writable } from "svelte/store";
   export let data: LayoutData;
 
   $: ({ HeaderMe } = data);
 
+  const region = writable("Select Region");
+
+
+  
+
+  setContext("region", region);
+
   $: user.set({
     emailVerified: $HeaderMe.data?.me.emailVerified || false,
+    isCompany: $HeaderMe.data?.me.companyName != null,
   });
 
   let isDarkMode = false;
 
-  // On component mount, check for user's preferred theme
   onMount(() => {
     if (localStorage.getItem("theme") === "dark") {
       isDarkMode = true;
@@ -26,9 +32,13 @@
       isDarkMode = false;
       document.documentElement.classList.remove("dark");
     }
+
+    region.set(localStorage.getItem("region") || "Select Region");
+    region.subscribe((value) => {
+      localStorage.setItem("region", value);
+    });
   });
 
-  // Function to toggle theme
   function toggleTheme() {
     isDarkMode = !isDarkMode;
     if (isDarkMode) {

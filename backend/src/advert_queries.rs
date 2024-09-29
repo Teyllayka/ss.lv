@@ -204,6 +204,7 @@ impl AdvertQuery {
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
+
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
             Some(token) => token,
             None => {
@@ -213,13 +214,16 @@ impl AdvertQuery {
             }
         };
 
+
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
         };
 
+        println!("{:?}", claims);
 
-        let id: i32 = claims["id"].parse().unwrap();
+
+        let id: i32 = claims["id"].parse().expect("id is not a number or not found");
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
         let user = match user {

@@ -82,7 +82,7 @@ impl UserQuery {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+            Some(token) => token,
             None => {
                 return Err(async_graphql::Error::new(
                     "you are not logged in".to_string(),
@@ -122,10 +122,9 @@ impl UserMutation {
         ctx: &async_graphql::Context<'_>,
         #[graphql(validator(email))] email: String,
         password: String,
-        surname: String,
-        name: String,
-        phone: String,
-        image: String,
+        surname: Option<String>,
+        name: Option<String>,
+        company_name: Option<String>,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
         let salt = SaltString::generate(&mut OsRng);
@@ -146,13 +145,12 @@ impl UserMutation {
         let user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
+            company_name: Set(company_name),
             email: Set(Some(email)),
-            phone: Set(Some(phone)),
             password_hash: Set(Some(parsed_hash.to_string())),
             created_at: Set(naive_date_time),
             updated_at: Set(naive_date_time),
             balance: Set(0.0),
-            avatar_url: Set(image),
             ..Default::default()
         };
 
@@ -176,23 +174,23 @@ impl UserMutation {
 
         println!("{:?}", verification);
 
-
+        let recipient = user.name.as_deref().or(user.company_name.as_deref()).unwrap_or("User");
 
         
-     let body = json!({
-        "from": {
-           "email":"mailtrap@demomailtrap.com",
-           "name":"Mailtrap Test"
-        },
-        "to": [
-            {
-                "email": "teyylayt@gmail.com",
-            }
-        ],
-        "subject": "You are awesome!",
-        "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", user.name, verification),
-        "category": "Integration Test"
-    });
+        let body = json!({
+            "from": {
+            "email":"mailtrap@demomailtrap.com",
+            "name":"Mailtrap Test"
+            },
+            "to": [
+                {
+                    "email": "teyylayt@gmail.com",
+                }
+            ],
+            "subject": "You are awesome!",
+            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", recipient, verification),
+            "category": "Integration Test"
+        });
 
     let response = reqwest::Client::new()
         .post("https://send.api.mailtrap.io/api/send")
@@ -302,10 +300,11 @@ impl UserMutation {
     async fn edit(
         &self,
         ctx: &async_graphql::Context<'_>,
-        name: String,
-        surname: String,
+        name: Option<String>,
+        surname: Option<String>,
+        company_name: Option<String>,
         phone: String,
-        avatar_url: String,
+        avatar_url: Option<String>,
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
@@ -354,13 +353,17 @@ impl UserMutation {
         let mut user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
+            company_name: Set(company_name),
             phone: Set(Some(phone)),
             ..user.into()
         };
 
-        if !avatar_url.is_empty() {
-            user.avatar_url = Set(avatar_url);
-        }
+        // if !avatar_url.is_empty() {
+        //     user.avatar_url = Set(avatar_url);
+        // }
+
+
+        // FIX
 
         let user: user::Model = user.update(&my_ctx.db).await?;
 
@@ -558,6 +561,9 @@ impl UserMutation {
 
         println!("{:?}", verification);
 
+        let recipient = user.name.as_deref().or(user.company_name.as_deref()).unwrap_or("User");
+
+
         let body = json!({
             "from": {
                "email":"mailtrap@demomailtrap.com",
@@ -569,7 +575,7 @@ impl UserMutation {
                 }
             ],
             "subject": "You are awesome!",
-            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", user.name, verification),
+            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", recipient, verification),
             "category": "Integration Test"
         });
     

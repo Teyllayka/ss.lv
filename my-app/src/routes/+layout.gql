@@ -2,6 +2,8 @@ query HeaderMe {
   me {
     id
     name
+    surname
+    companyName
     email
     emailVerified
 
