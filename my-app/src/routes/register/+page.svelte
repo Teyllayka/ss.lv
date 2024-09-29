@@ -1,15 +1,13 @@
 <script>
-  import { fade, fly } from 'svelte/transition';
-  import { cubicOut } from 'svelte/easing';
-  import { enhance } from "$app/forms";
-  export let form;
-  import InputField from "$lib/components/InputField.svelte";
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { enhance } from "$app/forms";
+export let form;
+import InputField from "$lib/components/InputField.svelte";
 
-  let registrationType = 'user';
+let registrationType = "user";
 
-  let isLoading = false;
-
-  
+let isLoading = false;
 </script>
 
 <div class="min-h-[58vh] bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">

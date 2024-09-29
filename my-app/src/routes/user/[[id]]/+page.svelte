@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { PageData } from "./$houdini";
-  export let data: PageData;
-  import Advert from "$lib/components/Advert.svelte";
+import type { PageData } from "./$houdini";
+export let data: PageData;
+import Advert from "$lib/components/Advert.svelte";
 
-  $: ({ User } = data);
-  $: adverts = $User.data?.user.adverts || [];
+$: ({ User } = data);
+$: adverts = $User.data?.user.adverts || [];
 </script>
 
 {#if $User.fetching}

@@ -1,48 +1,56 @@
 <script lang="ts">
-    import { fade, slide } from 'svelte/transition';
-    import { cubicOut } from 'svelte/easing';
-  
-    const faqs = [
-      {
-        question: "How do I create an account?",
-        answer: "To create an account, click on the 'Register' button in the top right corner of the page. You'll be asked to provide some basic information such as your name, email address, and a password. Once you've filled out the form, click 'Create Account' to complete the process."
-      },
-      {
-        question: "How can I list an item for sale?",
-        answer: "After logging in, click on the 'Create Ad' button in the header. Fill out the form with details about your item, including title, description, price, and photos. Once you're satisfied with your listing, click 'Post Ad' to make it live on the marketplace."
-      },
-      {
-        question: "Is it free to list items?",
-        answer: "Yes, it's completely free to list items on our marketplace. We don't charge any listing fees. We only take a small commission when an item is sold."
-      },
-      {
-        question: "How do I contact a seller?",
-        answer: "When viewing an item, you'll see a 'Contact Seller' button. Click this to send a message directly to the seller. You can ask questions about the item or make arrangements for purchase and pickup."
-      },
-      {
-        question: "What payment methods are accepted?",
-        answer: "We support a variety of payment methods including credit/debit cards, PayPal, and bank transfers. The exact payment methods available may depend on your location and the seller's preferences."
-      },
-      {
-        question: "How is shipping handled?",
-        answer: "Shipping is typically arranged between the buyer and seller. Some sellers offer shipping, while others may prefer local pickup. Always check the item description for shipping information, and feel free to ask the seller if you have any questions."
-      },
-      {
-        question: "What should I do if I have a problem with a purchase?",
-        answer: "If you encounter any issues with a purchase, first try to resolve it with the seller through our messaging system. If you can't reach a resolution, please contact our customer support team, and we'll be happy to assist you."
-      },
-      {
-        question: "How can I change my account settings?",
-        answer: "To change your account settings, log in and click on your profile icon in the top right corner. Select 'Settings' from the dropdown menu. Here you can update your personal information, change your password, and manage your notification preferences."
-      }
-    ];
-  
-    let openIndex = -1;
-  
-    function toggleQuestion(index: number) {
-      openIndex = openIndex === index ? -1 : index;
-    }
-  </script>
+import { fade, slide } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+
+const faqs = [
+	{
+		question: "How do I create an account?",
+		answer:
+			"To create an account, click on the 'Register' button in the top right corner of the page. You'll be asked to provide some basic information such as your name, email address, and a password. Once you've filled out the form, click 'Create Account' to complete the process.",
+	},
+	{
+		question: "How can I list an item for sale?",
+		answer:
+			"After logging in, click on the 'Create Ad' button in the header. Fill out the form with details about your item, including title, description, price, and photos. Once you're satisfied with your listing, click 'Post Ad' to make it live on the marketplace.",
+	},
+	{
+		question: "Is it free to list items?",
+		answer:
+			"Yes, it's completely free to list items on our marketplace. We don't charge any listing fees. We only take a small commission when an item is sold.",
+	},
+	{
+		question: "How do I contact a seller?",
+		answer:
+			"When viewing an item, you'll see a 'Contact Seller' button. Click this to send a message directly to the seller. You can ask questions about the item or make arrangements for purchase and pickup.",
+	},
+	{
+		question: "What payment methods are accepted?",
+		answer:
+			"We support a variety of payment methods including credit/debit cards, PayPal, and bank transfers. The exact payment methods available may depend on your location and the seller's preferences.",
+	},
+	{
+		question: "How is shipping handled?",
+		answer:
+			"Shipping is typically arranged between the buyer and seller. Some sellers offer shipping, while others may prefer local pickup. Always check the item description for shipping information, and feel free to ask the seller if you have any questions.",
+	},
+	{
+		question: "What should I do if I have a problem with a purchase?",
+		answer:
+			"If you encounter any issues with a purchase, first try to resolve it with the seller through our messaging system. If you can't reach a resolution, please contact our customer support team, and we'll be happy to assist you.",
+	},
+	{
+		question: "How can I change my account settings?",
+		answer:
+			"To change your account settings, log in and click on your profile icon in the top right corner. Select 'Settings' from the dropdown menu. Here you can update your personal information, change your password, and manage your notification preferences.",
+	},
+];
+
+let openIndex = -1;
+
+function toggleQuestion(index: number) {
+	openIndex = openIndex === index ? -1 : index;
+}
+</script>
   
   <div class="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
     <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden" in:fade={{ duration: 300 }}>

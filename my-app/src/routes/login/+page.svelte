@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { enhance } from "$app/forms";
-  export let form;
-  import InputField from "$lib/components/InputField.svelte";
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { enhance } from "$app/forms";
+export let form;
+import InputField from "$lib/components/InputField.svelte";
 </script>
 
 <div

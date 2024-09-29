@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let data;
+export let data;
 </script>
 
 {#if data && data.errors && data.errors.length > 0}

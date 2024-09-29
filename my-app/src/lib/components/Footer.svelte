@@ -1,5 +1,5 @@
 <script>
-  import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
+import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
 </script>
 
 <footer class="bg-white dark:bg-gray-800 transition-colors duration-300">

@@ -1,30 +1,29 @@
 <!-- <script lang="ts">
-  import { enhance } from "$app/forms";
-  import InputField from "$lib/components/InputField.svelte";
-  export let form;
+import { enhance } from "$app/forms";
+import InputField from "$lib/components/InputField.svelte";
+export let form;
 
+let inputValue = "";
+let selectedCategory = "";
 
-  let inputValue = "";
-  let selectedCategory = ""; 
+const categories = {
+	cars: ["fuelType", "assemblyYear", "model", "brand"],
+};
 
-  const categories = {
-    cars: ["fuelType", "assemblyYear", "model", "brand"],
-  };
+$: dynamicFields =
+	categories[selectedCategory as keyof typeof categories] || [];
 
-  $: dynamicFields =
-    categories[selectedCategory as keyof typeof categories] || [];
-
-  // $: {
-  //   fetch(
-  //     `https://api.geoapify.com/v1/geocode/autocomplete?text=${inputValue}&apiKey=76e56f7178e34d1f90b702904b22e1e4`,
-  //     {
-  //       method: "GET",
-  //     }
-  //   )
-  //     .then((response) => response.json())
-  //     .then((result) => console.log(result))
-  //     .catch((error) => console.log("error", error));
-  // }
+// $: {
+//   fetch(
+//     `https://api.geoapify.com/v1/geocode/autocomplete?text=${inputValue}&apiKey=76e56f7178e34d1f90b702904b22e1e4`,
+//     {
+//       method: "GET",
+//     }
+//   )
+//     .then((response) => response.json())
+//     .then((result) => console.log(result))
+//     .catch((error) => console.log("error", error));
+// }
 </script>
 
 <form method="POST" use:enhance>

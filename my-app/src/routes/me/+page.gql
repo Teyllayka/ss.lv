@@ -1,22 +1,22 @@
 query me {
-  me {
-    id
-    name
-    surname
-    companyName
-    email
-    emailVerified
+	me {
+		id
+		name
+		surname
+		companyName
+		email
+		emailVerified
 
-    adverts {
-      id
-      title
-      price
-      description
-      location
-      createdAt
-      photoUrl
-      additionalPhotos
-      oldPrice
-    }
-  }
+		adverts {
+			id
+			title
+			price
+			description
+			location
+			createdAt
+			photoUrl
+			additionalPhotos
+			oldPrice
+		}
+	}
 }

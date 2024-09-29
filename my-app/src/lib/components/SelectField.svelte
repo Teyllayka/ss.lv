@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  export let name;
-  export let placeholder;
-  export let options: any[] = [];
-  export let errors: any[] = [];
-  export let value: string | undefined | null = null;
-  export let onChange: (e: any) => void = () => {};
+import { fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+export let name;
+export let placeholder;
+export let options: any[] = [];
+export let errors: any[] = [];
+export let value: string | undefined | null = null;
+export let onChange: (e: any) => void = () => {};
 
-  let e: any = null;
-  $: {
-    e = errors.find((x) => x.field == name);
-  }
+let e: any = null;
+$: {
+	e = errors.find((x) => x.field == name);
+}
 </script>
 
 <select

@@ -1,7 +1,7 @@
 query Advert($id: Int!) {
-  advert(id: $id) {
-    advert {
-      id
-    }
-  }
+	advert(id: $id) {
+		advert {
+			id
+		}
+	}
 }

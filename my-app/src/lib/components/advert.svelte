@@ -1,23 +1,23 @@
 <script lang="ts">
-  export let title;
-  export let description;
-  export let date;
-  export let location;
-  export let price;
-  export let oldPrice;
+export let title;
+export let description;
+export let date;
+export let location;
+export let price;
+export let oldPrice;
 
-  function formatDateTime(dateString: string) {
-    const date = new Date(dateString);
+function formatDateTime(dateString: string) {
+	const date = new Date(dateString);
 
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const hours = String(date.getHours()).padStart(2, "0");
+	const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    const formattedDateTime = `${day}.${month} ${hours}:${minutes}`;
+	const formattedDateTime = `${day}.${month} ${hours}:${minutes}`;
 
-    return formattedDateTime;
-  }
+	return formattedDateTime;
+}
 </script>
 
 <div class="advert">

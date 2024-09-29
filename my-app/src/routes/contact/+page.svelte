@@ -1,13 +1,13 @@
 <script>
-  import { fade, fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { Mail, Phone, MapPin } from "lucide-svelte";
-  import { enhance } from "$app/forms";
-  import InputField from "$lib/components/InputField.svelte";
-  import TextField from "$lib/components/TextField.svelte";
-  export let form;
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { Mail, Phone, MapPin } from "lucide-svelte";
+import { enhance } from "$app/forms";
+import InputField from "$lib/components/InputField.svelte";
+import TextField from "$lib/components/TextField.svelte";
+export let form;
 
-  let isSubmitted = false;
+let isSubmitted = false;
 </script>
 
 <div

@@ -1,19 +1,16 @@
 <script>
-    import { fade, fly } from 'svelte/transition';
-    import { cubicOut } from 'svelte/easing';
-  
-    let email = '';
-    let isLoading = false;
-    let isSubmitted = false;
-    let error = '';
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
 
-    import { enhance } from "$app/forms";
-    export let form;
-    import InputField from "$lib/components/InputField.svelte";
+let email = "";
+let isLoading = false;
+let isSubmitted = false;
+let error = "";
 
-  
-   
-  </script>
+import { enhance } from "$app/forms";
+export let form;
+import InputField from "$lib/components/InputField.svelte";
+</script>
   
   <div class="min-h-[58vh] bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 flex justify-center items-center">
     <div     class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 w-full max-w-md transition-colors duration-300"
