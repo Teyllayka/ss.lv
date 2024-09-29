@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
+  import { capitalizeFirstLetter } from "$lib/helpers";
   export let name;
   export let type;
   export let placeholder;
@@ -13,13 +14,14 @@
   }
 </script>
 
-<div class="field">
+<div class="field relative">
   <input
     {type}
     {name}
     id={name}
-    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white {e?.message
-      ? 'border-red-500'
+    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2
+    {e
+      ? 'border-red-500 ring-red-500'
       : 'border-gray-300 dark:border-gray-600'}"
     {value}
     {placeholder}
@@ -33,7 +35,7 @@
       class="text-red-500 text-xs mt-1"
       in:fly={{ y: 10, duration: 300, easing: cubicOut }}
     >
-      {e?.message || ""}
+      {capitalizeFirstLetter(e?.message) || ""}
     </p>
   {/if}
 </div>

@@ -44,7 +44,7 @@
           {#each ["Contact", "FAQ", "Shipping", "Returns"] as item}
             <li>
               <a
-                href="{item.toLowerCase().replace(' ', '-')}"
+                href={item.toLowerCase().replace(" ", "-")}
                 class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
               >
                 {item}
@@ -83,7 +83,7 @@
             <Instagram class="h-6 w-6" />
           </a>
           <a
-            href="#github"
+            href="https://github.com/Teyllayka/ss.lv"
             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
             <span class="sr-only">GitHub</span>

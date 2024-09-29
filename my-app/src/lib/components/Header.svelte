@@ -1,11 +1,19 @@
 <script lang="ts">
-  import { Menu, X, Search, MapPin, Heart, User, Plus, Building2 } from "lucide-svelte";
+  import {
+    Menu,
+    X,
+    Search,
+    MapPin,
+    Heart,
+    User,
+    Plus,
+    Building2,
+  } from "lucide-svelte";
   import { fly } from "svelte/transition";
-  import { clickOutside } from "../helpers/clickOutside";
+  import { clickOutside } from "$lib/helpers";
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
   import { user } from "$lib/userStore";
-
 
   const region: Writable<String> = getContext("region");
 
@@ -56,10 +64,7 @@
       <!-- Logo -->
       <div class="flex justify-start lg:w-0 lg:flex-1">
         <a href="/" class="flex items-center">
-          <img
-            class="h-8 w-auto sm:h-10"
-            src="/placeholder.svg"
-          />
+          <!-- <img class="h-8 w-auto sm:h-10" src="/placeholder.svg" /> -->
           <span class="ml-2 text-xl font-bold text-gray-800 dark:text-white"
             >Adee</span
           >
@@ -156,9 +161,7 @@
             class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <MapPin class="h-5 w-5 mr-2" />
-            <span class="inline-block min-w-[100px] text-left"
-              >{$region}</span
-            >
+            <span class="inline-block min-w-[100px] text-left">{$region}</span>
             <svg
               class="ml-2 h-5 w-5 text-gray-400 group-hover:text-gray-500"
               xmlns="http://www.w3.org/2000/svg"
@@ -209,9 +212,9 @@
           class="ml-8 whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
         >
           {#if $user.isCompany}
-          <Building2 class="h-6 w-6" />
+            <Building2 class="h-6 w-6" />
           {:else}
-          <User class="h-6 w-6" />
+            <User class="h-6 w-6" />
           {/if}
         </a>
         <a
@@ -237,11 +240,11 @@
         <div class="pt-5 pb-6 px-5">
           <div class="flex items-center justify-between">
             <div>
-              <img
+              <!-- <img
                 class="h-8 w-auto"
                 src="/placeholder.svg"
                 alt="Marketplace Logo"
-              />
+              /> -->
             </div>
             <div class="-mr-2">
               <button

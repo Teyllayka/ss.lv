@@ -15,8 +15,7 @@
             ".",
             "./.svelte-kit/types",
             "./$houdini/types"
-        ]
-    },
-    "include": ["src/**/*", "svelte.d.ts"]
+        ],
 
+    }
 }
