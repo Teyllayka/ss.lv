@@ -436,7 +436,7 @@
                 {#if mainPhoto}
                   <img
                     src={mainPhoto}
-                    alt="Main photo preview"
+                    alt="main"
                     class="w-full h-full object-cover rounded-lg"
                   />
                 {:else}

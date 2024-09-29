@@ -16,7 +16,7 @@ use chrono::Utc;
 use entity::{
     advert::{self, Entity as Advert},
     user::{self, Entity as User},
-    payment::{self, Entity as Payment},
+    payment::{self},
 };
 use jwt::SignWithKey;
 use jwt::VerifyWithKey;
@@ -304,7 +304,7 @@ impl UserMutation {
         surname: Option<String>,
         company_name: Option<String>,
         phone: String,
-        avatar_url: Option<String>,
+        _avatar_url: Option<String>,
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
@@ -350,7 +350,7 @@ impl UserMutation {
             ));
         }
 
-        let mut user = user::ActiveModel {
+        let user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
             company_name: Set(company_name),

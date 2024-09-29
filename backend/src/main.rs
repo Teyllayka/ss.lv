@@ -17,11 +17,12 @@ use entity::{
     payment::{self, Entity as Payment},
 };
 use hmac::{Hmac, Mac};
-use migration::{Migrator, MigratorTrait};
+use migration::{Migrator, MigratorTrait, sea_orm::EntityTrait};
 use sea_orm::{
-    ColumnTrait, Database, DatabaseConnection, EntityTrait,
+    ColumnTrait, Database, DatabaseConnection,
     PaginatorTrait, QueryFilter, Set,ActiveModelTrait
 };
+
 use sha2::Sha256;
 use jwt::VerifyWithKey;
 use actix_web::HttpRequest;

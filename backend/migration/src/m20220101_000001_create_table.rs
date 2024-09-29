@@ -93,7 +93,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::Location).string().not_null())
                     .col(
                         ColumnDef::new(Advert::AdditionalPhotos)
-                            .array(ColumnType::String(None))
+                            .array(ColumnType::String(StringLen::None))
                             .not_null(),
                     )
                     .col(ColumnDef::new(Advert::Title).string().not_null())
