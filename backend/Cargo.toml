@@ -11,9 +11,9 @@ members = [".", "entity", "migration"]
 actix-web = "4.9.0"
 async-graphql = "6.0.6"
 async-graphql-actix-web = "6.0.6"
-dotenvy = "0.15"
+dotenvy = "0.15.7"
 sea-orm = { version = "1.0.1", features = ["runtime-tokio" , "sqlx-postgres", "macros" ] }
-sqlx = { version = "0.7.1", features = ["runtime-tokio"] }
+sqlx = { version = "0.7.4", features = ["runtime-tokio"] }
 tokio = {version="1.40", features = ["full"]}
 tracing = "0.1.40"
 tracing-subscriber = "0.3.17"
