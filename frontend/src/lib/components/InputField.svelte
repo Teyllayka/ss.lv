@@ -23,7 +23,7 @@ $: {
     {e
       ? 'border-red-500 ring-red-500'
       : 'border-gray-300 dark:border-gray-600'}"
-    {value}
+    value={value || null}
     {placeholder}
   />
   <label

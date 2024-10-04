@@ -1,4 +1,4 @@
-import { advertSchema, validateSchema } from "$lib/schemas";
+import { advertCarSchema, advertElectronicsSchema, advertSchema, validateSchema } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
 export const actions = {
@@ -10,15 +10,27 @@ export const actions = {
 			data[key] = value;
 		});
 
-		const errs = await validateSchema(advertSchema, data);
+		const category = formData.get("category") as string;
+		const schema = getCategorySchema(category);
+		if (!schema) {
+			console.log("grr")
+			return;
+		}
+		const fullSchema = advertSchema.concat(schema);
+
+
+		const errs = await validateSchema(fullSchema, data);
 		console.log(formData, errs);
 
 		if (errs.length > 0) {
+			const serializableData = { ...data };
+			delete serializableData.mainPhoto;
+		  
 			return fail(400, {
-				data,
-				errors: errs,
+			  data: serializableData,
+			  errors: errs,
 			});
-		}
+		  }
 
 		// if (errs.length > 0 || !email || !password) {
 		//   return fail(400, {
@@ -79,3 +91,16 @@ export function load({ cookies }: any) {
 		return redirect(302, "/login");
 	}
 }
+
+
+function getCategorySchema(category: string) {
+	switch (category) {
+	  case "vehicles":
+		return advertCarSchema;
+	  case "electronics":
+		return advertElectronicsSchema;
+	  default:
+		return null;
+	}
+  }
+  

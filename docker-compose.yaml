@@ -1,23 +1,5 @@
-version: "3"
 
 services:
-  # db:
-  #   image: postgres:latest
-  #   user: postgres
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: ss.lv
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5433:5432"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready"]
-  #     interval: 1s
-  #     timeout: 5s
-  #     retries: 10
   frontend:
     build: ./frontend
     ports:
@@ -31,17 +13,12 @@ services:
     ports:
       - "80:80"
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - RUST_BACKTRACE=1
-  telegram:
-    build: ./telegram-bot
-    env_file:
-      - .env
-    depends_on:
-      - backend
-#     depends_on:
-#       - db
-
-# volumes:
-#   db_data:
+  # telegram:
+  #   build: ./telegram-bot
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - backend

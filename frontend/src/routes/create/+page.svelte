@@ -1,55 +1,3 @@
-<!-- <script lang="ts">
-import { enhance } from "$app/forms";
-import InputField from "$lib/components/InputField.svelte";
-export let form;
-
-let inputValue = "";
-let selectedCategory = "";
-
-const categories = {
-	cars: ["fuelType", "assemblyYear", "model", "brand"],
-};
-
-$: dynamicFields =
-	categories[selectedCategory as keyof typeof categories] || [];
-
-// $: {
-//   fetch(
-//     `https://api.geoapify.com/v1/geocode/autocomplete?text=${inputValue}&apiKey=76e56f7178e34d1f90b702904b22e1e4`,
-//     {
-//       method: "GET",
-//     }
-//   )
-//     .then((response) => response.json())
-//     .then((result) => console.log(result))
-//     .catch((error) => console.log("error", error));
-// }
-</script>
-
-<form method="POST" use:enhance>
-  {JSON.stringify(form)}
-  <input type="text" bind:value={inputValue} />
-
-  <InputField name="price" type="number" placeholder="price" value={form?.data.price}     errors={form?.errors || []}
-  />
-  <InputField name="title" type="text" placeholder="title"     errors={form?.errors || []}
-  />
-  <InputField name="description" type="textfield" placeholder="description"     errors={form?.errors || []}
-  />
-
-  <select bind:value={selectedCategory}>
-    <option value="">Select a category</option>
-    <option value="cars">Cars</option>
-  </select>
-
-  {#each dynamicFields as field}
-    <InputField type="text" name={field} placeholder={field}     errors={form?.errors || []}
-    />
-  {/each}
-
-  <button type="submit">Submit</button>
-</form> -->
-
 <script lang="ts">
   import { fade, fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
@@ -231,7 +179,7 @@ $: dynamicFields =
         Create New Advert
       </h1>
 
-      <form method="post" use:enhance class="space-y-6">
+      <form method="post" use:enhance class="space-y-6" enctype="multipart/form-data">
         <div
           class="relative"
           in:fly={{ y: 20, duration: 300, delay: 100, easing: cubicOut }}
@@ -259,6 +207,19 @@ $: dynamicFields =
         </div>
 
         <div
+        class="relative"
+          in:fly={{ y: 20, duration: 300, delay: 100, easing: cubicOut }}
+        >
+          <InputField
+            name="price"
+            type="number"
+            placeholder="Price"
+            errors={form?.errors || []}
+            value={form?.data.price}
+          />
+        </div>
+
+        <div
           class="relative"
           in:fly={{ y: 20, duration: 300, delay: 300, easing: cubicOut }}
         >
@@ -268,30 +229,6 @@ $: dynamicFields =
             errors={form?.errors || []}
             value={form?.data.description || ""}
           />
-          <!-- <textarea
-            id="description"
-            bind:value={description}
-            required
-            rows="4"
-            class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white {errors.description
-              ? 'border-red-500'
-              : 'border-gray-300 dark:border-gray-600'}"
-            placeholder="Description"
-          ></textarea>
-          <label
-            for="description"
-            class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
-          >
-            Description
-          </label>
-          {#if errors.description}
-            <p
-              class="text-red-500 text-xs mt-1"
-              in:fly={{ y: 10, duration: 300, easing: cubicOut }}
-            >
-              {errors.description}
-            </p>
-          {/if} -->
         </div>
 
         <div
@@ -308,6 +245,7 @@ $: dynamicFields =
           /> -->
           <select
             id="category"
+            name="category"
             bind:value={category}
             on:change={handleCategoryChange}
             required
@@ -338,78 +276,22 @@ $: dynamicFields =
             {#each categoryFields[category] as field}
               <div class="relative">
                 {#if field.type === "select"}
-                  <select
-                    id={field.name}
-                    bind:value={dynamicFields[field.name]}
-                    required
-                    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out text-gray-800 dark:text-white {errors[
-                      field.name
-                    ]
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'}"
-                  >
-                    <option value="">Select {field.label}</option>
-                    {#if field.options}
-                      {#each field.options as option}
-                        <option value={option}>{option}</option>
-                      {/each}
-                    {/if}
-                  </select>
+
+                  <SelectField
+                    name={field.name}
+                    placeholder={`Select ${field.label}`}
+                    options={field.options}
+                    errors={form?.errors || []}
+                    value={form?.data[field.name]}
+                  />
                 {:else if field.type === "text" || field.type == "number"}
-                  <!-- <InputField
+                  <InputField
                     name={field.name}
                     type={field.type}
                     placeholder={field.label}
                     errors={form?.errors || []}
                     value={form?.data[field.name]}
-                  /> -->
-
-                  <input
-                    type="text"
-                    id={field.name}
-                    bind:value={dynamicFields[field.name]}
-                    required
-                    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white {errors[
-                      field.name
-                    ]
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'}"
-                    placeholder={field.label}
                   />
-                  <label
-                    for={field.name}
-                    class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
-                  >
-                    {field.label}
-                  </label>
-                {:else if field.type === "number"}
-                  <input
-                    type="number"
-                    id={field.name}
-                    bind:value={dynamicFields[field.name]}
-                    required
-                    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white {errors[
-                      field.name
-                    ]
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'}"
-                    placeholder={field.label}
-                  />
-                  <label
-                    for={field.name}
-                    class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
-                  >
-                    {field.label}
-                  </label>
-                {/if}
-
-                {#if errors[field.name]}
-                  <p
-                    class="text-red-500 text-xs mt-1"
-                    in:fly={{ y: 10, duration: 300, easing: cubicOut }}
-                  >
-                    {errors[field.name]}
-                  </p>
                 {/if}
               </div>
             {/each}
@@ -455,6 +337,7 @@ $: dynamicFields =
                 <input
                   id="mainPhoto"
                   type="file"
+                  name="mainPhoto"
                   accept="image/*"
                   on:change={handleMainPhotoChange}
                   class="hidden"
