@@ -1,168 +1,168 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { Camera, X } from "lucide-svelte";
-  import { enhance } from "$app/forms";
-  import InputField from "$lib/components/InputField.svelte";
-  import SelectField from "$lib/components/SelectField.svelte";
-  import TextField from "$lib/components/TextField.svelte";
-  export let form;
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { Camera, X } from "lucide-svelte";
+import { enhance } from "$app/forms";
+import InputField from "$lib/components/InputField.svelte";
+import SelectField from "$lib/components/SelectField.svelte";
+import TextField from "$lib/components/TextField.svelte";
+export let form;
 
-  let title = "";
-  let location = "";
-  let description = "";
-  let category: keyof typeof categoryFields | "" = "";
-  let isLoading = false;
-  let errors: Record<string, string> = {};
-  let dynamicFields: Record<string, string> = {};
-  let mainPhoto: string | null = null;
-  let additionalPhotos: string[] = [];
+let title = "";
+let location = "";
+let description = "";
+let category: keyof typeof categoryFields | "" = "";
+let isLoading = false;
+let errors: Record<string, string> = {};
+let dynamicFields: Record<string, string> = {};
+let mainPhoto: string | null = null;
+let additionalPhotos: string[] = [];
 
-  const categories = [
-    { value: "electronics", label: "Electronics" },
-    { value: "vehicles", label: "Vehicles" },
-    { value: "furniture", label: "Furniture" },
-    { value: "clothing", label: "Clothing" },
-  ];
+const categories = [
+	{ value: "electronics", label: "Electronics" },
+	{ value: "vehicles", label: "Vehicles" },
+	{ value: "furniture", label: "Furniture" },
+	{ value: "clothing", label: "Clothing" },
+];
 
-  const categoryFields = {
-    electronics: [
-      { name: "brand", label: "Brand", type: "text" },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used", "For Parts"],
-      },
-    ],
-    vehicles: [
-      { name: "make", label: "Make", type: "text" },
-      { name: "model", label: "Model", type: "text" },
-      { name: "year", label: "Year", type: "number" },
-      { name: "mileage", label: "Mileage", type: "number" },
-      {
-        name: "fuelType",
-        label: "Fuel Type",
-        type: "select",
-        options: ["Petrol", "Diesel", "Electric", "Hybrid"],
-      },
-    ],
-    furniture: [
-      { name: "material", label: "Material", type: "text" },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used", "Antique"],
-      },
-    ],
-    clothing: [
-      { name: "size", label: "Size", type: "text" },
-      {
-        name: "gender",
-        label: "Gender",
-        type: "select",
-        options: ["Men", "Women", "Unisex", "Kids"],
-      },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used"],
-      },
-    ],
-  };
+const categoryFields = {
+	electronics: [
+		{ name: "brand", label: "Brand", type: "text" },
+		{
+			name: "condition",
+			label: "Condition",
+			type: "select",
+			options: ["New", "Like New", "Used", "For Parts"],
+		},
+	],
+	vehicles: [
+		{ name: "make", label: "Make", type: "text" },
+		{ name: "model", label: "Model", type: "text" },
+		{ name: "year", label: "Year", type: "number" },
+		{ name: "mileage", label: "Mileage", type: "number" },
+		{
+			name: "fuelType",
+			label: "Fuel Type",
+			type: "select",
+			options: ["Petrol", "Diesel", "Electric", "Hybrid"],
+		},
+	],
+	furniture: [
+		{ name: "material", label: "Material", type: "text" },
+		{
+			name: "condition",
+			label: "Condition",
+			type: "select",
+			options: ["New", "Like New", "Used", "Antique"],
+		},
+	],
+	clothing: [
+		{ name: "size", label: "Size", type: "text" },
+		{
+			name: "gender",
+			label: "Gender",
+			type: "select",
+			options: ["Men", "Women", "Unisex", "Kids"],
+		},
+		{
+			name: "condition",
+			label: "Condition",
+			type: "select",
+			options: ["New", "Like New", "Used"],
+		},
+	],
+};
 
-  function handleCategoryChange() {
-    dynamicFields = {};
-    if (category && categoryFields[category]) {
-      categoryFields[category].forEach((field) => {
-        dynamicFields[field.name] = "";
-      });
-    }
-  }
+function handleCategoryChange() {
+	dynamicFields = {};
+	if (category && categoryFields[category]) {
+		categoryFields[category].forEach((field) => {
+			dynamicFields[field.name] = "";
+		});
+	}
+}
 
-  function handleMainPhotoChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      mainPhoto = URL.createObjectURL(file);
-    }
-  }
+function handleMainPhotoChange(event: Event) {
+	const file = (event.target as HTMLInputElement).files?.[0];
+	if (file) {
+		mainPhoto = URL.createObjectURL(file);
+	}
+}
 
-  function handleAdditionalPhotosChange(event: Event) {
-    const files = (event.target as HTMLInputElement).files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
-      }
-    }
-  }
+function handleAdditionalPhotosChange(event: Event) {
+	const files = (event.target as HTMLInputElement).files;
+	if (files) {
+		for (let i = 0; i < files.length; i++) {
+			additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
+		}
+	}
+}
 
-  function removeAdditionalPhoto(index: number) {
-    additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
-  }
+function removeAdditionalPhoto(index: number) {
+	additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
+}
 
-  function validateForm() {
-    errors = {};
-    let isValid = true;
+function validateForm() {
+	errors = {};
+	let isValid = true;
 
-    if (!title.trim()) {
-      errors.title = "Title is required";
-      isValid = false;
-    }
+	if (!title.trim()) {
+		errors.title = "Title is required";
+		isValid = false;
+	}
 
-    if (!location.trim()) {
-      errors.location = "Location is required";
-      isValid = false;
-    }
+	if (!location.trim()) {
+		errors.location = "Location is required";
+		isValid = false;
+	}
 
-    if (!description.trim()) {
-      errors.description = "Description is required";
-      isValid = false;
-    }
+	if (!description.trim()) {
+		errors.description = "Description is required";
+		isValid = false;
+	}
 
-    if (!category) {
-      errors.category = "Category is required";
-      isValid = false;
-    }
+	if (!category) {
+		errors.category = "Category is required";
+		isValid = false;
+	}
 
-    if (!mainPhoto) {
-      errors.mainPhoto = "Main photo is required";
-      isValid = false;
-    }
+	if (!mainPhoto) {
+		errors.mainPhoto = "Main photo is required";
+		isValid = false;
+	}
 
-    Object.keys(dynamicFields).forEach((field) => {
-      if (!dynamicFields[field].trim()) {
-        errors[field] = `${field} is required`;
-        isValid = false;
-      }
-    });
+	Object.keys(dynamicFields).forEach((field) => {
+		if (!dynamicFields[field].trim()) {
+			errors[field] = `${field} is required`;
+			isValid = false;
+		}
+	});
 
-    return isValid;
-  }
+	return isValid;
+}
 
-  async function handleSubmit() {
-    if (validateForm()) {
-      isLoading = true;
+async function handleSubmit() {
+	if (validateForm()) {
+		isLoading = true;
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+		// Simulate API call
+		await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // TODO: Replace this with your actual API call to create the advert
-      console.log("Advert created:", {
-        title,
-        location,
-        description,
-        category,
-        dynamicFields,
-        mainPhoto,
-        additionalPhotos,
-      });
+		// TODO: Replace this with your actual API call to create the advert
+		console.log("Advert created:", {
+			title,
+			location,
+			description,
+			category,
+			dynamicFields,
+			mainPhoto,
+			additionalPhotos,
+		});
 
-      isLoading = false;
-      // TODO: Redirect to the newly created advert page or show a success message
-    }
-  }
+		isLoading = false;
+		// TODO: Redirect to the newly created advert page or show a success message
+	}
+}
 </script>
 
 <div

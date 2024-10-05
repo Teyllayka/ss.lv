@@ -1,54 +1,84 @@
 type Advert {
-  additionalPhotos: [String!]!
-  available: Boolean!
-  category: String!
-  createdAt: NaiveDateTime!
-  description: String!
-  id: Int!
-  isFavorited: Boolean!
-  location: String!
-  oldPrice: Float!
-  photoUrl: String!
-  price: Float!
-  review: reviews
-  soldTo: Int
-  specs: [specifications!]!
-  title: String!
-  updatedAt: NaiveDateTime!
-  user: User!
-  userId: Int!
+	additionalPhotos: [String!]!
+	available: Boolean!
+	category: String!
+	createdAt: NaiveDateTime!
+	description: String!
+	id: Int!
+	isFavorited: Boolean!
+	location: String!
+	oldPrice: Float!
+	photoUrl: String!
+	price: Float!
+	review: reviews
+	soldTo: Int
+	specs: [specifications!]!
+	title: String!
+	updatedAt: NaiveDateTime!
+	user: User!
+	userId: Int!
 }
 
 type AdvertWithUser {
-  advert: Advert!
-  belongsToUser: Boolean!
-  isAdmin: Boolean!
-  user: User!
+	advert: Advert!
+	belongsToUser: Boolean!
+	isAdmin: Boolean!
+	user: User!
 }
 
-"""A scalar that can represent any JSON value."""
+"""
+A scalar that can represent any JSON value.
+"""
 scalar JSON
 
 type LoginResponse {
-  accessToken: String!
-  refreshToken: String!
+	accessToken: String!
+	refreshToken: String!
 }
 
 type Mutation {
-  addFavorite(advertId: Int!): favorites!
-  connectAccount(code: String!): String!
-  createAdvert(category: String!, data: JSON!, description: String!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
-  deleteAdvert(advertId: Int!): Advert!
-  edit(avatarUrl: String, companyName: String, name: String, password: String!, phone: String!, surname: String): User!
-  editAdvert(description: String!, id: Int!, location: String!, photos: [String!]!, price: Float!, title: String!): Advert!
-  login(email: String!, password: String!): LoginResponse!
-  refresh(refreshToken: String!): LoginResponse!
-  register(companyName: String, email: String!, name: String, password: String!, surname: String): User!
-  removeFavorite(advertId: Int!): favorites!
-  resendEmail: String!
-  topUpBalance(amount: Int!): String!
-  verifyEmail(token: String!): String!
-  writeReview(advertId: Int!, message: String!, rating: Int!): reviews!
+	addFavorite(advertId: Int!): favorites!
+	connectAccount(code: String!): String!
+	createAdvert(
+		category: String!
+		data: JSON!
+		description: String!
+		location: String!
+		photos: [String!]!
+		price: Float!
+		title: String!
+	): Advert!
+	deleteAdvert(advertId: Int!): Advert!
+	edit(
+		avatarUrl: String
+		companyName: String
+		name: String
+		password: String!
+		phone: String!
+		surname: String
+	): User!
+	editAdvert(
+		description: String!
+		id: Int!
+		location: String!
+		photos: [String!]!
+		price: Float!
+		title: String!
+	): Advert!
+	login(email: String!, password: String!): LoginResponse!
+	refresh(refreshToken: String!): LoginResponse!
+	register(
+		companyName: String
+		email: String!
+		name: String
+		password: String!
+		surname: String
+	): User!
+	removeFavorite(advertId: Int!): favorites!
+	resendEmail: String!
+	topUpBalance(amount: Int!): String!
+	verifyEmail(token: String!): String!
+	writeReview(advertId: Int!, message: String!, rating: Int!): reviews!
 }
 
 """
@@ -61,60 +91,60 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Query {
-  advert(id: Int!): AdvertWithUser!
-  getAdverts(limit: Int!, offset: Int!): [Advert!]!
-  getAdvertsByCategory(category: String!): [Advert!]!
-  getFavorites: [Advert!]!
-  me: User!
-  stats: Statistics!
-  user(id: Int!): User!
+	advert(id: Int!): AdvertWithUser!
+	getAdverts(limit: Int!, offset: Int!): [Advert!]!
+	getAdvertsByCategory(category: String!): [Advert!]!
+	getFavorites: [Advert!]!
+	me: User!
+	stats: Statistics!
+	user(id: Int!): User!
 }
 
 type Statistics {
-  advertCount: Int!
-  todayAdvertCount: Int!
-  todayUserCount: Int!
-  userCount: Int!
+	advertCount: Int!
+	todayAdvertCount: Int!
+	todayUserCount: Int!
+	userCount: Int!
 }
 
 type User {
-  adverts: [Advert!]!
-  avatarUrl: String
-  balance: Float!
-  companyName: String
-  createdAt: NaiveDateTime!
-  email: String
-  emailVerified: Boolean!
-  id: Int!
-  isAdmin: Boolean!
-  name: String
-  phone: String
-  rating: Float!
-  reviews: [reviews!]!
-  surname: String
-  telegramId: String
-  updatedAt: NaiveDateTime!
+	adverts: [Advert!]!
+	avatarUrl: String
+	balance: Float!
+	companyName: String
+	createdAt: NaiveDateTime!
+	email: String
+	emailVerified: Boolean!
+	id: Int!
+	isAdmin: Boolean!
+	name: String
+	phone: String
+	rating: Float!
+	reviews: [reviews!]!
+	surname: String
+	telegramId: String
+	updatedAt: NaiveDateTime!
 }
 
 type favorites {
-  advertId: Int!
-  createdAt: NaiveDateTime!
-  id: Int!
-  userId: Int!
+	advertId: Int!
+	createdAt: NaiveDateTime!
+	id: Int!
+	userId: Int!
 }
 
 type reviews {
-  advertId: Int!
-  createdAt: NaiveDateTime!
-  id: Int!
-  message: String!
-  rating: Int!
-  userId: Int!
+	advertId: Int!
+	createdAt: NaiveDateTime!
+	id: Int!
+	message: String!
+	rating: Int!
+	userId: Int!
 }
 
 type specifications {
-  advertId: Int!
-  id: Int!
-  key: String!
-  value: String!
+	advertId: Int!
+	id: Int!
+	key: String!
+	value: String!
 }

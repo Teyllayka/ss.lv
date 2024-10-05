@@ -70,32 +70,31 @@ interface AdvertFormValues {
 	condition: string;
 	mainPhoto: File;
 }
-  
 
 export const advertSchema: ObjectSchema<AdvertFormValues> = object({
 	title: string().required("Title is required"),
 	description: string()
-	  .required("Description is required")
-	  .min(100, "Description must be at least 100 characters long"),
+		.required("Description is required")
+		.min(100, "Description must be at least 100 characters long"),
 	price: string().required("Price is required"),
 	location: string().required("Location is required"),
 	condition: string()
-	  .oneOf(["New", "Used"], "Invalid condition")
-	  .required("Condition is required"),
+		.oneOf(["New", "Used"], "Invalid condition")
+		.required("Condition is required"),
 	mainPhoto: mixed<File>()
-	  .required("Main photo is required")
-	  .test("fileType", "Unsupported file format", (value) => {
-		if (!value) return false; // If no file is selected
-		if (!(value instanceof File)) return false; // Type guard
-		return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-	  })
-	  .test("fileSize", "File size too large", (value) => {
-		if (!value) return false; // If no file is selected
-		if (!(value instanceof File)) return false; // Type guard
-		const maxSize = 5 * 1024 * 1024; // 5MB
-		return value.size <= maxSize;
-	  }),
-  });
+		.required("Main photo is required")
+		.test("fileType", "Unsupported file format", (value) => {
+			if (!value) return false; // If no file is selected
+			if (!(value instanceof File)) return false; // Type guard
+			return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
+		})
+		.test("fileSize", "File size too large", (value) => {
+			if (!value) return false; // If no file is selected
+			if (!(value instanceof File)) return false; // Type guard
+			const maxSize = 5 * 1024 * 1024; // 5MB
+			return value.size <= maxSize;
+		}),
+});
 
 export let advertCarSchema = object({
 	engineFuelType: string().required(),

@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { fade } from "svelte/transition";
-  import { Heart, Star, MapPin } from "lucide-svelte";
-  import { graphql } from "$houdini";
-  import { formatDate } from "$lib/helpers";
-    import Advert from "$lib/components/Advert.svelte";
-  
+import { onMount } from "svelte";
+import { fade } from "svelte/transition";
+import { Heart, Star, MapPin } from "lucide-svelte";
+import { graphql } from "$houdini";
+import { formatDate } from "$lib/helpers";
+import Advert from "$lib/components/Advert.svelte";
 
-  const adverts = graphql(`
+const adverts = graphql(`
     query Adverts($offset: Int!) {
       getAdverts(limit: 10, offset: $offset) @paginate {
         id
@@ -25,14 +24,11 @@
     }
   `);
 
-  let isLoggedIn = false;
+let isLoggedIn = false;
 
-  onMount(async () => {
-    await adverts.fetch({ variables: { offset: 0 } });
-  });
-
-  
-
+onMount(async () => {
+	await adverts.fetch({ variables: { offset: 0 } });
+});
 </script>
 
 {JSON.stringify($adverts)}

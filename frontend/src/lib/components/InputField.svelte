@@ -10,7 +10,7 @@ export let value: string | undefined | null = null;
 
 let e: any = null;
 $: {
-	e = errors.find((x) => x.field == name);
+	e = errors.find((x) => x.field === name);
 }
 </script>
 

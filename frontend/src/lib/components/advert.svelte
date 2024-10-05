@@ -1,41 +1,39 @@
 <script lang="ts">
-  import { formatDate } from "$lib/helpers";
-  import { fade } from "svelte/transition";
-  import { goto } from "$app/navigation";
-  import { Heart, Star, MapPin } from "lucide-svelte";
+import { formatDate } from "$lib/helpers";
+import { fade } from "svelte/transition";
+import { goto } from "$app/navigation";
+import { Heart, Star, MapPin } from "lucide-svelte";
 
-  let isLoggedIn = false;
+let isLoggedIn = false;
 
-  export let advert;
-  export let userPage;
+export let advert;
+export let userPage;
 
+function handleImageScroll(event: any) {
+	const container = event.currentTarget;
+	if (!container) return;
+	const containerWidth = container.offsetWidth;
+	const mouseX = event.clientX - container.getBoundingClientRect().left;
+	const scrollPercentage = mouseX / containerWidth;
+	const maxScroll = container.scrollWidth - containerWidth;
+	container.scrollLeft = maxScroll * scrollPercentage;
+}
 
-  function handleImageScroll(event: any) {
-    const container = event.currentTarget;
-    if(!container) return;
-    const containerWidth = container.offsetWidth;
-    const mouseX = event.clientX - container.getBoundingClientRect().left;
-    const scrollPercentage = mouseX / containerWidth;
-    const maxScroll = container.scrollWidth - containerWidth;
-    container.scrollLeft = maxScroll * scrollPercentage;
-  }
+function toggleSaveAdvert(advert: any) {
+	if (isLoggedIn) {
+		advert.isFavorited = !advert.isSaved;
+		console.log(
+			advert.isSaved ? "Saving advert:" : "Unsaving advert:",
+			advert.id,
+		);
+	} else {
+		console.log("User needs to log in to save adverts");
+	}
+}
 
-  function toggleSaveAdvert(advert: any) {
-    if (isLoggedIn) {
-      advert.isFavorited = !advert.isSaved;
-      console.log(
-        advert.isSaved ? "Saving advert:" : "Unsaving advert:",
-        advert.id
-      );
-    } else {
-      console.log("User needs to log in to save adverts");
-    }
-  }
-
-  function navigateToUserProfile(userId: number) {
-    goto(`/user/${userId}`);
-  }
-
+function navigateToUserProfile(userId: number) {
+	goto(`/user/${userId}`);
+}
 </script>
 <div
 class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"

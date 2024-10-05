@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { capitalizeFirstLetter } from "../helpers";
-  export let name;
-  export let placeholder;
-  export let errors: any[] = [];
-  export let value: string | undefined | null = null;
+import { fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { capitalizeFirstLetter } from "../helpers";
+export let name;
+export let placeholder;
+export let errors: any[] = [];
+export let value: string | undefined | null = null;
 
-  let e: any = null;
-  $: {
-    e = errors.find((x) => x.field == name);
-  }
+let e: any = null;
+$: {
+	e = errors.find((x) => x.field === name);
+}
 </script>
 
 <textarea
