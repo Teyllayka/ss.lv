@@ -10,10 +10,12 @@ type Advert {
   oldPrice: Float!
   photoUrl: String!
   price: Float!
+  review: reviews
   soldTo: Int
   specs: [specifications!]!
   title: String!
   updatedAt: NaiveDateTime!
+  user: User!
   userId: Int!
 }
 
@@ -87,6 +89,7 @@ type User {
   isAdmin: Boolean!
   name: String
   phone: String
+  rating: Float!
   reviews: [reviews!]!
   surname: String
   telegramId: String

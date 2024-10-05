@@ -1,15 +1,14 @@
 use std::{
-    collections::BTreeMap,  time::{SystemTime, UNIX_EPOCH}
+    collections::{BTreeMap, HashSet},  time::{SystemTime, UNIX_EPOCH}
 };
 
 use crate::{verify_access_token, Context, Token};
 use deadpool_redis::redis::{cmd, RedisError};
 use rand::{distributions::Alphanumeric, Rng};
 use sea_orm::{
-    ActiveModelTrait, EntityTrait,
-    ModelTrait, Set,
+    ActiveModelTrait, EntityTrait, ModelTrait, QueryFilter, Set
 };
-
+use sea_orm::ColumnTrait;
 use actix_web::Result;
 use async_graphql::{Object, SimpleObject};
 use chrono::Utc;
@@ -17,6 +16,8 @@ use entity::{
     advert::{self, Entity as Advert},
     user::{self, Entity as User},
     payment::{self},
+    reviews::{self, Entity as Reviews},
+    favorites::{self},
 };
 use jwt::SignWithKey;
 use jwt::VerifyWithKey;
@@ -50,31 +51,98 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
+    // async fn user(
+    //     &self,
+    //     ctx: &async_graphql::Context<'_>,
+    //     id: i32,
+    // ) -> Result<user::Model, async_graphql::Error> {
+    //     let my_ctx = ctx.data::<Context>().unwrap();
+
+    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+    //     let mut user = match user {
+    //         Some(user) => user,
+    //         None => {
+    //             return Err(async_graphql::Error::new(
+    //                 "No user found".to_string(),
+    //             ))
+    //         }
+    //     };
+
+    //     let mut adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
+    //     let mut user_reviews: Vec<reviews::Model> = Vec::new();
+
+    //     for advert in &mut adverts {
+    //         let review = advert.find_related(Reviews).one(&my_ctx.db).await?;
+    //         user_reviews.push(review.clone().unwrap());
+    //         advert.review = review;
+    //     }
+
+    //     user.adverts = adverts;
+
+    //     return Ok(user);
+    // }
+
     async fn user(
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-        let mut user = match user {
-            Some(user) => user,
-            None => {
-                return Err(async_graphql::Error::new(
-                    "No user found".to_string(),
-                ))
+    
+        let user = User::find_by_id(id)
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("No user found"))?;
+    
+        let adverts_with_review = Advert::find()
+            .filter(advert::Column::UserId.eq(user.id))
+            .find_also_related(Reviews)
+            .all(&my_ctx.db)
+            .await?;
+    
+        let mut favorite_advert_ids = HashSet::new();
+    
+        if let Some(token) = ctx.data_opt::<Token>().map(|token| token.0.clone()) {
+            if let Ok(claims) = verify_access_token(token, &my_ctx.access_key) {
+                let current_user_id: i32 = claims["id"].parse().unwrap_or(0);
+    
+                let favorite_adverts = favorites::Entity::find()
+                    .filter(favorites::Column::UserId.eq(current_user_id))
+                    .all(&my_ctx.db)
+                    .await?;
+    
+                favorite_advert_ids = favorite_adverts
+                    .into_iter()
+                    .map(|fav| fav.advert_id)
+                    .collect();
             }
-        };
-
-        let adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
-
+        }
+    
+        let adverts: Vec<advert::Model> = adverts_with_review
+            .into_iter()
+            .map(|(mut advert, review_opt)| {
+                advert.review = review_opt;
+                advert.is_favorited = favorite_advert_ids.contains(&advert.id);
+                advert
+            })
+            .collect();
+    
+        let mut user = user;
         user.adverts = adverts;
+    
+        let user_reviews: Vec<reviews::Model> = user.find_related(Reviews).all(&my_ctx.db).await?;
+        user.reviews = user_reviews;
 
-        return Ok(user);
+        if user.reviews.len() == 0 {
+            user.rating = 0.0;
+        } else {
+            user.rating = user.reviews.iter().map(|review| review.rating).sum::<i32>() as f32 / user.reviews.len() as f32;
+        }
+
+    
+        Ok(user)
     }
-
     async fn me(
         &self,
         ctx: &async_graphql::Context<'_>,

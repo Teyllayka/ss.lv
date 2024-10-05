@@ -6,17 +6,5 @@ query HeaderMe {
 		companyName
 		email
 		emailVerified
-
-		adverts {
-			id
-			title
-			price
-			description
-			location
-			createdAt
-			photoUrl
-			additionalPhotos
-			oldPrice
-		}
 	}
 }

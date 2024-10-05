@@ -2,7 +2,7 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject, Default)]
 #[sea_orm(table_name = "user")]
 #[graphql(name = "User")]
 pub struct Model {
@@ -27,6 +27,8 @@ pub struct Model {
     pub adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]
     pub reviews: Vec<super::reviews::Model>,
+    #[sea_orm(ignore)]
+    pub rating: f32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

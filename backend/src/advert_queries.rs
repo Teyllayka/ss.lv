@@ -133,18 +133,22 @@ impl AdvertQuery {
             advert.specs = specs;
         }
 
+       
+        
+        for advert in &mut adverts {
+            let specs: Vec<specifications::Model> =
+                advert.find_related(Specifications).all(&my_ctx.db).await?;
+            let user = User::find_by_id(advert.user_id).one(&my_ctx.db).await?;
+            advert.specs = specs;
+            advert.user = user.unwrap();
+        }
+
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
             Some(token) => token,
             None => {
                 return Ok(adverts);
             }
         };
-        
-        for advert in &mut adverts {
-            let specs: Vec<specifications::Model> =
-                advert.find_related(Specifications).all(&my_ctx.db).await?;
-            advert.specs = specs;
-        }
 
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
@@ -168,10 +172,7 @@ impl AdvertQuery {
                     advert.is_favorited = true;
                 }
             }
-        } else {
-            return Err(async_graphql::Error::new("Wrong token".to_string()));
         }
-        
 
         return Ok(adverts);
     }

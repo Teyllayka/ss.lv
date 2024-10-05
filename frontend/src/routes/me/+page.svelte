@@ -16,7 +16,7 @@
 
   $: ({ me } = data);
 
-  $: adverts = $me.data?.me.adverts || [];
+  $: adverts = $me.data?.me.adverts;
 
   function logout() {
     fetch("/api/logout", {
@@ -47,29 +47,14 @@
     <button on:click={() => verify()}>verify</button>
   {/if}
 
-  <section class="adverts">
-    {#each adverts as advert}
-      <Advert
-        title={advert.title}
-        description={advert.description}
-        date={advert.createdAt}
-        location={advert.location}
-        price={advert.price}
-        oldPrice={advert.oldPrice}
-      />
-    {/each}
-  </section>
+  {#if adverts}
+      {#each adverts as advert}
+        <Advert
+          {advert}
+          userPage={true}
+        />
+      {/each}
+  {/if}
 {/if}
 
 <button on:click={logout}>logout</button>
-
-<style lang="scss">
-  .adverts {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 42px 100px;
-  }
-</style>

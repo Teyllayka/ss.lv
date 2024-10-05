@@ -26,6 +26,12 @@ pub struct Model {
     pub is_favorited: bool,
     #[sea_orm(ignore)]
     pub specs: Vec<super::specifications::Model>,
+
+    #[sea_orm(ignore)]
+    pub user: super::user::Model,
+
+    #[sea_orm(ignore)]
+    pub review: Option<super::reviews::Model>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -72,6 +78,12 @@ impl Related<super::specifications::Entity> for Entity {
 impl Related<super::favorites::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Favorites.def()
+    }
+}
+
+impl Related<super::reviews::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Review.def()
     }
 }
 

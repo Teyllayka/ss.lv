@@ -2,7 +2,10 @@ query User($id: Int!) {
 	user(id: $id) {
 		id
 		name
+		surname
+		phone
 		email
+		rating
 		adverts {
 			id
 			title
@@ -10,9 +13,16 @@ query User($id: Int!) {
 			description
 			location
 			createdAt
+			available
 			photoUrl
 			additionalPhotos
 			oldPrice
+			isFavorited
+
+			review {
+				rating
+				id
+			}
 		}
 	}
 }
