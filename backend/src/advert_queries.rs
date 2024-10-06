@@ -8,7 +8,7 @@ use actix_web::Result;
 use async_graphql::{Json, Object, SimpleObject};
 use chrono::Utc;
 use entity::{
-    advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews, specifications::{self, Entity as Specifications}, user::{self, Entity as User}
+    advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews::{self, Entity as Reviews}, specifications::{self, Entity as Specifications}, user::{self, Entity as User}
 };
 use jwt::VerifyWithKey;
 use sea_orm::{
@@ -112,6 +112,89 @@ impl AdvertQuery {
         });
     }
 
+    // async fn get_adverts(
+    //     &self,
+    //     ctx: &async_graphql::Context<'_>,
+    //     offset: i32,
+    //     limit: i32,
+    // ) -> Result<Vec<advert::Model>, async_graphql::Error> {
+    //     let my_ctx = ctx.data::<Context>().unwrap();
+    //     let mut adverts: Vec<advert::Model> = advert::Entity::find()
+    //         .order_by(advert::Column::Id, Order::Desc)
+    //         .offset(offset as u64)
+    //         .limit(limit as u64)
+    //         .filter(advert::Column::Available.eq(true))
+    //         .all(&my_ctx.db)
+    //         .await?;
+
+    //     for advert in &mut adverts {
+    //         let specs: Vec<specifications::Model> =
+    //             advert.find_related(Specifications).all(&my_ctx.db).await?;
+    //         advert.specs = specs;
+    //     }
+
+       
+        
+    //     for advert in &mut adverts {
+    //         let specs: Vec<specifications::Model> =
+    //             advert.find_related(Specifications).all(&my_ctx.db).await?;
+    //         let user = User::find_by_id(advert.user_id).one(&my_ctx.db).await?.unwrap();
+
+
+    //         let adverts_with_review = Advert::find()
+    //             .filter(advert::Column::UserId.eq(user.id))
+    //             .find_also_related(Reviews)
+    //             .all(&my_ctx.db)
+    //             .await?;
+
+    //         let mut user_rating: f32 = 0.0;
+
+    //         let adverts: Vec<advert::Model> = adverts_with_review
+    //             .into_iter()
+    //             .all(|(mut advert, review_opt)| {
+    //                 user_rating += advert.review.as_ref().map(|r| r.rating as f32).unwrap_or(0.0);
+    //             });
+
+    //         advert.specs = specs;
+    //         advert.user = user;
+
+
+    //     }
+
+    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+    //         Some(token) => token,
+    //         None => {
+    //             return Ok(adverts);
+    //         }
+    //     };
+
+    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+    //         Ok(claims) => claims,
+    //         Err(err) => return Err(err),
+    //     };
+
+    //     let id: i32 = claims["id"].parse().unwrap();
+    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+    //     if let Some(user) = user {
+    //         let favorite_adverts = favorites::Entity::find()
+    //             .filter(favorites::Column::UserId.eq(user.id))
+    //             .all(&my_ctx.db)
+    //             .await?;
+
+    //         let favorite_advert_ids: HashSet<i32> =
+    //             favorite_adverts.iter().map(|fav| fav.advert_id).collect();
+
+    //         for advert in &mut adverts {
+    //             if favorite_advert_ids.contains(&advert.id) {
+    //                 advert.is_favorited = true;
+    //             }
+    //         }
+    //     }
+
+    //     return Ok(adverts);
+    // }
+
     async fn get_adverts(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -119,7 +202,7 @@ impl AdvertQuery {
         limit: i32,
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-        let mut adverts: Vec<advert::Model> = advert::Entity::find()
+        let adverts: Vec<advert::Model> = advert::Entity::find()
             .order_by(advert::Column::Id, Order::Desc)
             .offset(offset as u64)
             .limit(limit as u64)
@@ -127,54 +210,94 @@ impl AdvertQuery {
             .all(&my_ctx.db)
             .await?;
 
-        for advert in &mut adverts {
-            let specs: Vec<specifications::Model> =
-                advert.find_related(Specifications).all(&my_ctx.db).await?;
-            advert.specs = specs;
+        let advert_ids: Vec<i32> = adverts.iter().map(|adv| adv.id).collect();
+
+        // Fetch all specifications in one query
+        let specs = Specifications::find()
+            .filter(specifications::Column::AdvertId.is_in(advert_ids))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let mut specs_map: HashMap<i32, Vec<specifications::Model>> = HashMap::new();
+        for spec in specs {
+            specs_map
+                .entry(spec.advert_id)
+                .or_default()
+                .push(spec);
         }
 
+        let user_ids: HashSet<i32> = adverts.iter().map(|adv| adv.user_id).collect();
+        let users = User::find()
+            .filter(user::Column::Id.is_in(user_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let users_map: HashMap<i32, user::Model> = users.into_iter().map(|user| (user.id, user)).collect();
+
+        let user_adverts = Advert::find()
+        .filter(advert::Column::UserId.is_in(user_ids.clone()))
+        .all(&my_ctx.db)
+        .await?;
+
+        let user_advert_ids: Vec<i32> = user_adverts.iter().map(|adv| adv.id).collect();
+
+        let reviews = Reviews::find()
+            .filter(reviews::Column::AdvertId.is_in(user_advert_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+
+        let mut user_ratings: HashMap<i32, (f32, usize)> = HashMap::new();
+        let advert_user_map: HashMap<i32, i32> = user_adverts
+            .iter()
+            .map(|adv| (adv.id, adv.user_id))
+            .collect();
        
+
+        for review in reviews {
+            if let Some(&user_id) = advert_user_map.get(&review.advert_id) {
+                let entry = user_ratings.entry(user_id).or_insert((0.0, 0));
+                entry.0 += review.rating as f32;
+                entry.1 += 1;
+            }
+        }
         
-        for advert in &mut adverts {
-            let specs: Vec<specifications::Model> =
-                advert.find_related(Specifications).all(&my_ctx.db).await?;
-            let user = User::find_by_id(advert.user_id).one(&my_ctx.db).await?;
+      
+
+        let mut favorite_advert_ids = HashSet::new();
+    if let Some(token) = ctx.data_opt::<Token>() {
+        let claims = verify_access_token(token.0.clone(), &my_ctx.access_key)?;
+        let user_id: i32 = claims["id"].parse().unwrap();
+
+        let favorite_adverts = Favorites::find()
+            .filter(favorites::Column::UserId.eq(user_id))
+            .all(&my_ctx.db)
+            .await?;
+
+        favorite_advert_ids = favorite_adverts.iter().map(|fav| fav.advert_id).collect();
+    }
+
+    // Assemble the final list
+    let result: Vec<advert::Model> = adverts
+        .into_iter()
+        .map(|mut advert| {
+            let specs = specs_map.get(&advert.id).cloned().unwrap_or_default();
+            let user = users_map.get(&advert.user_id).cloned();
+            let user_rating = user
+                .as_ref()
+                .and_then(|u| user_ratings.get(&u.id))
+                .map(|(total, count)| total / *count as f32);
+            let is_favorited = favorite_advert_ids.contains(&advert.id);
+
+            advert.is_favorited = is_favorited;
             advert.specs = specs;
             advert.user = user.unwrap();
-        }
+            advert.user.rating = user_rating.unwrap_or(0.0);
 
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token,
-            None => {
-                return Ok(adverts);
-            }
-        };
+            advert
+        })
+        .collect();
 
-        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-            Ok(claims) => claims,
-            Err(err) => return Err(err),
-        };
-
-        let id: i32 = claims["id"].parse().unwrap();
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-        if let Some(user) = user {
-            let favorite_adverts = favorites::Entity::find()
-                .filter(favorites::Column::UserId.eq(user.id))
-                .all(&my_ctx.db)
-                .await?;
-
-            let favorite_advert_ids: HashSet<i32> =
-                favorite_adverts.iter().map(|fav| fav.advert_id).collect();
-
-            for advert in &mut adverts {
-                if favorite_advert_ids.contains(&advert.id) {
-                    advert.is_favorited = true;
-                }
-            }
-        }
-
-        return Ok(adverts);
+        return Ok(result);
     }
 
     async fn get_adverts_by_category(

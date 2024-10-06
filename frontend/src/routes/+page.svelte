@@ -12,6 +12,7 @@ const adverts = graphql(`
         id
         title
         price
+        oldPrice
         location
         createdAt
         isFavorited
@@ -19,6 +20,7 @@ const adverts = graphql(`
           id
           name
           surname
+          rating
         }
       }
     }
@@ -53,6 +55,7 @@ onMount(async () => {
         loading...
       {:else if $adverts.errors}
         err...
+        {JSON.stringify($adverts.errors)}
       {:else if $adverts.data}
         {#each $adverts.data.getAdverts as advert (advert.id)}
             <Advert advert={advert} userPage={false} />

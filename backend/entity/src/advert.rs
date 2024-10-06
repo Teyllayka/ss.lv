@@ -2,7 +2,7 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject, Default)]
 #[sea_orm(table_name = "advert")]
 #[graphql(name = "Advert")]
 pub struct Model {
@@ -62,6 +62,8 @@ impl Related<super::user::Entity> for Entity {
     }
 }
 
+
+
 // impl Related<super::user::Entity> for Entity {
 //     fn to() -> RelationDef {
 //         Relation::SoldTo.def() // The user who bought the advert
@@ -86,5 +88,6 @@ impl Related<super::reviews::Entity> for Entity {
         Relation::Review.def()
     }
 }
+
 
 impl ActiveModelBehavior for ActiveModel {}

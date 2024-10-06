@@ -18,6 +18,7 @@ pub struct Model {
     pub email: Option<String>,
     pub phone: Option<String>,
     pub telegram_id: Option<String>,
+    pub telegram_username: Option<String>,
     pub balance: f32,
     pub is_admin: bool,
     pub email_verified: bool,
@@ -26,7 +27,9 @@ pub struct Model {
     #[sea_orm(ignore)]
     pub adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]
-    pub reviews: Vec<super::reviews::Model>,
+    pub adverts_with_reviews: Vec<super::advert::Model>,
+    #[sea_orm(ignore)]
+    pub reviewed_adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]
     pub rating: f32,
 }
@@ -70,15 +73,6 @@ impl Related<super::reviews::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Entity {
-    /// Finds a user by their email address.
-    ///
-    /// # Arguments
-    ///
-    /// * `email` - A `String` representing the user's email address.
-    ///
-    /// # Returns
-    ///
-    /// A `Select<Entity>` query that can be executed to retrieve the user.
     pub fn find_by_email(email: String) -> Select<Entity> {
         Self::find().filter(Column::Email.eq(email))
     }

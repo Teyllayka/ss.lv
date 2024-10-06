@@ -6,6 +6,8 @@ query User($id: Int!) {
 		phone
 		email
 		rating
+		avatarUrl
+		telegramUsername
 		adverts {
 			id
 			title
@@ -24,5 +26,33 @@ query User($id: Int!) {
 				id
 			}
 		}
+
+		 reviewedAdverts {
+			title
+			location
+			price
+			createdAt
+			review {
+				message
+				rating
+				createdAt
+			}
+			}
+			
+		advertsWithReviews {
+				title
+			price
+			location
+			available
+			review {
+				rating
+			message
+			createdAt
+			user {
+				name
+			}
+			}
+			
+			}
 	}
 }

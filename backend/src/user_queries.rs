@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashSet},  time::{SystemTime, UNIX_EPOCH}
+    collections::{BTreeMap, HashMap, HashSet},  time::{SystemTime, UNIX_EPOCH}
 };
 
 use crate::{verify_access_token, Context, Token};
@@ -51,38 +51,6 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
-    // async fn user(
-    //     &self,
-    //     ctx: &async_graphql::Context<'_>,
-    //     id: i32,
-    // ) -> Result<user::Model, async_graphql::Error> {
-    //     let my_ctx = ctx.data::<Context>().unwrap();
-
-    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-    //     let mut user = match user {
-    //         Some(user) => user,
-    //         None => {
-    //             return Err(async_graphql::Error::new(
-    //                 "No user found".to_string(),
-    //             ))
-    //         }
-    //     };
-
-    //     let mut adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
-    //     let mut user_reviews: Vec<reviews::Model> = Vec::new();
-
-    //     for advert in &mut adverts {
-    //         let review = advert.find_related(Reviews).one(&my_ctx.db).await?;
-    //         user_reviews.push(review.clone().unwrap());
-    //         advert.review = review;
-    //     }
-
-    //     user.adverts = adverts;
-
-    //     return Ok(user);
-    // }
-
     async fn user(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -90,19 +58,42 @@ impl UserQuery {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
     
+        // Fetch the user by ID
         let user = User::find_by_id(id)
             .one(&my_ctx.db)
             .await?
             .ok_or_else(|| async_graphql::Error::new("No user found"))?;
     
+        // Fetch the user's adverts along with their reviews (one review per advert)
         let adverts_with_review = Advert::find()
             .filter(advert::Column::UserId.eq(user.id))
             .find_also_related(Reviews)
             .all(&my_ctx.db)
             .await?;
     
+        // Collect reviewer IDs from the reviews
+        let reviewer_ids: HashSet<i32> = adverts_with_review
+            .iter()
+            .filter_map(|(_, review_opt)| review_opt.as_ref())
+            .map(|review| review.user_id)
+            .collect();
+    
+        // Fetch the reviewers
+        let reviewers = User::find()
+            .filter(user::Column::Id.is_in(reviewer_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        // Map reviewer IDs to user models
+        let reviewer_map: HashMap<i32, user::Model> = reviewers
+            .into_iter()
+            .map(|user| (user.id, user))
+            .collect();
+    
+        // Fetch the current user's favorite adverts if authenticated
         let mut favorite_advert_ids = HashSet::new();
     
+        // Get the current user's ID from the token if available
         if let Some(token) = ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             if let Ok(claims) = verify_access_token(token, &my_ctx.access_key) {
                 let current_user_id: i32 = claims["id"].parse().unwrap_or(0);
@@ -119,30 +110,68 @@ impl UserQuery {
             }
         }
     
-        let adverts: Vec<advert::Model> = adverts_with_review
-            .into_iter()
-            .map(|(mut advert, review_opt)| {
-                advert.review = review_opt;
-                advert.is_favorited = favorite_advert_ids.contains(&advert.id);
-                advert
-            })
-            .collect();
+        let mut user_rating: f32 = 0.0;
     
+        // Process adverts and separate them based on whether they have reviews
+        let mut adverts = Vec::new();
+        let mut adverts_with_reviews = Vec::new();
+    
+        for (mut advert, mut review_opt) in adverts_with_review {
+            if let Some(review) = review_opt.as_mut() {
+                // Process review
+                user_rating += review.rating as f32;
+                let reviewer = reviewer_map
+                    .get(&review.user_id)
+                    .cloned()
+                    .unwrap_or_else(|| user::Model::default());
+                review.user = reviewer;
+                advert.review = Some(review.clone());
+    
+                adverts_with_reviews.push(advert.clone());
+            }
+    
+            advert.is_favorited = favorite_advert_ids.contains(&advert.id);
+            adverts.push(advert);
+        }
+    
+
+        let reviews_written_by_user = Reviews::find()
+            .filter(reviews::Column::UserId.eq(user.id))
+            .find_also_related(Advert)
+            .all(&my_ctx.db)
+            .await?;
+
+        // Map the reviews to adverts, attaching the review to the advert
+        let mut reviewed_adverts = Vec::new();
+
+        for (mut review, advert_opt) in reviews_written_by_user {
+            if let Some(mut advert) = advert_opt {
+                advert.is_favorited = favorite_advert_ids.contains(&advert.id);
+
+                // Attach the review to the advert
+                review.user = user.clone(); // Since the queried user wrote this review
+                advert.review = Some(review);
+
+                reviewed_adverts.push(advert);
+            }
+        }
+    
+        // Update the user object
         let mut user = user;
         user.adverts = adverts;
-    
-        let user_reviews: Vec<reviews::Model> = user.find_related(Reviews).all(&my_ctx.db).await?;
-        user.reviews = user_reviews;
-
-        if user.reviews.len() == 0 {
-            user.rating = 0.0;
+        user.adverts_with_reviews = adverts_with_reviews; // Adverts of the user that have reviews
+        user.reviewed_adverts = reviewed_adverts; // Adverts to which the current user wrote reviews
+        user.rating = if user_rating > 0.0 && !user.adverts_with_reviews.is_empty() {
+            user_rating / (user.adverts_with_reviews.len() as f32)
         } else {
-            user.rating = user.reviews.iter().map(|review| review.rating).sum::<i32>() as f32 / user.reviews.len() as f32;
-        }
-
+            0.0
+        };
     
         Ok(user)
     }
+    
+
+
     async fn me(
         &self,
         ctx: &async_graphql::Context<'_>,

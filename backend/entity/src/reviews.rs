@@ -16,6 +16,9 @@ pub struct Model {
     pub advert_id: i32,
     pub message: String,
     pub rating: i32,
+
+    #[sea_orm(ignore)]
+    pub user: super::user::Model,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

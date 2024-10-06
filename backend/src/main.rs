@@ -4,8 +4,6 @@ mod advert_queries;
 use stripe::{CheckoutSession, EventObject, EventType, Webhook, WebhookError};
 use user_queries::{UserMutation, UserQuery};
 use advert_queries::{AdvertMutation, AdvertQuery};
-
-
 use std::{collections::BTreeMap, time::{SystemTime, UNIX_EPOCH}};
 use actix_cors::Cors;
 use dotenvy::dotenv;
@@ -22,12 +20,12 @@ use sea_orm::{
     ColumnTrait, Database, DatabaseConnection,
     PaginatorTrait, QueryFilter, Set,ActiveModelTrait
 };
-
 use sha2::Sha256;
 use jwt::VerifyWithKey;
 use actix_web::HttpRequest;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use deadpool_redis::{Config, Pool, Runtime};
+
 
 
 pub fn verify_access_token(

@@ -35,6 +35,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Phone).string().null())
                     // Telegram ID (Nullable and Unique)
                     .col(ColumnDef::new(User::TelegramId).string().unique_key().null())
+                    .col(ColumnDef::new(User::TelegramUsername).string().null())
                     // Financial Details
                     .col(ColumnDef::new(User::Balance).float().not_null())
                     // Authentication Details (PasswordHash Nullable)
@@ -320,10 +321,12 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Favorites::Table).to_owned())
             .await?;
 
+
         manager
             .drop_table(Table::drop().table(Reviews::Table).to_owned())
             .await?;
 
+  
         Ok(())
     }
 }
@@ -341,6 +344,7 @@ enum User {
     Email,
     Phone,
     TelegramId,      
+    TelegramUsername,
     Balance,
     PasswordHash,
     IsAdmin,
