@@ -112,88 +112,6 @@ impl AdvertQuery {
         });
     }
 
-    // async fn get_adverts(
-    //     &self,
-    //     ctx: &async_graphql::Context<'_>,
-    //     offset: i32,
-    //     limit: i32,
-    // ) -> Result<Vec<advert::Model>, async_graphql::Error> {
-    //     let my_ctx = ctx.data::<Context>().unwrap();
-    //     let mut adverts: Vec<advert::Model> = advert::Entity::find()
-    //         .order_by(advert::Column::Id, Order::Desc)
-    //         .offset(offset as u64)
-    //         .limit(limit as u64)
-    //         .filter(advert::Column::Available.eq(true))
-    //         .all(&my_ctx.db)
-    //         .await?;
-
-    //     for advert in &mut adverts {
-    //         let specs: Vec<specifications::Model> =
-    //             advert.find_related(Specifications).all(&my_ctx.db).await?;
-    //         advert.specs = specs;
-    //     }
-
-       
-        
-    //     for advert in &mut adverts {
-    //         let specs: Vec<specifications::Model> =
-    //             advert.find_related(Specifications).all(&my_ctx.db).await?;
-    //         let user = User::find_by_id(advert.user_id).one(&my_ctx.db).await?.unwrap();
-
-
-    //         let adverts_with_review = Advert::find()
-    //             .filter(advert::Column::UserId.eq(user.id))
-    //             .find_also_related(Reviews)
-    //             .all(&my_ctx.db)
-    //             .await?;
-
-    //         let mut user_rating: f32 = 0.0;
-
-    //         let adverts: Vec<advert::Model> = adverts_with_review
-    //             .into_iter()
-    //             .all(|(mut advert, review_opt)| {
-    //                 user_rating += advert.review.as_ref().map(|r| r.rating as f32).unwrap_or(0.0);
-    //             });
-
-    //         advert.specs = specs;
-    //         advert.user = user;
-
-
-    //     }
-
-    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-    //         Some(token) => token,
-    //         None => {
-    //             return Ok(adverts);
-    //         }
-    //     };
-
-    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-    //         Ok(claims) => claims,
-    //         Err(err) => return Err(err),
-    //     };
-
-    //     let id: i32 = claims["id"].parse().unwrap();
-    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-    //     if let Some(user) = user {
-    //         let favorite_adverts = favorites::Entity::find()
-    //             .filter(favorites::Column::UserId.eq(user.id))
-    //             .all(&my_ctx.db)
-    //             .await?;
-
-    //         let favorite_advert_ids: HashSet<i32> =
-    //             favorite_adverts.iter().map(|fav| fav.advert_id).collect();
-
-    //         for advert in &mut adverts {
-    //             if favorite_advert_ids.contains(&advert.id) {
-    //                 advert.is_favorited = true;
-    //             }
-    //         }
-    //     }
-
-    //     return Ok(adverts);
-    // }
 
     async fn get_adverts(
         &self,
@@ -477,12 +395,12 @@ impl AdvertMutation {
             additional_photos = photos[1..].iter().cloned().collect();
         } else {
             photo_url = advert.photo_url.clone();
-            additional_photos = advert.additional_photos.clone();
+            additional_photos = advert.additional_photos.clone().unwrap();
         }
 
         let new_advert = advert::ActiveModel {
             photo_url: Set(photo_url),
-            additional_photos: Set(additional_photos),
+            additional_photos: Set(Some(additional_photos)),
             price: Set(price),
             location: Set(location),
             title: Set(title),
@@ -637,7 +555,7 @@ impl AdvertMutation {
             title: Set(title),
             category: Set(category),
             photo_url: Set(photo_url),
-            additional_photos: Set(additional_photos),
+            additional_photos: Set(Some(additional_photos)),
             ..Default::default()
         };
 

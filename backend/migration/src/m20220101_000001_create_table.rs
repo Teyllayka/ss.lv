@@ -23,8 +23,10 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     // Timestamps
-                    .col(ColumnDef::new(User::CreatedAt).date_time().not_null())
-                    .col(ColumnDef::new(User::UpdatedAt).date_time().not_null())
+                    .col(ColumnDef::new(User::CreatedAt).date_time().not_null()                    .default(Expr::cust("CURRENT_TIMESTAMP"))
+                )
+                    .col(ColumnDef::new(User::UpdatedAt).date_time().not_null()                    .default(Expr::cust("CURRENT_TIMESTAMP"))
+                )
                     // User Details
                     .col(ColumnDef::new(User::AvatarUrl).string().null())
                     .col(ColumnDef::new(User::Name).string().null()) // Made nullable
@@ -85,8 +87,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     // Timestamps
-                    .col(ColumnDef::new(Advert::CreatedAt).date_time().not_null())
-                    .col(ColumnDef::new(Advert::UpdatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Advert::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
+                    .col(ColumnDef::new(Advert::UpdatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
                     // Advert Details
                     .col(ColumnDef::new(Advert::Available).boolean().not_null())
                     .col(ColumnDef::new(Advert::Price).float().not_null())
@@ -95,7 +97,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(Advert::AdditionalPhotos)
                             .array(ColumnType::String(StringLen::None))
-                            .not_null(),
+                            .null(),
                     )
                     .col(ColumnDef::new(Advert::Title).string().not_null())
                     .col(ColumnDef::new(Advert::Category).string().not_null())
@@ -166,7 +168,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     // Timestamps and Foreign Keys
-                    .col(ColumnDef::new(Favorites::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Favorites::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
                     .col(ColumnDef::new(Favorites::UserId).integer().not_null())
                     .col(ColumnDef::new(Favorites::AdvertId).integer().not_null())
                     // Foreign Keys with Cascade Delete
@@ -242,7 +244,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     // Review Details
-                    .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
                     .col(ColumnDef::new(Reviews::UserId).integer().not_null())
                     .col(ColumnDef::new(Reviews::AdvertId).integer().not_null().unique_key())
                     .col(ColumnDef::new(Reviews::Rating).integer().not_null())
@@ -265,41 +267,86 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        
-        // Optionally, Insert a Default Admin User
-        // Uncomment and modify as needed
-        /*
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-    
-        let password_hash = argon2.hash_password("test".as_bytes(), &salt).await?;
-    
-        let insert = Query::insert()
-            .into_table(User::Table)
-            .columns([
-                User::Name,
-                User::AvatarUrl,
-                User::Surname,
-                User::Email,
-                User::Phone,
-                User::Balance,
-                User::PasswordHash,
-                User::IsAdmin,
-            ])
-            .values_panic([
-                "Test".into(),
-                "".into(),
-                "Test".into(),
-                "Test@Test.com".into(),
-                "123456789".into(),
-                0.0.into(),
-                password_hash.into(),
-                true.into(),
-            ])
-            .to_owned();
-    
-        manager.exec_stmt(insert).await?;
-        */
+
+
+
+            let user = Query::insert()
+                .into_table(User::Table)
+                .columns([User::Name, User::Surname, User::Email, User::PasswordHash, User::IsAdmin, User::EmailVerified,  User::Balance, User::TelegramUsername, User::TelegramId])
+                .values_panic(vec![
+                    "John".into(),
+                    "Doe".into(),
+                    "johndoe@gmail.com".into(),
+                    "hashed_password".into(),
+                    false.into(),
+                    false.into(),
+                    0.0.into(),
+                    "johndoe".into(),
+                    "johndoe".into(),
+                ]).to_owned();
+            manager.exec_stmt(user).await?;
+
+
+            let advert = Query::insert()
+                .into_table(Advert::Table)
+                .columns([Advert::Title, Advert::Description, Advert::PhotoUrl, Advert::Available, Advert::Price, Advert::Location, Advert::UserId, Advert::Category, Advert::SoldTo, Advert::OldPrice])
+                .values_panic(vec![
+                    "Title".into(),
+                    "Description".into(),
+                    "photo_url".into(),
+                    true.into(),
+                    100.0.into(),
+                    "Location".into(),
+                    1.into(),
+                    "Category".into(),
+                    1.into(),
+                    200.0.into(),
+                ]).to_owned();
+
+
+            manager.exec_stmt(advert).await?;
+
+
+
+            let specification = Query::insert()
+                .into_table(Specifications::Table)
+                .columns([Specifications::Key, Specifications::Value, Specifications::AdvertId])
+                .values_panic(vec![
+                    "Key".into(),
+                    "Value".into(),
+                    1.into(),
+                ]).to_owned();
+            manager.exec_stmt(specification).await?;
+
+
+            let favorite = Query::insert()
+                .into_table(Favorites::Table)
+                .columns([Favorites::UserId, Favorites::AdvertId])
+                .values_panic(vec![
+                    1.into(),
+                    1.into(),
+                ]).to_owned();
+
+            manager.exec_stmt(favorite).await?;
+
+
+
+            let review = Query::insert()
+                .into_table(Reviews::Table)
+                .columns([Reviews::UserId, Reviews::AdvertId, Reviews::Rating, Reviews::Message])
+                .values_panic(vec![
+                    1.into(),
+                    1.into(),
+                    5.into(),
+                    "Message".into(),
+                ]).to_owned();
+
+            manager.exec_stmt(review).await?;
+
+
+
+
+   
         
         Ok(())
     }

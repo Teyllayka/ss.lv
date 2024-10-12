@@ -58,42 +58,35 @@ impl UserQuery {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
     
-        // Fetch the user by ID
         let user = User::find_by_id(id)
             .one(&my_ctx.db)
             .await?
             .ok_or_else(|| async_graphql::Error::new("No user found"))?;
     
-        // Fetch the user's adverts along with their reviews (one review per advert)
         let adverts_with_review = Advert::find()
             .filter(advert::Column::UserId.eq(user.id))
             .find_also_related(Reviews)
             .all(&my_ctx.db)
             .await?;
     
-        // Collect reviewer IDs from the reviews
         let reviewer_ids: HashSet<i32> = adverts_with_review
             .iter()
             .filter_map(|(_, review_opt)| review_opt.as_ref())
             .map(|review| review.user_id)
             .collect();
     
-        // Fetch the reviewers
         let reviewers = User::find()
             .filter(user::Column::Id.is_in(reviewer_ids.clone()))
             .all(&my_ctx.db)
             .await?;
     
-        // Map reviewer IDs to user models
         let reviewer_map: HashMap<i32, user::Model> = reviewers
             .into_iter()
             .map(|user| (user.id, user))
             .collect();
     
-        // Fetch the current user's favorite adverts if authenticated
         let mut favorite_advert_ids = HashSet::new();
     
-        // Get the current user's ID from the token if available
         if let Some(token) = ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             if let Ok(claims) = verify_access_token(token, &my_ctx.access_key) {
                 let current_user_id: i32 = claims["id"].parse().unwrap_or(0);
@@ -112,13 +105,11 @@ impl UserQuery {
     
         let mut user_rating: f32 = 0.0;
     
-        // Process adverts and separate them based on whether they have reviews
         let mut adverts = Vec::new();
         let mut adverts_with_reviews = Vec::new();
     
         for (mut advert, mut review_opt) in adverts_with_review {
             if let Some(review) = review_opt.as_mut() {
-                // Process review
                 user_rating += review.rating as f32;
                 let reviewer = reviewer_map
                     .get(&review.user_id)
@@ -141,26 +132,23 @@ impl UserQuery {
             .all(&my_ctx.db)
             .await?;
 
-        // Map the reviews to adverts, attaching the review to the advert
         let mut reviewed_adverts = Vec::new();
 
         for (mut review, advert_opt) in reviews_written_by_user {
             if let Some(mut advert) = advert_opt {
                 advert.is_favorited = favorite_advert_ids.contains(&advert.id);
 
-                // Attach the review to the advert
-                review.user = user.clone(); // Since the queried user wrote this review
+                review.user = user.clone(); 
                 advert.review = Some(review);
 
                 reviewed_adverts.push(advert);
             }
         }
     
-        // Update the user object
         let mut user = user;
         user.adverts = adverts;
-        user.adverts_with_reviews = adverts_with_reviews; // Adverts of the user that have reviews
-        user.reviewed_adverts = reviewed_adverts; // Adverts to which the current user wrote reviews
+        user.adverts_with_reviews = adverts_with_reviews; 
+        user.reviewed_adverts = reviewed_adverts; 
         user.rating = if user_rating > 0.0 && !user.adverts_with_reviews.is_empty() {
             user_rating / (user.adverts_with_reviews.len() as f32)
         } else {
@@ -178,33 +166,124 @@ impl UserQuery {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
+        // Extract the access token from the context
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
             Some(token) => token,
             None => {
-                return Err(async_graphql::Error::new(
-                    "you are not logged in".to_string(),
-                ));
+                return Err(async_graphql::Error::new("You are not logged in."));
             }
         };
 
+        // Verify the access token
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
         };
 
-        let id: i32 = claims["id"].parse().unwrap();
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+        // Parse the user ID from the token claims
+        let id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid user ID in token."))?;
 
-        let mut user = match user {
-            Some(user) => user,
-            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+        // Fetch the user by ID
+        let user = User::find_by_id(id)
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("No user found."))?;
+
+        // Fetch adverts with associated reviews
+        let adverts_with_review = Advert::find()
+            .filter(advert::Column::UserId.eq(user.id))
+            .find_also_related(Reviews)
+            .all(&my_ctx.db)
+            .await?;
+
+        // Collect unique reviewer IDs
+        let reviewer_ids: HashSet<i32> = adverts_with_review
+            .iter()
+            .filter_map(|(_, review_opt)| review_opt.as_ref())
+            .map(|review| review.user_id)
+            .collect();
+
+        let reviewers = User::find()
+            .filter(user::Column::Id.is_in(reviewer_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+
+        let reviewer_map: HashMap<i32, user::Model> = reviewers
+            .into_iter()
+            .map(|user| (user.id, user))
+            .collect();
+
+        let mut favorite_advert_ids = HashSet::new();
+
+        if let Some(token) = ctx.data_opt::<Token>().map(|token| token.0.clone()) {
+            if let Ok(claims) = verify_access_token(token, &my_ctx.access_key) {
+                let current_user_id: i32 = claims["id"].parse().unwrap_or(0);
+
+                let favorite_adverts = favorites::Entity::find()
+                    .filter(favorites::Column::UserId.eq(current_user_id))
+                    .all(&my_ctx.db)
+                    .await?;
+
+                favorite_advert_ids = favorite_adverts
+                    .into_iter()
+                    .map(|fav| fav.advert_id)
+                    .collect();
+            }
+        }
+
+        let mut user_rating: f32 = 0.0;
+
+        let mut adverts = Vec::new();
+        let mut adverts_with_reviews = Vec::new();
+
+        for (mut advert, mut review_opt) in adverts_with_review {
+            if let Some(review) = review_opt.as_mut() {
+                user_rating += review.rating as f32;
+                let reviewer = reviewer_map
+                    .get(&review.user_id)
+                    .cloned()
+                    .unwrap_or_else(|| user::Model::default());
+                review.user = reviewer;
+                advert.review = Some(review.clone());
+
+                adverts_with_reviews.push(advert.clone());
+            }
+
+            advert.is_favorited = favorite_advert_ids.contains(&advert.id);
+            adverts.push(advert);
+        }
+
+        let reviews_written_by_user = Reviews::find()
+            .filter(reviews::Column::UserId.eq(user.id))
+            .find_also_related(Advert)
+            .all(&my_ctx.db)
+            .await?;
+
+        let mut reviewed_adverts = Vec::new();
+
+        for (mut review, advert_opt) in reviews_written_by_user {
+            if let Some(mut advert) = advert_opt {
+                advert.is_favorited = favorite_advert_ids.contains(&advert.id);
+
+                review.user = user.clone(); 
+                advert.review = Some(review);
+
+                reviewed_adverts.push(advert);
+            }
+        }
+
+        // Update the user model with the fetched data
+        let mut user = user;
+        user.adverts = adverts;
+        user.adverts_with_reviews = adverts_with_reviews; 
+        user.reviewed_adverts = reviewed_adverts; 
+        user.rating = if user_rating > 0.0 && !user.adverts_with_reviews.is_empty() {
+            user_rating / (user.adverts_with_reviews.len() as f32)
+        } else {
+            0.0
         };
 
-        let adverts: Vec<advert::Model> = user.find_related(Advert).all(&my_ctx.db).await?;
-
-        user.adverts = adverts;
-
-        return Ok(user);
+        Ok(user)
     }
 }
 

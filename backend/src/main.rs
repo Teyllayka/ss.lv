@@ -314,6 +314,7 @@ async fn main() -> std::io::Result<()> {
     let port = (dotenvy::var("BACKEND_PORT").expect("BACKEND_PORT environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
+    let ip = dotenvy::var("BACKEND_IP").expect("BACKEND_IP environment variable not found");
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .with_test_writer()
@@ -324,7 +325,7 @@ async fn main() -> std::io::Result<()> {
 
     Migrator::up(&db, None).await.expect("Migration error");
 
-    println!("GraphiQL IDE: http://localhost:{}/", port);
+    println!("GraphiQL IDE: http://{}:{}/", ip, port);
 
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
@@ -380,7 +381,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
-    .bind(("0.0.0.0", port))?
+    .bind((ip, port))?
     .run()
     .await
 }

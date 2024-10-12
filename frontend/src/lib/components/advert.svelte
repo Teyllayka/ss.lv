@@ -5,14 +5,12 @@
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { user } from "$lib/userStore";
 
-  
   let isLoggedIn = false;
-  
+
   export let advert;
   export let userPage;
-  
-  let isFavorited = advert.isFavorited;
 
+  let isFavorited = advert.isFavorited;
 
   function handleImageScroll(event: any) {
     const container = event.currentTarget;
@@ -23,42 +21,33 @@
     const maxScroll = container.scrollWidth - containerWidth;
     container.scrollLeft = maxScroll * scrollPercentage;
   }
-  
+
   function toggleSaveAdvert(advert: any) {
-    if(!$user.isLogedIn) {
+    if (!$user.isLogedIn) {
       goto("/login");
     }
     console.log(advert.isFavorited);
-    
-    isFavorited = !isFavorited;
 
+    isFavorited = !isFavorited;
   }
-  
+
   function navigateToUserProfile(userId: number) {
     goto(`/user/${userId}`);
   }
-  
-  function calculateDiscountPercentage(originalPrice: number, discountedPrice: number): number {
-    return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
-  }
-  </script>
-  
-  <div
+</script>
+
+<div
   class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
   in:fade={{ duration: 300 }}
-  >
+>
   <div
     class="relative h-48 overflow-hidden"
     on:mousemove={(e) => handleImageScroll(e)}
     role="img"
-  >
-    <!-- Image carousel code here -->
-  </div>
+  ></div>
   <div class="p-4">
     <div class="flex justify-between items-start mb-2">
-      <h2
-        class="text-lg font-semibold text-gray-900 dark:text-white truncate"
-      >
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
         {advert.title}
       </h2>
       <button
@@ -70,11 +59,11 @@
             : "Save for later"
           : "Log in to save adverts"}
       >
-      <Heart
-      size={20}
-      fill={isFavorited ? "red" : "none"}
-      color={isFavorited ? "red" : "currentColor"} 
-    />
+        <Heart
+          size={20}
+          fill={isFavorited ? "red" : "none"}
+          color={isFavorited ? "red" : "currentColor"}
+        />
       </button>
     </div>
     <div class="flex items-end mb-2">
@@ -85,9 +74,6 @@
         <p class="text-lg text-gray-500 dark:text-gray-400 line-through">
           ${advert.oldPrice.toFixed(2)}
         </p>
-        <!-- <p class="text-sm text-green-600 dark:text-green-400 ml-2">
-          {calculateDiscountPercentage(advert.oldPrice, advert.price)}% off
-        </p> -->
       {:else}
         <p class="text-xl font-bold text-gray-900 dark:text-white">
           ${advert.price.toFixed(2)}
@@ -99,14 +85,16 @@
     >
       <MapPin size={16} class="mr-1" />
       <span class="truncate">{advert.location}</span>
-      {#if !userPage}<span class="ml-1 text-gray-500 dark:text-gray-400"> 2 km </span>{/if}
+      {#if !userPage}<span class="ml-1 text-gray-500 dark:text-gray-400">
+          2 km
+        </span>{/if}
     </div>
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
       {formatDate(advert.createdAt.toString())}
     </p>
     <div class="flex items-center justify-between">
       {#if !userPage}
-          <button
+        <button
           class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
           on:click={() => navigateToUserProfile(advert.user.id)}
         >
@@ -115,18 +103,11 @@
         </button>
         <div class="flex items-center">
           <Star size={16} class="text-yellow-400 mr-1" />
-          {#if userPage}
-            <!-- <span class="text-sm text-gray-500 dark:text-gray-400">
-              {advert.user.rating.toFixed(1)}
-            </span> -->
-          {:else}
           <span class="text-sm text-gray-500 dark:text-gray-400">
             {advert.user.rating.toFixed(1)}
           </span>
-          {/if}
         </div>
       {/if}
-     
     </div>
   </div>
-  </div>
+</div>
