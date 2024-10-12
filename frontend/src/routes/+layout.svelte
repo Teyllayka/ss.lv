@@ -17,6 +17,7 @@ setContext("region", region);
 $: user.set({
 	emailVerified: $HeaderMe.data?.me.emailVerified || false,
 	isCompany: $HeaderMe.data?.me.companyName != null,
+	isLogedIn: $HeaderMe.data?.me != null,
 });
 
 let isDarkMode = false;

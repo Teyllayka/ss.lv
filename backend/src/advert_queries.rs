@@ -265,15 +265,18 @@ impl AdvertQuery {
 
         let mut favorite_advert_ids = HashSet::new();
     if let Some(token) = ctx.data_opt::<Token>() {
-        let claims = verify_access_token(token.0.clone(), &my_ctx.access_key)?;
-        let user_id: i32 = claims["id"].parse().unwrap();
+        let claims = verify_access_token(token.0.clone(), &my_ctx.access_key);
 
-        let favorite_adverts = Favorites::find()
-            .filter(favorites::Column::UserId.eq(user_id))
-            .all(&my_ctx.db)
-            .await?;
+        if let Some(claims) = claims.ok() {
+            let user_id: i32 = claims["id"].parse().unwrap();
 
-        favorite_advert_ids = favorite_adverts.iter().map(|fav| fav.advert_id).collect();
+            let favorite_adverts = Favorites::find()
+                .filter(favorites::Column::UserId.eq(user_id))
+                .all(&my_ctx.db)
+                .await?;
+
+            favorite_advert_ids = favorite_adverts.iter().map(|fav| fav.advert_id).collect();
+        }
     }
 
     // Assemble the final list

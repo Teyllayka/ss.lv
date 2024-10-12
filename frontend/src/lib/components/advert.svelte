@@ -3,12 +3,17 @@
   import { fade } from "svelte/transition";
   import { goto } from "$app/navigation";
   import { Heart, Star, MapPin } from "lucide-svelte";
+  import { user } from "$lib/userStore";
+
   
   let isLoggedIn = false;
   
   export let advert;
   export let userPage;
   
+  let isFavorited = advert.isFavorited;
+
+
   function handleImageScroll(event: any) {
     const container = event.currentTarget;
     if (!container) return;
@@ -20,15 +25,13 @@
   }
   
   function toggleSaveAdvert(advert: any) {
-    if (isLoggedIn) {
-      advert.isFavorited = !advert.isSaved;
-      console.log(
-        advert.isSaved ? "Saving advert:" : "Unsaving advert:",
-        advert.id,
-      );
-    } else {
-      console.log("User needs to log in to save adverts");
+    if(!$user.isLogedIn) {
+      goto("/login");
     }
+    console.log(advert.isFavorited);
+    
+    isFavorited = !isFavorited;
+
   }
   
   function navigateToUserProfile(userId: number) {
@@ -61,17 +64,17 @@
       <button
         class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors duration-300"
         on:click={() => toggleSaveAdvert(advert)}
-        disabled={!isLoggedIn}
         title={isLoggedIn
-          ? advert.isFavorited
+          ? isFavorited
             ? "Remove from saved"
             : "Save for later"
           : "Log in to save adverts"}
       >
-        <Heart
-          size={20}
-          fill={advert.isFavorited ? "red-500 " : "none"}
-        />
+      <Heart
+      size={20}
+      fill={isFavorited ? "red" : "none"}
+      color={isFavorited ? "red" : "currentColor"} 
+    />
       </button>
     </div>
     <div class="flex items-end mb-2">

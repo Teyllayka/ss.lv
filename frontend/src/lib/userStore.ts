@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 
 function createUserStore() {
-	let initialState = { emailVerified: false, isCompany: false };
+	let initialState = { emailVerified: false, isCompany: false, isLogedIn: false};
 
 	// Check if we are in a browser environment
 	if (typeof window !== "undefined") {
