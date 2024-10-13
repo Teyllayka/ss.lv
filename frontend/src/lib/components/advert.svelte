@@ -1,39 +1,53 @@
 <script lang="ts">
-import { formatDate } from "$lib/helpers";
-import { fade } from "svelte/transition";
-import { goto } from "$app/navigation";
-import { Heart, Star, MapPin } from "lucide-svelte";
-import { user } from "$lib/userStore";
+  import { formatDate } from "$lib/helpers";
+  import { fade } from "svelte/transition";
+  import { goto } from "$app/navigation";
+  import { Heart, Star, MapPin } from "lucide-svelte";
+  import { user } from "$lib/userStore";
 
-let isLoggedIn = false;
+  let isLoggedIn = false;
 
-export let advert;
-export let userPage;
+  export let advert;
+  export let userPage;
 
-let isFavorited = advert.isFavorited;
+  let isFavorited = advert.isFavorited;
 
-function handleImageScroll(event: any) {
-	const container = event.currentTarget;
-	if (!container) return;
-	const containerWidth = container.offsetWidth;
-	const mouseX = event.clientX - container.getBoundingClientRect().left;
-	const scrollPercentage = mouseX / containerWidth;
-	const maxScroll = container.scrollWidth - containerWidth;
-	container.scrollLeft = maxScroll * scrollPercentage;
-}
+  function handleImageScroll(event: any) {
+    const container = event.currentTarget;
+    if (!container) return;
+    const containerWidth = container.offsetWidth;
+    const mouseX = event.clientX - container.getBoundingClientRect().left;
+    const scrollPercentage = mouseX / containerWidth;
+    const maxScroll = container.scrollWidth - containerWidth;
+    container.scrollLeft = maxScroll * scrollPercentage;
+  }
 
-function toggleSaveAdvert(advert: any) {
-	if (!$user.isLogedIn) {
-		goto("/login");
-	}
-	console.log(advert.isFavorited);
+  function toggleSaveAdvert(advert: any) {
+    if (!$user.isLogedIn) {
+      goto("/login");
+    }
 
-	isFavorited = !isFavorited;
-}
+    fetch("/api/favorite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        advertId: advert.id,
+        isFavorited: !isFavorited,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+      });
 
-function navigateToUserProfile(userId: number) {
-	goto(`/user/${userId}`);
-}
+    isFavorited = !isFavorited;
+  }
+
+  function navigateToUserProfile(userId: number) {
+    goto(`/user/${userId}`);
+  }
 </script>
 
 <div
@@ -94,13 +108,13 @@ function navigateToUserProfile(userId: number) {
     </p>
     <div class="flex items-center justify-between">
       {#if !userPage}
-        <button
+        <a
           class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-          on:click={() => navigateToUserProfile(advert.user.id)}
+          href={`/user/${advert.user.id}`}
         >
           {advert.user.name}
           {advert.user.surname}
-        </button>
+        </a>
         <div class="flex items-center">
           <Star size={16} class="text-yellow-400 mr-1" />
           <span class="text-sm text-gray-500 dark:text-gray-400">

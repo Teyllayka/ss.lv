@@ -9,7 +9,6 @@ export const handle = async ({
   event: RequestEvent;
   resolve: any;
 }) => {
-  console.log("running hook", event, event.cookies.getAll());
   let accessToken = event.cookies.get("accessToken");
   const expiresAt = event.cookies.get("expiresAt");
   const refreshToken = event.cookies.get("refreshToken");
