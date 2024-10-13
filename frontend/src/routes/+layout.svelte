@@ -1,4 +1,7 @@
 <script lang="ts">
+import { ParaglideJS } from "@inlang/paraglide-sveltekit";
+import { i18n } from "$lib/i18n";
+
 import "../app.css";
 import type { LayoutData } from "./$houdini";
 import { user } from "$lib/userStore";
@@ -8,7 +11,7 @@ import Header from "$lib/components/Header.svelte";
 import { writable } from "svelte/store";
 export let data: LayoutData;
 
-$: ({ HeaderMe } = data);
+$: HeaderMe = data.HeaderMe;
 
 const region = writable("Select Region");
 
@@ -49,8 +52,10 @@ function toggleTheme() {
 }
 </script>
 
-<Header />
+<ParaglideJS {i18n}>
+  <Header />
 
-<slot />
+  <slot />
 
-<Footer />
+  <Footer />
+</ParaglideJS>

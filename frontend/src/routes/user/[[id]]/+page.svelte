@@ -1,52 +1,52 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import {
-    Star,
-    Phone,
-    Mail,
-    CheckCircle,
-    Heart,
-    MapPin,
-    User,
-    ShoppingBag,
-    MessageSquare,
-    AtSign,
-  } from "lucide-svelte";
-  import type { PageData } from "./$houdini";
-  import { formatDate } from "$lib/helpers";
+import { fade, fly } from "svelte/transition";
+import {
+	Star,
+	Phone,
+	Mail,
+	CheckCircle,
+	Heart,
+	MapPin,
+	User,
+	ShoppingBag,
+	MessageSquare,
+	AtSign,
+} from "lucide-svelte";
+import type { PageData } from "./$houdini";
+import { formatDate } from "$lib/helpers";
 
-  export let data: PageData;
+export let data: PageData;
 
-  $: ({ User: UserInfo } = data);
-  $: userData = $UserInfo.data?.user;
+$: ({ User: UserInfo } = data);
+$: userData = $UserInfo.data?.user;
 
-  let activeTab: "profile" | "adverts" = "profile";
-  let activeReviewTab: "received" | "written" = "received";
-  let activeAdvertTab: "active" | "sold" = "active";
+let activeTab: "profile" | "adverts" = "profile";
+let activeReviewTab: "received" | "written" = "received";
+let activeAdvertTab: "active" | "sold" = "active";
 
-  function switchTab(tab: "profile" | "adverts") {
-    activeTab = tab;
-    if (tab === "adverts") {
-      activeAdvertTab = "active";
-    } else if (tab === "profile") {
-      activeReviewTab = "received";
-    }
-  }
+function switchTab(tab: "profile" | "adverts") {
+	activeTab = tab;
+	if (tab === "adverts") {
+		activeAdvertTab = "active";
+	} else if (tab === "profile") {
+		activeReviewTab = "received";
+	}
+}
 
-  function switchReviewTab(tab: "received" | "written") {
-    activeReviewTab = tab;
-  }
+function switchReviewTab(tab: "received" | "written") {
+	activeReviewTab = tab;
+}
 
-  function switchAdvertTab(tab: "active" | "sold") {
-    activeAdvertTab = tab;
-  }
+function switchAdvertTab(tab: "active" | "sold") {
+	activeAdvertTab = tab;
+}
 
-  function renderStars(rating: number) {
-    const stars = Array.from({ length: 5 }, (_, i) => ({
-      isFilled: i < Math.floor(rating),
-    }));
-    return stars;
-  }
+function renderStars(rating: number) {
+	const stars = Array.from({ length: 5 }, (_, i) => ({
+		isFilled: i < Math.floor(rating),
+	}));
+	return stars;
+}
 </script>
 
 <div
@@ -371,7 +371,7 @@
                     }`}
                     on:click={() => switchAdvertTab("active")}
                   >
-                    Received Reviews
+                    Active Adverts
                   </button>
                   <button
                     type="button"
@@ -382,7 +382,7 @@
                     }`}
                     on:click={() => switchAdvertTab("sold")}
                   >
-                    Written Reviews
+                    Sold Adverts
                   </button>
                 </div>
               </div>

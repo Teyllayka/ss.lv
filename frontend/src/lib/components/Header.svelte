@@ -14,6 +14,7 @@ import { clickOutside } from "$lib/helpers";
 import { getContext } from "svelte";
 import type { Writable } from "svelte/store";
 import { user } from "$lib/userStore";
+import * as m from "$lib/paraglide/messages.js";
 
 const region: Writable<String> = getContext("region");
 
@@ -222,7 +223,7 @@ function toggleRegions() {
           class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
         >
           <Plus class="h-5 w-5 mr-2" />
-          Create
+          {m.header_create()}
         </a>
       </div>
     </div>

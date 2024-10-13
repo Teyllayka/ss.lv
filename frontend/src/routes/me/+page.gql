@@ -1,59 +1,59 @@
 query me {
-  me {
-    id
-    name
-    surname
-    companyName
-    email
-    emailVerified
-    rating
-    telegramUsername
-    phone
+	me {
+		id
+		name
+		surname
+		companyName
+		email
+		emailVerified
+		rating
+		telegramUsername
+		phone
 
-    reviewedAdverts {
-      title
-      location
-      price
-      createdAt
-      review {
-        message
-        rating
-        createdAt
-      }
-    }
+		reviewedAdverts {
+			title
+			location
+			price
+			createdAt
+			review {
+				message
+				rating
+				createdAt
+			}
+		}
 
-    advertsWithReviews {
-      title
-      price
-      location
-      available
-      review {
-        rating
-        message
-        createdAt
-        user {
-          name
-        }
-      }
-    }
+		advertsWithReviews {
+			title
+			price
+			location
+			available
+			review {
+				rating
+				message
+				createdAt
+				user {
+					name
+				}
+			}
+		}
 
-    adverts {
-      id
-      title
-      price
-      description
-      location
-      createdAt
-      photoUrl
-      additionalPhotos
-      oldPrice
-      available
+		adverts {
+			id
+			title
+			price
+			description
+			location
+			createdAt
+			photoUrl
+			additionalPhotos
+			oldPrice
+			available
 
-      review {
-        rating
-        id
-        message
-      }
-    }
-  }
+			review {
+				rating
+				id
+				message
+			}
+		}
+	}
 }
