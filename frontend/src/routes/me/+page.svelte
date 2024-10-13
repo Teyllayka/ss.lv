@@ -7,6 +7,7 @@
     CheckCircle,
     Heart,
     MapPin,
+    Edit,
     User,
     ShoppingBag,
     MessageSquare,
@@ -15,23 +16,19 @@
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { formatDate } from "$lib/helpers";
+  import InputField from "$lib/components/InputField.svelte";
 
   export let data: PageData;
 
-  // Destructure UserInfo from the data prop
   $: ({ me } = data);
-  $: adverts = $me.data?.me.adverts;
   $: userData = $me.data?.me;
 
-  // State variables for tab management
-  let activeTab: "profile" | "adverts" = "profile";
+  let activeTab: "profile" | "adverts" | "edit" = "profile";
   let activeReviewTab: "received" | "written" = "received";
-  let activeAdvertTab: "active" | "sold" = "active"; // New state variable for adverts tabs
+  let activeAdvertTab: "active" | "sold" = "active";
 
-  // Function to switch between Profile and Adverts tabs
-  function switchTab(tab: "profile" | "adverts") {
+  function switchTab(tab: "profile" | "adverts" | "edit") {
     activeTab = tab;
-    // Reset sub-tabs when switching main tabs
     if (tab === "adverts") {
       activeAdvertTab = "active";
     } else if (tab === "profile") {
@@ -39,17 +36,47 @@
     }
   }
 
-  // Function to switch between Received and Written Reviews
+  let sent: boolean = false;
+
+  function sendVerificationEmail() {
+    fetch("?/verify", {
+      method: "POST",
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          sent = true;
+        }
+      });
+  }
+
+  function linkTelegramAccount() {}
+
+  function logout() {
+    fetch("/api/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          window.location.href = "/";
+        }
+      });
+  }
+
   function switchReviewTab(tab: "received" | "written") {
     activeReviewTab = tab;
   }
 
-  // Function to switch between Active and Sold Adverts
   function switchAdvertTab(tab: "active" | "sold") {
     activeAdvertTab = tab;
   }
 
-  // Function to render star ratings
   function renderStars(rating: number) {
     const stars = Array.from({ length: 5 }, (_, i) => ({
       isFilled: i < Math.floor(rating),
@@ -140,6 +167,17 @@
             >
               <ShoppingBag class="w-5 h-5 mr-2" />
               Adverts
+            </button>
+            <button
+              class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
+                activeTab === "edit"
+                  ? "border-b-2 border-blue-500 text-blue-500"
+                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+              on:click={() => switchTab("edit")}
+            >
+              <Edit class="w-5 h-5 mr-2" />
+              Edit
             </button>
           </div>
 
@@ -560,6 +598,98 @@
                   </p>
                 {/if}
               {/if}
+            </div>
+          {:else if activeTab === "edit"}
+            <div in:fade>
+              <form class="space-y-6">
+                <InputField
+                  name="name"
+                  placeholder="Name"
+                  type="text"
+                  value={userData.name}
+                />
+                <InputField
+                  name="surname"
+                  placeholder="Surname"
+                  type="text"
+                  value={userData.surname}
+                />
+                <!-- <InputField
+                  name="email"
+                  placeholder="Email"
+                  type="email"
+                  value={userData.email}
+                /> -->
+                <InputField
+                  name="phone"
+                  placeholder="Phone"
+                  type="text"
+                  value={userData.phone}
+                />
+                {#if !userData.emailVerified}
+                  <div
+                    class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
+                    role="alert"
+                  >
+                    <div class="flex">
+                      <AlertCircle class="w-6 h-6 mr-2" />
+                      <p>Your email is not verified.</p>
+                    </div>
+                    <button
+                      type="button"
+                      on:click={sendVerificationEmail}
+                      disabled={sent}
+                      class={`mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        sent
+                          ? "text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
+                          : "text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
+                      }`}
+                    >
+                      <Mail class="w-4 h-4 mr-2" />
+                      {sent
+                        ? "Verification Email Sent"
+                        : "Resend Verification Email"}
+                    </button>
+                  </div>
+                {/if}
+
+                {#if !userData.telegramUsername}
+                  <div
+                    class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4"
+                    role="alert"
+                  >
+                    <div class="flex">
+                      <AtSign class="w-6 h-6 mr-2" />
+                      <p>
+                        Link your Telegram account for easier communication.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <AtSign class="w-4 h-4 mr-2" />
+                      Link Telegram Account
+                    </button>
+                  </div>
+                {/if}
+
+                <div class="flex justify-between">
+                  <button
+                    type="button"
+                    on:click={logout}
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Logout
+                  </button>
+                  <button
+                    type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
             </div>
           {/if}
         </div>

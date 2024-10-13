@@ -17,19 +17,15 @@
 
   export let data: PageData;
 
-  // Destructure UserInfo from the data prop
   $: ({ User: UserInfo } = data);
   $: userData = $UserInfo.data?.user;
 
-  // State variables for tab management
   let activeTab: "profile" | "adverts" = "profile";
   let activeReviewTab: "received" | "written" = "received";
-  let activeAdvertTab: "active" | "sold" = "active"; // New state variable for adverts tabs
+  let activeAdvertTab: "active" | "sold" = "active";
 
-  // Function to switch between Profile and Adverts tabs
   function switchTab(tab: "profile" | "adverts") {
     activeTab = tab;
-    // Reset sub-tabs when switching main tabs
     if (tab === "adverts") {
       activeAdvertTab = "active";
     } else if (tab === "profile") {
@@ -37,17 +33,14 @@
     }
   }
 
-  // Function to switch between Received and Written Reviews
   function switchReviewTab(tab: "received" | "written") {
     activeReviewTab = tab;
   }
 
-  // Function to switch between Active and Sold Adverts
   function switchAdvertTab(tab: "active" | "sold") {
     activeAdvertTab = tab;
   }
 
-  // Function to render star ratings
   function renderStars(rating: number) {
     const stars = Array.from({ length: 5 }, (_, i) => ({
       isFilled: i < Math.floor(rating),
@@ -74,7 +67,6 @@
         in:fade={{ duration: 300 }}
       >
         <div class="p-6">
-          <!-- User Information Section -->
           <div class="flex flex-col md:flex-row items-center mb-6">
             <img
               src={userData.avatarUrl}
@@ -118,7 +110,6 @@
             </div>
           </div>
 
-          <!-- Main Tabs: Profile and Adverts -->
           <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
@@ -144,11 +135,8 @@
             </button>
           </div>
 
-          <!-- Conditional Rendering Based on Active Tab -->
           {#if activeTab === "profile"}
-            <!-- Profile Tab Content -->
             <div in:fade>
-              <!-- Contact Information -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {#if userData.phone}
                   <div class="flex items-center">
@@ -218,7 +206,6 @@
                 </div>
               </div>
 
-              <!-- Review Content Based on Selected Sub-Tab -->
               {#if activeReviewTab === "received"}
                 {#if userData.advertsWithReviews && userData.advertsWithReviews.length > 0}
                   {#each userData.advertsWithReviews as advert}
@@ -368,7 +355,6 @@
               {/if}
             </div>
           {:else if activeTab === "adverts"}
-            <!-- Adverts Tab Content -->
             <div in:fade>
               <div class="mb-6 flex justify-center">
                 <div

@@ -36,18 +36,15 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    /// Defines a one-to-many relationship between `User` and `Advert` via `user_id`.
     #[sea_orm(has_many = "super::advert::Entity")]
     Advert,
 
     #[sea_orm(has_many = "super::payment::Entity")]
     Payment,
 
-    /// Defines a one-to-many relationship between `User` and `Favorites` via `user_id`.
     #[sea_orm(has_many = "super::favorites::Entity")]
     Favorites,
 
-    /// Defines a one-to-many relationship between `User` and `Reviews` via `user_id`.
     #[sea_orm(has_many = "super::reviews::Entity", on_delete = "Cascade")]
     Review,
 }

@@ -6,7 +6,7 @@ use crate::{verify_access_token, Context, Token};
 use deadpool_redis::redis::{cmd, RedisError};
 use rand::{distributions::Alphanumeric, Rng};
 use sea_orm::{
-    ActiveModelTrait, EntityTrait, ModelTrait, QueryFilter, Set
+    ActiveModelTrait, EntityTrait, QueryFilter, Set
 };
 use sea_orm::ColumnTrait;
 use actix_web::Result;
@@ -166,7 +166,6 @@ impl UserQuery {
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        // Extract the access token from the context
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
             Some(token) => token,
             None => {
@@ -174,29 +173,24 @@ impl UserQuery {
             }
         };
 
-        // Verify the access token
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
         };
 
-        // Parse the user ID from the token claims
         let id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid user ID in token."))?;
 
-        // Fetch the user by ID
         let user = User::find_by_id(id)
             .one(&my_ctx.db)
             .await?
             .ok_or_else(|| async_graphql::Error::new("No user found."))?;
 
-        // Fetch adverts with associated reviews
         let adverts_with_review = Advert::find()
             .filter(advert::Column::UserId.eq(user.id))
             .find_also_related(Reviews)
             .all(&my_ctx.db)
             .await?;
 
-        // Collect unique reviewer IDs
         let reviewer_ids: HashSet<i32> = adverts_with_review
             .iter()
             .filter_map(|(_, review_opt)| review_opt.as_ref())

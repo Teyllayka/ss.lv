@@ -26,3 +26,5 @@ $houdini
 .yarn
 
 schema.graphql
+
+.vscode/
