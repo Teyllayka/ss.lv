@@ -14,6 +14,9 @@ const config = {
 		NaiveDateTime: {
 			type: "Date",
 		},
+		JSON: {
+			type: "Record<string, unknown>",
+		},
 	},
 };
 

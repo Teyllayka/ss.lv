@@ -1,60 +1,60 @@
 <script lang="ts">
-import {
-	Menu,
-	X,
-	Search,
-	MapPin,
-	Heart,
-	User,
-	Plus,
-	Building2,
-} from "lucide-svelte";
-import { fly } from "svelte/transition";
-import { clickOutside } from "$lib/helpers";
-import { getContext } from "svelte";
-import type { Writable } from "svelte/store";
-import { user } from "$lib/userStore";
-import * as m from "$lib/paraglide/messages.js";
+  import {
+    Menu,
+    X,
+    Search,
+    MapPin,
+    Heart,
+    User,
+    Plus,
+    Building2,
+  } from "lucide-svelte";
+  import { fly } from "svelte/transition";
+  import { clickOutside } from "$lib/helpers";
+  import { getContext } from "svelte";
+  import type { Writable } from "svelte/store";
+  import { user } from "$lib/userStore";
+  import * as m from "$lib/paraglide/messages.js";
 
-const region: Writable<String> = getContext("region");
+  const region: Writable<String> = getContext("region");
 
-let isMenuOpen = false;
-let searchQuery = "";
-let isCategoriesOpen = false;
-let isRegionsOpen = false;
+  let isMenuOpen = false;
+  let searchQuery = "";
+  let isCategoriesOpen = false;
+  let isRegionsOpen = false;
 
-const regions = ["North", "South", "East", "West", "Central"];
-const categories = [
-	"Electronics",
-	"Fashion",
-	"Home & Garden",
-	"Sports",
-	"Vehicles",
-	"Toys & Games",
-];
+  const regions = ["North", "South", "East", "West", "Central"];
+  const categories = [
+    "Electronics",
+    "Fashion",
+    "Home & Garden",
+    "Sports",
+    "Vehicles",
+    "Toys & Games",
+  ];
 
-function toggleMenu() {
-	isMenuOpen = !isMenuOpen;
-}
+  function toggleMenu() {
+    isMenuOpen = !isMenuOpen;
+  }
 
-function handleSearch() {
-	console.log("Searching for:", searchQuery);
-}
+  function handleSearch() {
+    console.log("Searching for:", searchQuery);
+  }
 
-function selectRegion(rg: any) {
-	region.set(rg);
-	isRegionsOpen = false;
-}
+  function selectRegion(rg: any) {
+    region.set(rg);
+    isRegionsOpen = false;
+  }
 
-function toggleCategories() {
-	isCategoriesOpen = !isCategoriesOpen;
-	if (isCategoriesOpen) isRegionsOpen = false;
-}
+  function toggleCategories() {
+    isCategoriesOpen = !isCategoriesOpen;
+    if (isCategoriesOpen) isRegionsOpen = false;
+  }
 
-function toggleRegions() {
-	isRegionsOpen = !isRegionsOpen;
-	if (isRegionsOpen) isCategoriesOpen = false;
-}
+  function toggleRegions() {
+    isRegionsOpen = !isRegionsOpen;
+    if (isRegionsOpen) isCategoriesOpen = false;
+  }
 </script>
 
 <header class="bg-white dark:bg-gray-800 shadow-md">
@@ -62,17 +62,14 @@ function toggleRegions() {
     <div
       class="flex justify-between items-center py-4 md:justify-start md:space-x-10"
     >
-      <!-- Logo -->
       <div class="flex justify-start lg:w-0 lg:flex-1">
         <a href="/" class="flex items-center">
-          <!-- <img class="h-8 w-auto sm:h-10" src="/placeholder.svg" /> -->
           <span class="ml-2 text-xl font-bold text-gray-800 dark:text-white"
             >Adee</span
           >
         </a>
       </div>
 
-      <!-- Mobile menu button -->
       <div class="-mr-2 -my-2 md:hidden">
         <button
           on:click={toggleMenu}
@@ -88,16 +85,14 @@ function toggleRegions() {
         </button>
       </div>
 
-      <!-- Desktop menu -->
       <nav class="hidden md:flex space-x-10 items-center">
         <div class="relative">
-          <!-- Categories Dropdown -->
           <button
             on:click={toggleCategories}
             type="button"
             class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            <span>Categories</span>
+            <span>{m.header_categoies()}</span>
             <svg
               class="ml-2 h-5 w-5 text-gray-400 group-hover:text-gray-500"
               xmlns="http://www.w3.org/2000/svg"
@@ -134,14 +129,13 @@ function toggleRegions() {
           {/if}
         </div>
 
-        <!-- Search Bar -->
         <div class="flex-1 flex items-center">
           <form on:submit|preventDefault={handleSearch} class="w-full">
             <div class="relative">
               <input
                 type="text"
                 bind:value={searchQuery}
-                placeholder="Search..."
+                placeholder={m.header_search()}
                 class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <button
@@ -154,7 +148,6 @@ function toggleRegions() {
           </form>
         </div>
 
-        <!-- Region Selection -->
         <div class="relative">
           <button
             on:click={toggleRegions}
@@ -200,7 +193,6 @@ function toggleRegions() {
         </div>
       </nav>
 
-      <!-- Right side icons -->
       <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
         <a
           href="/favorites"
@@ -229,7 +221,6 @@ function toggleRegions() {
     </div>
   </div>
 
-  <!-- Mobile menu, show/hide based on menu state -->
   {#if isMenuOpen}
     <div
       transition:fly={{ y: -100, duration: 300 }}
