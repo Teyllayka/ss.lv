@@ -32,12 +32,8 @@ function logout() {
 {:else}
   {#each adverts as advert}
     <Advert
-      title={advert.title}
-      description={advert.description}
-      date={advert.createdAt}
-      location={advert.location}
-      price={advert.price}
-      oldPrice={advert.oldPrice}
+      advert={advert}
+      userPage={false}
     />
   {/each}
 {/if}

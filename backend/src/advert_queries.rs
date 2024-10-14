@@ -5,7 +5,7 @@ use std::{
 use crate::{verify_access_token, Context, Token};
 
 use actix_web::Result;
-use async_graphql::{Json, Object, SimpleObject};
+use async_graphql::{Json, Object};
 use chrono::Utc;
 use entity::{
     advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews::{self, Entity as Reviews}, specifications::{self, Entity as Specifications}, user::{self, Entity as User}
@@ -15,15 +15,6 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbErr, DeleteResult, EntityTrait,
     ModelTrait, Order, QueryFilter, QueryOrder, QuerySelect, Set,
 };
-
-
-#[derive(SimpleObject)]
-struct AdvertWithUser {
-    advert: advert::Model,
-    user: user::Model,
-    is_admin: bool,
-    belongs_to_user: bool,
-}
 
 
 #[derive(Default)]
@@ -36,80 +27,78 @@ impl AdvertQuery {
         &self,
         ctx: &async_graphql::Context<'_>,
         id: i32,
-    ) -> Result<AdvertWithUser, async_graphql::Error> {
-        let my_ctx = ctx.data::<Context>().unwrap();
+    ) -> Result<advert::Model, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().expect("Failed to get context");
 
-       
+        // Fetch the advert
+        let advert = Advert::find_by_id(id)
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("Advert not found"))?;
 
-        let advert: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
+        // Fetch specifications related to the advert
+        let specs = Specifications::find()
+            .filter(specifications::Column::AdvertId.eq(id))
+            .all(&my_ctx.db)
+            .await?;
 
-        let mut advert = match advert {
-            Some(advert) => advert,
-            None => return Err(async_graphql::Error::new("advert not found".to_string())),
-        };
+        // Fetch the user who owns the advert
+        let user = User::find_by_id(advert.user_id)
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("User not found"))?;
 
-        let specs: Vec<specifications::Model> =
-            advert.find_related(Specifications).all(&my_ctx.db).await?;
+        // Initialize fields to be updated in advert::Model
+        let mut updated_advert = advert.clone();
+        updated_advert.specs = specs;
 
-        advert.specs = specs;
+        // Initialize variables for authentication and favorites
+        let mut is_admin = false;
+        let mut is_favorited = false;
+        let mut user_rating = 0.0;
 
-        let user: Option<user::Model> = User::find_by_id(advert.user_id).one(&my_ctx.db).await?;
+        // Handle optional token for additional data
+        if let Some(token) = ctx.data_opt::<Token>() {
+            // Verify the access token
+            if let Ok(claims) = verify_access_token(token.0.clone(), &my_ctx.access_key) {
+                // Parse user ID from claims
+                let req_user_id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid token"))?;
 
-        let user = match user {
-            Some(user) => user,
-            None => return Err(async_graphql::Error::new("user not found".to_string())),
-        };
+                // Fetch the requesting user
+                let req_user = User::find_by_id(req_user_id)
+                    .one(&my_ctx.db)
+                    .await?
+                    .ok_or_else(|| async_graphql::Error::new("Invalid token: user not found"))?;
 
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
-            Some(token) => token,
-            None => {
-                return Ok(AdvertWithUser {
-                    advert,
-                    user,
-                    is_admin: false,
-                    belongs_to_user: false,
+                is_admin = req_user.is_admin;
+
+                is_favorited = Favorites::find()
+                    .filter(favorites::Column::UserId.eq(req_user_id))
+                    .filter(favorites::Column::AdvertId.eq(id))
+                    .one(&my_ctx.db)
+                    .await?
+                    .is_some();
+
+                let user_reviews = Reviews::find()
+                    .filter(reviews::Column::AdvertId.eq(id))
+                    .all(&my_ctx.db)
+                    .await?;
+
+                let (total, count) = user_reviews.iter().fold((0.0, 0), |acc, review| {
+                    (acc.0 + review.rating as f32, acc.1 + 1)
                 });
+
+                if count > 0 {
+                    user_rating = total / count as f32;
+                }
             }
-        };
-
-  
-        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-            Ok(claims) => claims,
-            Err(err) => return Err(err),
-        };
-
-
-        let user_id: i32 = claims["id"].parse().unwrap();
-        let req_user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
-
-        let req_user = match req_user {
-            Some(req_user) => req_user,
-            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
-        };
-
-        let favorite_adverts: Vec<favorites::Model> =
-            req_user.find_related(Favorites).all(&my_ctx.db).await?;
-
-        let is_admin = req_user.is_admin;
-
-        let mut favorite_adverts_map: HashMap<i32, bool> = HashMap::new();
-        for favorite in favorite_adverts {
-            favorite_adverts_map.insert(favorite.advert_id, true);
         }
 
-        let is_favorited = favorite_adverts_map.get(&advert.id).is_some();
+        updated_advert.is_favorited = is_favorited;
+        updated_advert.user = user.clone();
+        updated_advert.user.rating = user_rating;
 
-        let belongs_to_user = user.id == advert.user_id;
-
-        return Ok(AdvertWithUser {
-            advert: advert::Model {
-                is_favorited,
-                ..advert
-            },
-            user,
-            is_admin,
-            belongs_to_user,
-        });
+        Ok(updated_advert)
     }
 
 
@@ -197,7 +186,6 @@ impl AdvertQuery {
         }
     }
 
-    // Assemble the final list
     let result: Vec<advert::Model> = adverts
         .into_iter()
         .map(|mut advert| {
@@ -248,62 +236,114 @@ impl AdvertQuery {
         ctx: &async_graphql::Context<'_>,
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-
-
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+    
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             Some(token) => token,
             None => {
-                return Err(async_graphql::Error::new(
-                    "you are not logged in".to_string(),
-                ));
+                return Err(async_graphql::Error::new("You are not logged in."));
             }
         };
-
-
+    
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
-            Err(err) => return Err(err),
+            Err(err) => return Err(async_graphql::Error::new(format!("Invalid token: {:?}", err))),
         };
-
-        println!("{:?}", claims);
-
-
-        let id: i32 = claims["id"].parse().expect("id is not a number or not found");
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-        let user = match user {
+    
+        let user_id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid user ID in token."))?;
+    
+        let user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
+        match user {
             Some(user) => user,
-            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+            None => return Err(async_graphql::Error::new("User not found.")),
         };
-
-        let favorites: Vec<favorites::Model> = user.find_related(Favorites).all(&my_ctx.db).await?;
-
-        let ids: Vec<i32> = favorites
-            .iter()
-            .map(|favorite| favorite.advert_id)
-            .collect();
-
-        let adverts: Option<Vec<advert::Model>> = Some(
-            Advert::find()
-                .filter(advert::Column::Id.is_in(ids))
-                .all(&my_ctx.db)
-                .await?,
-        );
-
-        let adverts = match adverts {
-            Some(adverts) => adverts,
-            None => return Err(async_graphql::Error::new("There is no adverts".to_string())),
-        };
-
-        let mut all_adverts: Vec<advert::Model> = Vec::new();
-        for advert in adverts {
-            all_adverts.push(advert::Model {
-                is_favorited: true,
-                ..advert
-            });
+    
+        let favorites: Vec<favorites::Model> = Favorites::find()
+            .filter(favorites::Column::UserId.eq(user_id))
+            .all(&my_ctx.db)
+            .await?;
+    
+        if favorites.is_empty() {
+            return Ok(vec![]);
         }
-
-        return Ok(all_adverts);
+    
+        let favorite_advert_ids: Vec<i32> = favorites.iter().map(|fav| fav.advert_id).collect();
+    
+        let adverts: Vec<advert::Model> = Advert::find()
+            .filter(advert::Column::Id.is_in(favorite_advert_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        if adverts.is_empty() {
+            return Err(async_graphql::Error::new("No adverts found for the given favorites."));
+        }
+    
+        let specs = Specifications::find()
+            .filter(specifications::Column::AdvertId.is_in(favorite_advert_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let mut specs_map: HashMap<i32, Vec<specifications::Model>> = HashMap::new();
+        for spec in specs {
+            specs_map.entry(spec.advert_id).or_default().push(spec);
+        }
+    
+        let user_ids: HashSet<i32> = adverts.iter().map(|adv| adv.user_id).collect();
+        let users = User::find()
+            .filter(user::Column::Id.is_in(user_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let users_map: HashMap<i32, user::Model> = users.into_iter().map(|u| (u.id, u)).collect();
+    
+        let user_adverts = Advert::find()
+            .filter(advert::Column::UserId.is_in(user_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let user_advert_ids: Vec<i32> = user_adverts.iter().map(|adv| adv.id).collect();
+    
+        let reviews = Reviews::find()
+            .filter(reviews::Column::AdvertId.is_in(user_advert_ids.clone()))
+            .all(&my_ctx.db)
+            .await?;
+    
+        let mut user_ratings: HashMap<i32, (f32, usize)> = HashMap::new();
+        let advert_user_map: HashMap<i32, i32> = user_adverts
+            .iter()
+            .map(|adv| (adv.id, adv.user_id))
+            .collect();
+    
+        for review in reviews {
+            if let Some(&u_id) = advert_user_map.get(&review.advert_id) {
+                let entry = user_ratings.entry(u_id).or_insert((0.0, 0));
+                entry.0 += review.rating as f32;
+                entry.1 += 1;
+            }
+        }
+    
+    
+        let result: Vec<advert::Model> = adverts
+            .into_iter()
+            .map(|mut advert| {
+                advert.specs = specs_map.get(&advert.id).cloned().unwrap_or_default();
+    
+                if let Some(user) = users_map.get(&advert.user_id) {
+                    advert.user = user.clone();
+    
+                    if let Some((total, count)) = user_ratings.get(&user.id) {
+                        advert.user.rating = total / (*count as f32);
+                    } else {
+                        advert.user.rating = 0.0;
+                    }
+                }
+    
+                advert.is_favorited = true;
+    
+                advert
+            })
+            .collect();
+    
+        Ok(result)
     }
 }
 

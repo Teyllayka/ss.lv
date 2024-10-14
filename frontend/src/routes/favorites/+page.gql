@@ -8,5 +8,12 @@ query Favorites {
 		location
 		oldPrice
 		isFavorited
+
+		user {
+			id
+			rating
+			name
+			surname
+		}
 	}
 }

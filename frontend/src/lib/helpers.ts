@@ -28,3 +28,10 @@ export function formatDate(dateStr: string) {
 
 	return `${year} ${month} ${day} ${hours}:${minutes}`;
 }
+
+export function renderStars(rating: number) {
+	const stars = Array.from({ length: 5 }, (_, i) => ({
+		isFilled: i < Math.floor(rating),
+	}));
+	return stars;
+}

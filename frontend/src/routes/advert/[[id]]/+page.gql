@@ -1,7 +1,20 @@
 query Advert($id: Int!) {
 	advert(id: $id) {
-		advert {
+		id
+		title
+		description
+		price
+		createdAt
+		location
+		oldPrice
+		isFavorited
+
+		user {
 			id
+			rating
+			name
+			surname
+			createdAt
 		}
 	}
 }

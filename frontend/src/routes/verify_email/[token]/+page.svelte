@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import { CheckCircle, XCircle } from "lucide-svelte";
+import { fade } from "svelte/transition";
+import { CheckCircle, XCircle } from "lucide-svelte";
 
-  export let data;
+export let data;
 </script>
 
 <div

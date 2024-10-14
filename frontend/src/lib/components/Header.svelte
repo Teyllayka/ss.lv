@@ -1,60 +1,60 @@
 <script lang="ts">
-  import {
-    Menu,
-    X,
-    Search,
-    MapPin,
-    Heart,
-    User,
-    Plus,
-    Building2,
-  } from "lucide-svelte";
-  import { fly } from "svelte/transition";
-  import { clickOutside } from "$lib/helpers";
-  import { getContext } from "svelte";
-  import type { Writable } from "svelte/store";
-  import { user } from "$lib/userStore";
-  import * as m from "$lib/paraglide/messages.js";
+import {
+	Menu,
+	X,
+	Search,
+	MapPin,
+	Heart,
+	User,
+	Plus,
+	Building2,
+} from "lucide-svelte";
+import { fly } from "svelte/transition";
+import { clickOutside } from "$lib/helpers";
+import { getContext } from "svelte";
+import type { Writable } from "svelte/store";
+import { user } from "$lib/userStore";
+import * as m from "$lib/paraglide/messages.js";
 
-  const region: Writable<String> = getContext("region");
+const region: Writable<String> = getContext("region");
 
-  let isMenuOpen = false;
-  let searchQuery = "";
-  let isCategoriesOpen = false;
-  let isRegionsOpen = false;
+let isMenuOpen = false;
+let searchQuery = "";
+let isCategoriesOpen = false;
+let isRegionsOpen = false;
 
-  const regions = ["North", "South", "East", "West", "Central"];
-  const categories = [
-    "Electronics",
-    "Fashion",
-    "Home & Garden",
-    "Sports",
-    "Vehicles",
-    "Toys & Games",
-  ];
+const regions = ["North", "South", "East", "West", "Central"];
+const categories = [
+	"Electronics",
+	"Fashion",
+	"Home & Garden",
+	"Sports",
+	"Vehicles",
+	"Toys & Games",
+];
 
-  function toggleMenu() {
-    isMenuOpen = !isMenuOpen;
-  }
+function toggleMenu() {
+	isMenuOpen = !isMenuOpen;
+}
 
-  function handleSearch() {
-    console.log("Searching for:", searchQuery);
-  }
+function handleSearch() {
+	console.log("Searching for:", searchQuery);
+}
 
-  function selectRegion(rg: any) {
-    region.set(rg);
-    isRegionsOpen = false;
-  }
+function selectRegion(rg: any) {
+	region.set(rg);
+	isRegionsOpen = false;
+}
 
-  function toggleCategories() {
-    isCategoriesOpen = !isCategoriesOpen;
-    if (isCategoriesOpen) isRegionsOpen = false;
-  }
+function toggleCategories() {
+	isCategoriesOpen = !isCategoriesOpen;
+	if (isCategoriesOpen) isRegionsOpen = false;
+}
 
-  function toggleRegions() {
-    isRegionsOpen = !isRegionsOpen;
-    if (isRegionsOpen) isCategoriesOpen = false;
-  }
+function toggleRegions() {
+	isRegionsOpen = !isRegionsOpen;
+	if (isRegionsOpen) isCategoriesOpen = false;
+}
 </script>
 
 <header class="bg-white dark:bg-gray-800 shadow-md">

@@ -13,7 +13,7 @@ import {
 	AtSign,
 } from "lucide-svelte";
 import type { PageData } from "./$houdini";
-import { formatDate } from "$lib/helpers";
+import { formatDate, renderStars } from "$lib/helpers";
 
 export let data: PageData;
 
@@ -39,13 +39,6 @@ function switchReviewTab(tab: "received" | "written") {
 
 function switchAdvertTab(tab: "active" | "sold") {
 	activeAdvertTab = tab;
-}
-
-function renderStars(rating: number) {
-	const stars = Array.from({ length: 5 }, (_, i) => ({
-		isFilled: i < Math.floor(rating),
-	}));
-	return stars;
 }
 </script>
 
