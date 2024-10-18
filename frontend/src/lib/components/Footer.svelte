@@ -41,7 +41,7 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
           Customer Service
         </h4>
         <ul class="space-y-2">
-          {#each ["Contact", "FAQ", "Shipping", "Returns"] as item}
+          {#each ["Contact", "FAQ", "Shipping"] as item}
             <li>
               <a
                 href={item.toLowerCase().replace(" ", "-")}

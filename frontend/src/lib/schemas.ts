@@ -17,7 +17,7 @@ interface RegisterFormValues {
 export const registerSchema: ObjectSchema<RegisterFormValues> = object({
 	email: string().email("Invalid email format").required("Email is required"),
 
-	password: string().required("Password is required"),
+	password: string().required("Password is required").min(8, "Password must be at least 8 characters long"),
 
 	repeatPassword: string()
 		.oneOf([ref("password")], "Passwords must match")
@@ -84,14 +84,14 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
 	mainPhoto: mixed<File>()
 		.required("Main photo is required")
 		.test("fileType", "Unsupported file format", (value) => {
-			if (!value) return false; // If no file is selected
-			if (!(value instanceof File)) return false; // Type guard
+			if (!value) return false; 
+			if (!(value instanceof File)) return false; 
 			return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
 		})
 		.test("fileSize", "File size too large", (value) => {
-			if (!value) return false; // If no file is selected
-			if (!(value instanceof File)) return false; // Type guard
-			const maxSize = 5 * 1024 * 1024; // 5MB
+			if (!value) return false; 
+			if (!(value instanceof File)) return false; 
+			const maxSize = 5 * 1024 * 1024; 
 			return value.size <= maxSize;
 		}),
 });

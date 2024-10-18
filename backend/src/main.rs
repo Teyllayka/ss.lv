@@ -7,7 +7,7 @@ use advert_queries::{AdvertMutation, AdvertQuery};
 use std::{collections::BTreeMap, time::{SystemTime, UNIX_EPOCH}};
 use actix_cors::Cors;
 use dotenvy::dotenv;
-use actix_web::{guard, http::{self, header::HeaderMap}, web, App, HttpResponse, HttpServer, Result};
+use actix_web::{dev::Service, guard, http::{self, header::{self, HeaderMap}}, web, App, HttpResponse, HttpServer, Result};
 use async_graphql::{http::GraphiQLSource, EmptySubscription, MergedObject, Object, Schema, SimpleObject};
 use entity::{
     advert::{self, Entity as Advert},
@@ -371,6 +371,21 @@ async fn main() -> std::io::Result<()> {
         App::new().app_data(web::Data::new(schema))
             .app_data(context_data)
             .wrap(cors)
+            .wrap_fn(|req, srv| {
+                let res = srv.call(req);
+                async {
+                    let mut response = res.await?;
+                    response.headers_mut().insert(
+                        header::X_FRAME_OPTIONS,
+                        header::HeaderValue::from_static("DENY"),
+                    );
+                    response.headers_mut().insert(
+                        header::X_CONTENT_TYPE_OPTIONS,
+                        header::HeaderValue::from_static("nosniff"),
+                    );
+                    Ok(response)
+                }
+            })
             .service(
                 web::resource("/")
                     .guard(guard::Post())

@@ -291,7 +291,7 @@ impl UserMutation {
         &self,
         ctx: &async_graphql::Context<'_>,
         #[graphql(validator(email))] email: String,
-        password: String,
+        #[graphql(validator(min_length = 8))] password: String,
         surname: Option<String>,
         name: Option<String>,
         company_name: Option<String>,

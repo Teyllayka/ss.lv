@@ -10,6 +10,10 @@ const config = {
 		alias: {
 			$houdini: "./$houdini",
 		},
+		csp: {
+			mode: "auto",
+			directives: { "script-src": ["self"] },
+		},
 	},
 };
 

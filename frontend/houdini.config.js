@@ -1,5 +1,3 @@
-/// <references types="houdini-svelte">
-// import { PUBLIC_BACKEND_URI } from '$env/static/public';
 
 /** @type {import('houdini').ConfigFile} */
 const config = {
