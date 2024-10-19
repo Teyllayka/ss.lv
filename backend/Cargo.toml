@@ -8,6 +8,7 @@ edition = "2021"
 members = [".", "entity", "migration"]
 
 [dependencies]
+async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper", "billing", "checkout", "webhook-events"] }
 actix-web = "4.9.0"
 async-graphql = "6.0.6"
 async-graphql-actix-web = "6.0.6"
@@ -29,5 +30,15 @@ serde_json = "1.0.128"
 serde = "1.0.210"
 reqwest = {version = "0.12.7", features = ["json"]}
 deadpool-redis = "0.18.0"
-async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper"] }
 rand = "0.8.5"
+
+[profile.dev]
+incremental = true
+
+[profile.release]
+incremental = true
+opt-level = 2
+
+[build.limit]
+local-memory="100%"
+cpu="100%"

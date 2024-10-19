@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   frontend:
@@ -8,17 +9,58 @@ services:
     tty: true
     depends_on:
       - backend
+
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - DOCKER_BUILDKIT=1
+        - DOCKER_BUILDKIT_INLINE_CACHE=1
     ports:
-      - "80:80"
+      - "90:80"  # Host port 90 mapped to container port 80
     env_file:
-      - ./backend/.env
+      - ./backend/docker.env
     environment:
       - RUST_BACKTRACE=1
+      - DB_PORT=5432
+      - DB_HOST=db
+      
+      - DB_USER=your_username
+      - DB_PASSWORD=your_password
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: your_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "your_username"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # telegram:
   #   build: ./telegram-bot
   #   env_file:
   #     - .env
   #   depends_on:
   #     - backend
+
+volumes:
+  db_data:
