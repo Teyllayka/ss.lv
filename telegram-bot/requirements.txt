@@ -1,0 +1,12 @@
+certifi==2024.8.30
+charset-normalizer==3.3.2
+idna==3.10
+psycopg2-binary==2.9.9
+pyTelegramBotAPI==4.23.0
+python-dotenv==1.0.1
+redis==5.1.0
+requests==2.32.3
+SQLAlchemy==2.0.35
+telebot==0.0.5
+typing_extensions==4.12.2
+urllib3==2.2.3

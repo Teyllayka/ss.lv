@@ -1,28 +1,21 @@
-#!/bin/sh
-
-# Exit immediately if a command exits with a non-zero status
+#!/usr/bin/env bash
 set -e
 
-# Function to wait for PostgreSQL to be ready
-wait_for_db() {
-  echo "Waiting for PostgreSQL to be available..."
-  until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER"; do
-    echo "PostgreSQL is unavailable - sleeping"
+# Function to check if PostgreSQL is ready
+wait_for_postgres() {
+  echo "Waiting for PostgreSQL to be ready..."
+  while ! pg_isready -h "$POSTGRES_HOST" -U "$POSTGRES_USER" > /dev/null 2>&1; do
     sleep 2
   done
-  echo "PostgreSQL is available."
+  echo "PostgreSQL is ready."
 }
 
-# Export PGPASSWORD for pg_isready to use
-export PGPASSWORD="$DB_PASSWORD"
+# Run the wait function
+wait_for_postgres
 
-# Wait for the PostgreSQL database to be ready
-wait_for_db
-
-# Run database migrations using sea-orm-cli
+# Run database migrations
 echo "Running database migrations..."
-sea-orm-cli migrate -d "$DATABASE_URL"
+sea-orm-cli migrate
 
-# Execute the main application
-echo "Starting the Rust application..."
+# Execute the main container command
 exec "$@"

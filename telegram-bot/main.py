@@ -52,7 +52,7 @@ def send_welcome(message: telebot.types.Message):
             bot.send_message(chat_id, 'Please choose an option:', reply_markup=keyboard)
     
     except Exception as e:
-        bot.send_message(chat_id, "An error occurred. Please try again later.")
+        bot.send_message(chat_id, "An error occurred. Please try again later.", e)
         print(f"Error querying user: {e}")
 
 

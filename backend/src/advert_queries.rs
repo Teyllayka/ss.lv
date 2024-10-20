@@ -53,7 +53,6 @@ impl AdvertQuery {
         updated_advert.specs = specs;
 
         // Initialize variables for authentication and favorites
-        let mut is_admin = false;
         let mut is_favorited = false;
         let mut user_rating = 0.0;
 
@@ -65,12 +64,7 @@ impl AdvertQuery {
                 let req_user_id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid token"))?;
 
                 // Fetch the requesting user
-                let req_user = User::find_by_id(req_user_id)
-                    .one(&my_ctx.db)
-                    .await?
-                    .ok_or_else(|| async_graphql::Error::new("Invalid token: user not found"))?;
-
-                is_admin = req_user.is_admin;
+              
 
                 is_favorited = Favorites::find()
                     .filter(favorites::Column::UserId.eq(req_user_id))

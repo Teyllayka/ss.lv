@@ -1,17 +1,18 @@
 import { HoudiniClient } from "$houdini";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface Session {
-	accessToken?: string;
+  accessToken?: string;
 }
 
 export default new HoudiniClient({
-	url: "http://localhost:80",
+  url: apiUrl || "http://localhost:80",
 
-	fetchParams({ session }: { session?: Session | null }) {
-		return {
-			headers: {
-				Authorization: `Bearer ${session?.accessToken}`,
-			},
-		};
-	},
+  fetchParams({ session }: { session?: Session | null }) {
+    return {
+      headers: {
+        Authorization: `Bearer ${session?.accessToken}`,
+      },
+    };
+  },
 });

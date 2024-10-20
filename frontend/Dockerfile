@@ -1,15 +1,17 @@
-FROM node:16-alpine
+FROM node:21
 
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm install
+COPY package.json yarn.lock ./
+RUN yarn install
 
 COPY . .
 
-RUN npm run build
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 
-EXPOSE 5000
+EXPOSE 4173
 
-CMD ["npm", "run", "preview"]
+RUN yarn build
+
+CMD ["yarn", "preview"]
