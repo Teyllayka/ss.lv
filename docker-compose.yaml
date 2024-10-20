@@ -11,6 +11,12 @@ services:
       - backend
     networks:
       - app-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: always
 
   frontend:
     build:
@@ -25,20 +31,18 @@ services:
       - backend
     networks:
       - app-network
+    restart: always
 
   backend:
     build: ./backend
     ports:
       - "8080:80"  
-    environment:
-      DATABASE_URL: postgres://user:password@db:5432/mydb
-      REDIS_URL: redis://redis:6379
-      OTHER_ENV_VAR: value
     depends_on:
       - db
       - redis
     networks:
       - app-network
+    restart: always
 
   db:
     image: postgres:15
@@ -53,6 +57,11 @@ services:
       - db_data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:7
@@ -62,6 +71,12 @@ services:
       - redis_data:/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: always
   
   tgbot:
     build: ./telegram-bot
@@ -72,10 +87,12 @@ services:
     depends_on:
       - db
       - redis
+    restart: always
 
 volumes:
   db_data:
   redis_data:
+    driver: local
 
 networks:
   app-network:

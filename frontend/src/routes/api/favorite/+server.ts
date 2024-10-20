@@ -28,7 +28,7 @@ export const POST: RequestHandler = async (event) => {
 
 	let res;
 	if (isFavorited) {
-		res = await favorite.mutate({ id: advertId }, { event }); 
+		res = await favorite.mutate({ id: advertId }, { event });
 	} else {
 		res = await removeFavorite.mutate({ id: advertId }, { event });
 	}

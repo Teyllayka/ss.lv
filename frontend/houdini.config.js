@@ -1,4 +1,3 @@
-
 /** @type {import('houdini').ConfigFile} */
 const config = {
 	schemaPath: "./schema.graphql",

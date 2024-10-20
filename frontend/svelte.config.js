@@ -12,7 +12,10 @@ const config = {
 		},
 		csp: {
 			mode: "auto",
-			directives: { "script-src": ["self"] },
+			directives: {
+				"script-src": ["self"],
+				"style-src": ["self", "unsafe-inline"],
+			},
 		},
 	},
 };
