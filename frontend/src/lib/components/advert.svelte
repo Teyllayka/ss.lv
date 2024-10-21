@@ -4,9 +4,14 @@
   import { goto } from "$app/navigation";
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { user } from "$lib/userStore";
+  import { createEventDispatcher } from "svelte";
 
   let isLoggedIn = false;
 
+  export let onFavoriteChange: (
+    advertId: number,
+    isFavorited: boolean
+  ) => void = () => {};
   export let advert;
   export let userPage;
 
@@ -40,6 +45,7 @@
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        onFavoriteChange(advert.id, isFavorited);
       });
 
     isFavorited = !isFavorited;
