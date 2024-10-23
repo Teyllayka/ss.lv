@@ -473,7 +473,7 @@ impl UserMutation {
         name: Option<String>,
         surname: Option<String>,
         company_name: Option<String>,
-        phone: String,
+        phone: Option<String>,
         _avatar_url: Option<String>,
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
@@ -524,7 +524,7 @@ impl UserMutation {
             name: Set(name),
             surname: Set(surname),
             company_name: Set(company_name),
-            phone: Set(Some(phone)),
+            phone: Set(phone),
             ..user.into()
         };
 

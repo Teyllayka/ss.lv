@@ -69,7 +69,7 @@ function logout() {
     <h1
       class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center"
     >
-      Recent Adverts
+      Favorited Adverts
     </h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

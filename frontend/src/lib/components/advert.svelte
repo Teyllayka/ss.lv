@@ -51,9 +51,6 @@
     isFavorited = !isFavorited;
   }
 
-  function navigateToUserProfile(userId: number) {
-    goto(`/user/${userId}`);
-  }
 </script>
 
 <div

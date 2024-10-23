@@ -18,6 +18,7 @@ import type { PageData } from "./$houdini";
 import { formatDate, renderStars } from "$lib/helpers";
 import InputField from "$lib/components/InputField.svelte";
 import * as m from "$lib/paraglide/messages.js";
+    import { enhance } from "$app/forms";
 
 export let data: PageData;
 
@@ -595,31 +596,47 @@ function switchAdvertTab(tab: "active" | "sold") {
             </div>
           {:else if activeTab === "edit"}
             <div in:fade>
-              <form class="space-y-6">
-                <InputField
-                  name="name"
-                  placeholder="Name"
-                  type="text"
-                  value={userData.name}
-                />
-                <InputField
-                  name="surname"
-                  placeholder="Surname"
-                  type="text"
-                  value={userData.surname}
-                />
-                <!-- <InputField
-                  name="email"
-                  placeholder="Email"
-                  type="email"
-                  value={userData.email}
-                /> -->
+              <form use:enhance 
+              method="POST"
+              action="?/updateProfile"
+               class="space-y-6">
+                {#if !userData.companyName}
+                  <InputField
+                    name="name"
+                    placeholder="Name"
+                    type="text"
+                    value={userData.name}
+                  />
+                  <InputField
+                    name="surname"
+                    placeholder="Surname"
+                    type="text"
+                    value={userData.surname}
+                  />
+                {:else}
+                  <InputField
+                    name="companyName"
+                    placeholder="Company Name"
+                    type="text"
+                    value={userData.companyName}
+                  />
+                {/if}
                 <InputField
                   name="phone"
                   placeholder="Phone"
                   type="text"
                   value={userData.phone}
                 />
+
+                <InputField
+                  name="password"
+                  placeholder="Password"
+                  type="password"
+                  disableAutoFill={true}
+                />
+
+
+
                 {#if !userData.emailVerified}
                   <div
                     class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"

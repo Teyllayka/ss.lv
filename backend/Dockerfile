@@ -2,11 +2,10 @@ FROM rust:latest AS build
 
 WORKDIR /usr/src/backend
 
-RUN cargo install sea-orm-cli
 
 COPY . .
 
-RUN cargo build --release
+RUN cargo build --release --jobs 3
 
 FROM debian:bookworm-slim
 
@@ -14,7 +13,6 @@ RUN apt-get update \
     && apt-get install -y libssl3 libpq-dev postgresql-client bash \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /usr/local/cargo/bin/sea-orm-cli /usr/local/bin/sea-orm-cli
 COPY --from=build /usr/src/backend/target/release/backend /usr/local/bin/backend
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

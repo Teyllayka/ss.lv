@@ -7,6 +7,8 @@ export let type;
 export let placeholder;
 export let errors: any[] = [];
 export let value: string | undefined | null = null;
+export let disableAutoFill: boolean = false;
+
 
 let e: any = null;
 $: {
@@ -25,6 +27,7 @@ $: {
       : 'border-gray-300 dark:border-gray-600'}"
     value={value || null}
     {placeholder}
+    autocomplete={disableAutoFill ? 'off' : undefined}
   />
   <label
     class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
