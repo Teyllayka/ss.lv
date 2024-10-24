@@ -18,7 +18,7 @@ const config = {
 			  "frame-ancestors": ["'self'"],
 			  "manifest-src": ["'self'"],
 			  "font-src": ["'self'", "https://fonts.gstatic.com"],
-			  "connect-src": ["'self'", "http://localhost:90"],	
+			  "connect-src": ["'self'", "http://localhost:90", "http://localhost:80"],	
 			  "frame-src": ["'self'"],
 			  "object-src": ["'self'"],
 			  "form-action": ["'self'"],	

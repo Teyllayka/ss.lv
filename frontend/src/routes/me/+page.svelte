@@ -1,83 +1,84 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import {
-	Star,
-	Phone,
-	Mail,
-	CheckCircle,
-	Heart,
-	MapPin,
-	Edit,
-	User,
-	ShoppingBag,
-	MessageSquare,
-	AlertCircle,
-	AtSign,
-} from "lucide-svelte";
-import type { PageData } from "./$houdini";
-import { formatDate, renderStars } from "$lib/helpers";
-import InputField from "$lib/components/InputField.svelte";
-import * as m from "$lib/paraglide/messages.js";
-    import { enhance } from "$app/forms";
+  import { fade, fly } from "svelte/transition";
+  import {
+    Star,
+    Phone,
+    Mail,
+    CheckCircle,
+    Heart,
+    MapPin,
+    Edit,
+    User,
+    ShoppingBag,
+    MessageSquare,
+    AlertCircle,
+    AtSign,
+  } from "lucide-svelte";
+  import type { PageData } from "./$houdini";
+  import { formatDate, renderStars } from "$lib/helpers";
+  import InputField from "$lib/components/InputField.svelte";
+  import * as m from "$lib/paraglide/messages.js";
+  import { enhance } from "$app/forms";
+  export let form;
 
-export let data: PageData;
+  export let data: PageData;
 
-$: ({ me } = data);
-$: userData = $me.data?.me;
+  $: ({ me } = data);
+  $: userData = $me.data?.me;
 
-let activeTab: "profile" | "adverts" | "edit" = "profile";
-let activeReviewTab: "received" | "written" = "received";
-let activeAdvertTab: "active" | "sold" = "active";
+  let activeTab: "profile" | "adverts" | "edit" = "profile";
+  let activeReviewTab: "received" | "written" = "received";
+  let activeAdvertTab: "active" | "sold" = "active";
 
-function switchTab(tab: "profile" | "adverts" | "edit") {
-	activeTab = tab;
-	if (tab === "adverts") {
-		activeAdvertTab = "active";
-	} else if (tab === "profile") {
-		activeReviewTab = "received";
-	}
-}
+  function switchTab(tab: "profile" | "adverts" | "edit") {
+    activeTab = tab;
+    if (tab === "adverts") {
+      activeAdvertTab = "active";
+    } else if (tab === "profile") {
+      activeReviewTab = "received";
+    }
+  }
 
-let sent: boolean = false;
+  let sent: boolean = false;
 
-function sendVerificationEmail() {
-	fetch("?/verify", {
-		method: "POST",
-		body: JSON.stringify({}),
-	})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.status == 200) {
-				sent = true;
-			}
-		});
-}
+  function sendVerificationEmail() {
+    fetch("?/verify", {
+      method: "POST",
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          sent = true;
+        }
+      });
+  }
 
-function linkTelegramAccount() {}
+  function linkTelegramAccount() {}
 
-function logout() {
-	fetch("/api/logout", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({}),
-	})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.status == 200) {
-				window.location.href = "/";
-			}
-		});
-}
+  function logout() {
+    fetch("/api/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          window.location.href = "/";
+        }
+      });
+  }
 
-function switchReviewTab(tab: "received" | "written") {
-	activeReviewTab = tab;
-}
+  function switchReviewTab(tab: "received" | "written") {
+    activeReviewTab = tab;
+  }
 
-function switchAdvertTab(tab: "active" | "sold") {
-	activeAdvertTab = tab;
-}
+  function switchAdvertTab(tab: "active" | "sold") {
+    activeAdvertTab = tab;
+  }
 </script>
 
 <div
@@ -596,28 +597,33 @@ function switchAdvertTab(tab: "active" | "sold") {
             </div>
           {:else if activeTab === "edit"}
             <div in:fade>
-              <form use:enhance 
-              method="POST"
-              action="?/updateProfile"
-               class="space-y-6">
+              <form
+                use:enhance
+                method="POST"
+                action="?/updateProfile"
+                class="space-y-6"
+              >
                 {#if !userData.companyName}
                   <InputField
                     name="name"
                     placeholder="Name"
                     type="text"
                     value={userData.name}
+                    errors={form?.errors || []}
                   />
                   <InputField
                     name="surname"
                     placeholder="Surname"
                     type="text"
                     value={userData.surname}
+                    errors={form?.errors || []}
                   />
                 {:else}
                   <InputField
                     name="companyName"
                     placeholder="Company Name"
                     type="text"
+                    errors={form?.errors || []}
                     value={userData.companyName}
                   />
                 {/if}
@@ -625,6 +631,7 @@ function switchAdvertTab(tab: "active" | "sold") {
                   name="phone"
                   placeholder="Phone"
                   type="text"
+                  errors={form?.errors || []}
                   value={userData.phone}
                 />
 
@@ -632,10 +639,9 @@ function switchAdvertTab(tab: "active" | "sold") {
                   name="password"
                   placeholder="Password"
                   type="password"
+                  errors={form?.errors || []}
                   disableAutoFill={true}
                 />
-
-
 
                 {#if !userData.emailVerified}
                   <div

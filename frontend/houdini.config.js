@@ -2,8 +2,9 @@
 const config = {
 	schemaPath: "./schema.graphql",
 	watchSchema: {
-		//url: process?.env.VITE_API_URL || "http://localhost:80",
-		url: "http://localhost:90"
+		url: typeof import.meta.env !== 'undefined' && import.meta.env.VITE_API_URL 
+            ? import.meta.env.VITE_API_URL 
+            : "http://localhost:80",
 	},
 	plugins: {
 		"houdini-svelte": {},

@@ -8,7 +8,7 @@
     name: any;
     type: any;
     placeholder: any;
-    errors?: any[];
+    errors?: any | any[];
     value?: string | undefined | null;
     disableAutoFill?: boolean;
   }

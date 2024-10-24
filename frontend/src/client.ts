@@ -6,7 +6,7 @@ interface Session {
 }
 
 export default new HoudiniClient({
-  url: apiUrl || "http://localhost:90",
+  url: apiUrl || "http://localhost:80",
 
   fetchParams({ session }: { session?: Session | null }) {
     return {
