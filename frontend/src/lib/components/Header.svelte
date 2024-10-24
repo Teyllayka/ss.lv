@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from "svelte/legacy";
+
   import {
     Menu,
     X,
@@ -18,10 +20,10 @@
 
   const region: Writable<string> = getContext("region");
 
-  let isMenuOpen = false;
-  let searchQuery = "";
-  let isCategoriesOpen = false;
-  let isRegionsOpen = false;
+  let isMenuOpen = $state(false);
+  let searchQuery = $state("");
+  let isCategoriesOpen = $state(false);
+  let isRegionsOpen = $state(false);
 
   const regions = ["North", "South", "East", "West", "Central"];
   const categories = [
@@ -72,7 +74,7 @@
 
       <div class="-mr-2 -my-2 md:hidden">
         <button
-          on:click={toggleMenu}
+          onclick={toggleMenu}
           type="button"
           class="bg-white dark:bg-gray-800 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
         >
@@ -88,7 +90,7 @@
       <nav class="hidden md:flex space-x-10 items-center">
         <div class="relative">
           <button
-            on:click={toggleCategories}
+            onclick={toggleCategories}
             type="button"
             class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
@@ -113,7 +115,7 @@
               transition:fly={{ y: -10, duration: 200 }}
               class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
               use:clickOutside
-              on:click_outside={() => (isCategoriesOpen = false)}
+              onclick_outside={() => (isCategoriesOpen = false)}
             >
               <div class="py-1">
                 {#each categories as category}
@@ -130,7 +132,7 @@
         </div>
 
         <div class="flex-1 flex items-center">
-          <form on:submit|preventDefault={handleSearch} class="w-full">
+          <form onsubmit={preventDefault(handleSearch)} class="w-full">
             <div class="relative">
               <input
                 type="text"
@@ -150,7 +152,7 @@
 
         <div class="relative">
           <button
-            on:click={toggleRegions}
+            onclick={toggleRegions}
             type="button"
             class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
@@ -176,12 +178,12 @@
               transition:fly={{ y: -10, duration: 200 }}
               class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
               use:clickOutside
-              on:click_outside={() => (isRegionsOpen = false)}
+              onclick_outside={() => (isRegionsOpen = false)}
             >
               <div class="py-1">
                 {#each regions as region}
                   <button
-                    on:click={() => selectRegion(region)}
+                    onclick={() => selectRegion(region)}
                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
                     {region}
@@ -240,7 +242,7 @@
             </div>
             <div class="-mr-2">
               <button
-                on:click={toggleMenu}
+                onclick={toggleMenu}
                 type="button"
                 class="bg-white dark:bg-gray-800 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
               >
@@ -281,7 +283,7 @@
             </a>
             {#each regions as region}
               <button
-                on:click={() => selectRegion(region)}
+                onclick={() => selectRegion(region)}
                 class="text-base font-medium text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300"
               >
                 {region}

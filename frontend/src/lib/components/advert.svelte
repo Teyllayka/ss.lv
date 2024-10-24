@@ -4,18 +4,18 @@
   import { goto } from "$app/navigation";
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { user } from "$lib/userStore";
-  import { createEventDispatcher } from "svelte";
 
   let isLoggedIn = false;
 
-  export let onFavoriteChange: (
-    advertId: number,
-    isFavorited: boolean
-  ) => void = () => {};
-  export let advert;
-  export let userPage;
+  interface Props {
+    onFavoriteChange?: (advertId: number, isFavorited: boolean) => void;
+    advert: any;
+    userPage: any;
+  }
 
-  let isFavorited = advert.isFavorited;
+  let { onFavoriteChange = () => {}, advert, userPage }: Props = $props();
+
+  let isFavorited = $state(advert.isFavorited);
 
   function handleImageScroll(event: any) {
     const container = event.currentTarget;
@@ -50,7 +50,6 @@
 
     isFavorited = !isFavorited;
   }
-
 </script>
 
 <div
@@ -59,8 +58,8 @@
 >
   <div
     class="relative h-48 overflow-hidden cursor-pointer"
-    on:mousemove={(e) => handleImageScroll(e)}
-    on:click={() => goto(`/advert/${advert.id}`)}
+    onmousemove={(e) => handleImageScroll(e)}
+    onclick={() => goto(`/advert/${advert.id}`)}
     role="img"
   ></div>
   <div class="p-4">
@@ -70,7 +69,7 @@
       </h2>
       <button
         class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors duration-300"
-        on:click={() => toggleSaveAdvert(advert)}
+        onclick={() => toggleSaveAdvert(advert)}
         title={isLoggedIn
           ? isFavorited
             ? "Remove from saved"

@@ -14,7 +14,7 @@ const config = {
 			mode: "auto",
 			directives: {
 				"script-src": ["self"],
-				//"style-src": ["self", "unsafe-inline"],
+				"style-src": ["self"],
 			},
 		},
 	},

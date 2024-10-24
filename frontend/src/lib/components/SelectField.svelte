@@ -1,28 +1,41 @@
 <script lang="ts">
-import { fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { capitalizeFirstLetter } from "../helpers";
-export let name;
-export let placeholder;
-export let options: any[] = [];
-export let errors: any[] = [];
-export let value: string | undefined | null = null;
-export let onChange: (e: any) => void = () => {};
+  import { run } from "svelte/legacy";
 
-let e: any = null;
-$: {
-	e = errors.find((x) => x.field === name);
-}
+  import { fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { capitalizeFirstLetter } from "../helpers";
+  interface Props {
+    name: any;
+    placeholder: any;
+    options?: any[];
+    errors?: any[];
+    value?: string | undefined | null;
+    onChange?: (e: any) => void;
+  }
 
-console.log(options);
+  let {
+    name,
+    placeholder,
+    options = [],
+    errors = [],
+    value = null,
+    onChange = () => {},
+  }: Props = $props();
+
+  let e: any = $state(null);
+  run(() => {
+    e = errors.find((x) => x.field === name);
+  });
+
+  console.log(options);
 </script>
 
 <select
   id={name}
-  value={value === null || value === undefined ? 'placeholder' : value}
+  value={value === null || value === undefined ? "placeholder" : value}
   {name}
   required
-  on:change={onChange}
+  onchange={onChange}
   class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out text-gray-800 dark:text-white border-solid border-2 {e
     ? 'border-red-500'
     : 'border-gray-300 dark:border-gray-600'}"

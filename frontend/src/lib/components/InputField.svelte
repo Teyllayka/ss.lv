@@ -1,19 +1,31 @@
 <script lang="ts">
-import { fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { capitalizeFirstLetter } from "$lib/helpers";
-export let name;
-export let type;
-export let placeholder;
-export let errors: any[] = [];
-export let value: string | undefined | null = null;
-export let disableAutoFill: boolean = false;
+  import { run } from "svelte/legacy";
 
+  import { fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { capitalizeFirstLetter } from "$lib/helpers";
+  interface Props {
+    name: any;
+    type: any;
+    placeholder: any;
+    errors?: any[];
+    value?: string | undefined | null;
+    disableAutoFill?: boolean;
+  }
 
-let e: any = null;
-$: {
-	e = errors.find((x) => x.field === name);
-}
+  let {
+    name,
+    type,
+    placeholder,
+    errors = [],
+    value = null,
+    disableAutoFill = false,
+  }: Props = $props();
+
+  let e: any = $state(null);
+  run(() => {
+    e = errors.find((x) => x.field === name);
+  });
 </script>
 
 <div class="field relative">
@@ -27,7 +39,7 @@ $: {
       : 'border-gray-300 dark:border-gray-600'}"
     value={value || null}
     {placeholder}
-    autocomplete={disableAutoFill ? 'off' : undefined}
+    autocomplete={disableAutoFill ? "off" : undefined}
   />
   <label
     class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
