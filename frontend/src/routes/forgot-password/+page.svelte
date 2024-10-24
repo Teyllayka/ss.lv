@@ -10,6 +10,8 @@ let error = "";
 import { enhance } from "$app/forms";
 export let form;
 import InputField from "$lib/components/InputField.svelte";
+
+let csrfToken = '';
 </script>
   
   <div class="min-h-[58vh] bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 flex justify-center items-center">
@@ -21,6 +23,8 @@ import InputField from "$lib/components/InputField.svelte";
         
         {#if !isSubmitted}
           <form  method="POST" use:enhance class="space-y-6">
+            <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
+
             <div class="relative" in:fly={{ y: 20, duration: 300, delay: 300, easing: cubicOut }}>
                 <InputField
                 name="email"

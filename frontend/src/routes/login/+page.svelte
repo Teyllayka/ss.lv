@@ -4,6 +4,9 @@ import { cubicOut } from "svelte/easing";
 import { enhance } from "$app/forms";
 export let form;
 import InputField from "$lib/components/InputField.svelte";
+
+let csrfToken = '';
+
 </script>
 
 <div
@@ -18,6 +21,7 @@ import InputField from "$lib/components/InputField.svelte";
     </h2>
 
     <form method="POST" use:enhance class="space-y-6">
+      <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
       <div
         class="relative"
         in:fly={{ y: 20, duration: 300, delay: 300, easing: cubicOut }}

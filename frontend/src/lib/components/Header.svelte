@@ -13,7 +13,7 @@
   } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { clickOutside } from "$lib/helpers";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { user } from "$lib/userStore";
   import * as m from "$lib/paraglide/messages.js";
@@ -34,6 +34,15 @@
     "Vehicles",
     "Toys & Games",
   ];
+
+  let csrfToken = $state("");
+
+  onMount(async () => {
+    // const response = await fetch('/csrf-token'); // Adjust to your API endpoint
+    // const data = await response.json();
+    // csrfToken = data.csrfToken;
+    csrfToken = 'aa';
+  });
 
   function toggleMenu() {
     isMenuOpen = !isMenuOpen;
@@ -133,6 +142,7 @@
 
         <div class="flex-1 flex items-center">
           <form onsubmit={preventDefault(handleSearch)} class="w-full">
+            <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
             <div class="relative">
               <input
                 type="text"

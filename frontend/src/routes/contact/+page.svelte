@@ -7,6 +7,8 @@ import InputField from "$lib/components/InputField.svelte";
 import TextField from "$lib/components/TextField.svelte";
 export let form;
 
+  let csrfToken = '';
+
 let isSubmitted = false;
 </script>
 
@@ -28,6 +30,7 @@ let isSubmitted = false;
         <div>
           {#if !isSubmitted}
             <form method="post" use:enhance class="space-y-6">
+              <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
               <div
                 class="relative"
                 in:fly={{ y: 20, duration: 300, delay: 100, easing: cubicOut }}

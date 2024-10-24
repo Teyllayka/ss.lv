@@ -56,6 +56,8 @@
   class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
   in:fade={{ duration: 300 }}
 >
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
     class="relative h-48 overflow-hidden cursor-pointer"
     onmousemove={(e) => handleImageScroll(e)}
