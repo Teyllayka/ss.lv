@@ -108,38 +108,94 @@ export const actions = {
       return fail(400, { errors, updateFields });
     }
 
-    // const editProfile = graphql(`
-    //   mutation editProfile(
-    //     $name: String
-    //     $surname: String
-    //     $companyName: String
-    //     $phone: String
-    //     $password: String!
-    //   ) {
-    //     edit(
-    //       name: $name
-    //       surname: $surname
-    //       companyName: $companyName
-    //       phone: $phone
-    //       password: $password
-    //     ) {
-    //       id
-    //     }
-    //   }
-    // `);
+    const editProfile = graphql(`
+      mutation editProfile(
+        $name: String
+        $surname: String
+        $companyName: String
+        $phone: String
+        $password: String!
+      ) {
+        edit(
+          name: $name
+          surname: $surname
+          companyName: $companyName
+          phone: $phone
+          password: $password
+        ) {
+          id
+		name
+		surname
+		companyName
+		email
+		emailVerified
+		rating
+		telegramUsername
+		phone
 
-    // const res = await editProfile.mutate(
-    //   { ...updateFields, password },
-    //   { event }
-    // );
+		reviewedAdverts {
+			title
+			location
+			price
+			createdAt
+			review {
+				message
+				rating
+				createdAt
+			}
+		}
 
-    // if (!res.data || !res.data.edit) {
-    //   return fail(400, {
-    //     updateFields,
-    //     errors: { form: "Failed to update profile." },
-    //   });
-    // }
+		advertsWithReviews {
+			title
+			price
+			location
+			available
+			review {
+				rating
+				message
+				createdAt
+				user {
+					name
+				}
+			}
+		}
 
-    // return { success: true };
+		adverts {
+			id
+			title
+			price
+			description
+			location
+			createdAt
+			photoUrl
+			additionalPhotos
+			oldPrice
+			available
+
+			review {
+				rating
+				id
+				message
+			}
+		}
+        }
+      }
+    `);
+
+    const res = await editProfile.mutate(
+      { ...updateFields, password: data.password },
+      { event }
+    );
+
+    console.log(res);
+
+    if (!res.data || !res.data.edit) {
+      return fail(400, {
+        updateFields,
+        errors: { form: "Failed to update profile." },
+      });
+    }
+
+    return { success: true,  data: res.data.edit};
   },
 };

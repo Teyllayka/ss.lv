@@ -30,40 +30,31 @@ impl AdvertQuery {
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().expect("Failed to get context");
 
-        // Fetch the advert
         let advert = Advert::find_by_id(id)
             .one(&my_ctx.db)
             .await?
             .ok_or_else(|| async_graphql::Error::new("Advert not found"))?;
 
-        // Fetch specifications related to the advert
         let specs = Specifications::find()
             .filter(specifications::Column::AdvertId.eq(id))
             .all(&my_ctx.db)
             .await?;
 
-        // Fetch the user who owns the advert
         let user = User::find_by_id(advert.user_id)
             .one(&my_ctx.db)
             .await?
             .ok_or_else(|| async_graphql::Error::new("User not found"))?;
 
-        // Initialize fields to be updated in advert::Model
         let mut updated_advert = advert.clone();
         updated_advert.specs = specs;
 
-        // Initialize variables for authentication and favorites
         let mut is_favorited = false;
         let mut user_rating = 0.0;
 
-        // Handle optional token for additional data
         if let Some(token) = ctx.data_opt::<Token>() {
-            // Verify the access token
             if let Ok(claims) = verify_access_token(token.0.clone(), &my_ctx.access_key) {
-                // Parse user ID from claims
                 let req_user_id: i32 = claims["id"].parse().map_err(|_| async_graphql::Error::new("Invalid token"))?;
 
-                // Fetch the requesting user
               
 
                 is_favorited = Favorites::find()
@@ -113,7 +104,6 @@ impl AdvertQuery {
 
         let advert_ids: Vec<i32> = adverts.iter().map(|adv| adv.id).collect();
 
-        // Fetch all specifications in one query
         let specs = Specifications::find()
             .filter(specifications::Column::AdvertId.is_in(advert_ids))
             .all(&my_ctx.db)
@@ -203,24 +193,42 @@ impl AdvertQuery {
         return Ok(result);
     }
 
-    async fn get_adverts_by_category(
+
+
+    async fn search_adverts(
         &self,
         ctx: &async_graphql::Context<'_>,
-        category: String,
+        category: Option<String>,
+        location: Option<String>,
+        offset: i32,
+        title: String,        
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let adverts: Option<Vec<advert::Model>> = Some(
-            Advert::find()
-                .filter(advert::Column::Category.eq(category))
-                .all(&my_ctx.db)
-                .await?,
-        );
+        // let adverts: Option<Vec<advert::Model>> = Some(
+        //     Advert::find()
+        //         .filter(advert::Column::Category.eq(category))
+        //         .all(&my_ctx.db)
+        //         .await?,
+        // );
 
-        let adverts = match adverts {
-            Some(advert) => advert,
-            None => return Err(async_graphql::Error::new("advert not found".to_string())),
-        };
+        // let adverts = match adverts {
+        //     Some(advert) => advert,
+        //     None => return Err(async_graphql::Error::new("advert not found".to_string())),
+        // };
+
+
+        let adverts: Vec<advert::Model> = Advert::find()
+            .order_by(advert::Column::Id, Order::Desc)
+            .offset(offset as u64)
+            .limit(10)
+            .filter(advert::Column::Available.eq(true))
+            .filter(advert::Column::Title.contains(title))
+            .all(&my_ctx.db)
+            .await?;
+
+
+
 
         return Ok(adverts);
     }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade, fly } from "svelte/transition";
   import {
+    X,
     Star,
     Phone,
     Mail,
@@ -19,12 +20,14 @@
   import InputField from "$lib/components/InputField.svelte";
   import * as m from "$lib/paraglide/messages.js";
   import { enhance } from "$app/forms";
+  
   export let form;
 
   export let data: PageData;
 
   $: ({ me } = data);
-  $: userData = $me.data?.me;
+  $: userData = $me.data?.me || form?.data;
+
 
   let activeTab: "profile" | "adverts" | "edit" = "profile";
   let activeReviewTab: "received" | "written" = "received";
@@ -79,6 +82,11 @@
   function switchAdvertTab(tab: "active" | "sold") {
     activeAdvertTab = tab;
   }
+
+  let showSuccessMessage = false;
+  $: showSuccessMessage = form?.success || false;
+  $: console.log(form);
+
 </script>
 
 <div
@@ -597,6 +605,19 @@
             </div>
           {:else if activeTab === "edit"}
             <div in:fade>
+              {#if showSuccessMessage}
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert" transition:fly={{ y: -20, duration: 300 }}>
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                      <CheckCircle class="w-5 h-5 mr-2" />
+                      <p>User information successfully updated!</p>
+                    </div>
+                    <button on:click={() => showSuccessMessage = false} class="text-green-700 hover:text-green-900">
+                      <X class="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              {/if}
               <form
                 use:enhance
                 method="POST"
@@ -608,14 +629,14 @@
                     name="name"
                     placeholder="Name"
                     type="text"
-                    value={userData.name}
+                    value={form?.data?.name || userData.name}
                     errors={form?.errors || []}
                   />
                   <InputField
                     name="surname"
                     placeholder="Surname"
                     type="text"
-                    value={userData.surname}
+                    value={form?.data?.surname || userData.surname }
                     errors={form?.errors || []}
                   />
                 {:else}
@@ -624,7 +645,7 @@
                     placeholder="Company Name"
                     type="text"
                     errors={form?.errors || []}
-                    value={userData.companyName}
+                    value={form?.data?.companyName || userData.companyName }
                   />
                 {/if}
                 <InputField
@@ -632,7 +653,7 @@
                   placeholder="Phone"
                   type="text"
                   errors={form?.errors || []}
-                  value={userData.phone}
+                  value={form?.data?.phone || userData.phone }
                 />
 
                 <InputField

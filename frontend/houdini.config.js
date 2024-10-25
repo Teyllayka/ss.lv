@@ -4,7 +4,7 @@ const config = {
 	watchSchema: {
 		url: typeof import.meta.env !== 'undefined' && import.meta.env.VITE_API_URL 
             ? import.meta.env.VITE_API_URL 
-            : "http://localhost:80",
+            : "/backend/",
 	},
 	plugins: {
 		"houdini-svelte": {},
