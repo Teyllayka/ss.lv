@@ -3741,7 +3741,6 @@ __metadata:
     lucide-svelte: "npm:^0.446.0"
     postcss: "npm:^8.4.47"
     sass: "npm:^1.77.8"
-    svelte: "npm:^5"
     svelte-check: "npm:^3.6.0"
     tailwindcss: "npm:^3.4.13"
     typescript: "npm:^5.0.0"
@@ -4726,9 +4725,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svelte@npm:^5, svelte@npm:^5.0.0 || ^5.0.0-next.1 || ^5.0.0-rc.1":
-  version: 5.1.0
-  resolution: "svelte@npm:5.1.0"
+"svelte@npm:^5.0.0 || ^5.0.0-next.1 || ^5.0.0-rc.1":
+  version: 5.1.9
+  resolution: "svelte@npm:5.1.9"
   dependencies:
     "@ampproject/remapping": "npm:^2.3.0"
     "@jridgewell/sourcemap-codec": "npm:^1.5.0"
@@ -4743,7 +4742,7 @@ __metadata:
     locate-character: "npm:^3.0.0"
     magic-string: "npm:^0.30.11"
     zimmerframe: "npm:^1.1.2"
-  checksum: 10c0/2b80c56d773b2fd90135f10d3d612c08c00e4802eca52936c43d54a6ca7a90edd93d6a0bd29342f7f3ffa81eab787b21f923529351d950e4c731f8e0d4a5b2b6
+  checksum: 10c0/4cd14a0ecd0dce97a4d69cdbf205581e55d6b817a0abfa4a9a3b19d1afc2bfbd66ae2d6898f21ff37c3d738757bfb76f6fce027bf1779ff2e89d758a46ea016a
   languageName: node
   linkType: hard
 
@@ -4919,11 +4918,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.0.3#optional!builtin<compat/typescript>":
   version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
+  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=5adc0c"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/7c9d2e07c81226d60435939618c91ec2ff0b75fbfa106eec3430f0fcf93a584bc6c73176676f532d78c3594fe28a54b36eb40b3d75593071a7ec91301533ace7
+  checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
   languageName: node
   linkType: hard
 
