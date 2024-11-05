@@ -5,7 +5,7 @@
 
   const adverts = graphql(`
     query Adverts($offset: Int!) {
-      getAdverts(limit: 10, offset: $offset) @paginate {
+      getAdverts(limit: 10, offset: $offset) @cache(policy: NetworkOnly) @paginate {
         id
         title
         price

@@ -4,6 +4,12 @@
   import { goto } from "$app/navigation";
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { user } from "$lib/userStore";
+  import { AddFavoriteStore, RemoveFavoriteStore } from '$houdini';
+
+  const addFavorite = new AddFavoriteStore();
+  const removeFavorite = new RemoveFavoriteStore();
+
+
 
   let isLoggedIn = false;
 
@@ -27,28 +33,26 @@
     container.scrollLeft = maxScroll * scrollPercentage;
   }
 
-  function toggleSaveAdvert(advert: any) {
-    if (!$user.isLogedIn) {
-      goto("/login");
+  async function toggleSaveAdvert(advert: any) {
+    // if (!user.isLoggedIn) {
+    //   goto("/login");
+    //   return;
+    // }
+
+    try {
+      let res;
+      if (isFavorited) {
+        res = await removeFavorite.mutate({ advertId: advert.id  });
+      } else {
+        res = await addFavorite.mutate({ advertId: advert.id });
+      }
+      console.log(res);
+
+      isFavorited = !isFavorited;
+      onFavoriteChange(advert.id, isFavorited);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
     }
-
-    fetch("/api/favorite", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        advertId: advert.id,
-        isFavorited: !isFavorited,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        onFavoriteChange(advert.id, isFavorited);
-      });
-
-    isFavorited = !isFavorited;
   }
 </script>
 

@@ -60,8 +60,7 @@ export const actions = {
       return fail(400, {
         data,
         errors: [
-          { field: "email", message: "Invalid email or password" },
-          { field: "password", message: "Invalid email or password" },
+          { field: "email", message: "Email already registered" },
         ],
       });
     }
