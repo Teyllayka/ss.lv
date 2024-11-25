@@ -15,7 +15,7 @@
 		"@biomejs/biome": "1.9.0",
 		"@inlang/paraglide-js": "1.11.3",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/kit": "^2.8.3",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"houdini": "^1.2.54",
 		"houdini-svelte": "^1.2.54",

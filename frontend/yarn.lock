@@ -1159,10 +1159,10 @@
     tiny-glob "^0.2.9"
     undici "^5.28.3"
 
-"@sveltejs/kit@^2.0.0":
-  version "2.7.5"
-  resolved "https://registry.yarnpkg.com/@sveltejs/kit/-/kit-2.7.5.tgz#234ffbb4a0b7df9146807992849e9f0fedc2b94d"
-  integrity sha512-8WIrVch2Ze2Rq3eIMPTqIIRFPM2zGQcGKHim2z43KVRdgdtYWBugAQ7nemH9ATnzlvbgztk6hwhEZOi8A8ZOPg==
+"@sveltejs/kit@^2.8.3":
+  version "2.8.3"
+  resolved "https://registry.yarnpkg.com/@sveltejs/kit/-/kit-2.8.3.tgz#e67f7af2b1f792819877c2cbbc9f8ab7dee411a7"
+  integrity sha512-DVBVwugfzzn0SxKA+eAmKqcZ7aHZROCHxH7/pyrOi+HLtQ721eEsctGb9MkhEuqj6q/9S/OFYdn37vdxzFPdvw==
   dependencies:
     "@types/cookie" "^0.6.0"
     cookie "^0.6.0"
@@ -2024,13 +2024,6 @@ graceful-fs@^4.1.3, graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
 
-graphql-tag@^2.12.6:
-  version "2.12.6"
-  resolved "https://registry.npmjs.org/graphql-tag/-/graphql-tag-2.12.6.tgz"
-  integrity sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==
-  dependencies:
-    tslib "^2.1.0"
-
 graphql-yoga@^4.0.4:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/graphql-yoga/-/graphql-yoga-4.0.5.tgz#7545f430d2e83998d22427b63fd511976dba47c4"
@@ -2197,11 +2190,6 @@ is-stream@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-3.0.0.tgz#e6bfd7aa6bef69f4f472ce9bb681e3e57b4319ac"
   integrity sha512-LnQR4bZ9IADDRSkvpqMGvt/tEJWclzklNgSw48V5EAaAeDd6qGvN8ei6k5p0tvxSR171VmGyHuTiAOfxAbr8kA==
-
-is-unicode-supported@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/is-unicode-supported/-/is-unicode-supported-1.3.0.tgz#d824984b616c292a2e198207d4a609983842f714"
-  integrity sha512-43r2mRvz+8JRIKnWJ+3j8JtjRKZ6GmjzfaE/qiBJnikNnYv/6bagRJ1kUhNk8R5EX/GkobD+r+sfxCPJsiKBLQ==
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -3147,7 +3135,7 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
-tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.5.0, tslib@^2.5.2, tslib@^2.6.3:
+tslib@^2.0.1, tslib@^2.4.0, tslib@^2.5.0, tslib@^2.5.2, tslib@^2.6.3:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
