@@ -17,6 +17,8 @@
   import type { Writable } from "svelte/store";
   import { user } from "$lib/userStore";
   import * as m from "$lib/paraglide/messages.js";
+    import { goto } from "$app/navigation";
+    import { page } from '$app/stores';
 
   const region: Writable<string> = getContext("region");
 
@@ -48,8 +50,11 @@
     isMenuOpen = !isMenuOpen;
   }
 
-  function handleSearch() {
-    console.log("Searching for:", searchQuery);
+  async function handleSearch() {
+    const url = `/search?q=${encodeURIComponent(searchQuery.trim())}&region=${encodeURIComponent($region)}`;
+    await goto(url, {
+      keepFocus: true,
+    });
   }
 
   function selectRegion(rg: string) {
@@ -96,6 +101,7 @@
         </button>
       </div>
 
+      {#if $page.url.pathname !== '/search'}
       <nav class="hidden md:flex space-x-10 items-center">
         <div class="relative">
           <button
@@ -204,6 +210,7 @@
           {/if}
         </div>
       </nav>
+      {/if}
 
       <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
         <a

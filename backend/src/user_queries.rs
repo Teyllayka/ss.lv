@@ -520,24 +520,29 @@ impl UserMutation {
             ));
         }
 
-        let user = user::ActiveModel {
-            name: Set(name),
-            surname: Set(surname),
-            company_name: Set(company_name),
-            phone: Set(phone),
-            ..user.into()
+
+
+        let mut active_user = user::ActiveModel {
+            id: Set(user.id), 
+            ..user.into()     
         };
 
-        // if !avatar_url.is_empty() {
-        //     user.avatar_url = Set(avatar_url);
-        // }
+        if let Some(name) = name {
+            active_user.name = Set(Some(name));
+        }
+        if let Some(surname) = surname {
+            active_user.surname = Set(Some(surname));
+        }
+        if let Some(company_name) = company_name {
+            active_user.company_name = Set(Some(company_name));
+        }
+        if let Some(phone) = phone {
+            active_user.phone = Set(Some(phone));
+        }
 
+        let updated_user: user::Model = active_user.update(&my_ctx.db).await?;
 
-        // FIX
-
-        let user: user::Model = user.update(&my_ctx.db).await?;
-
-        return Ok(user);
+        Ok(updated_user)
     }
 
     async fn refresh(

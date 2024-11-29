@@ -1,0 +1,5 @@
+mutation AddFavorite($advertId: Int!) {
+  addFavorite(advertId: $advertId) @cache(policy: NetworkOnly) {
+    id
+  }
+}
