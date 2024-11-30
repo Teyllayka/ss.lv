@@ -61,7 +61,7 @@ export const registerSchema: ObjectSchema<RegisterFormValues> = object({
     }
 
     return true;
-  }
+  },
 );
 
 interface AdvertFormValues {

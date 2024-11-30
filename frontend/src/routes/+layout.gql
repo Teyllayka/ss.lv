@@ -1,10 +1,10 @@
 query HeaderMe {
-	me {
-		id
-		name
-		surname
-		companyName
-		email
-		emailVerified
-	}
+  me {
+    id
+    name
+    surname
+    companyName
+    email
+    emailVerified
+  }
 }

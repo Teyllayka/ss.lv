@@ -50,18 +50,16 @@ export const actions = {
         surname: data.surname,
         companyName: data.companyName,
       },
-      { event }
+      { event },
     );
     console.log(res);
 
     if (!res.errors && res.data) {
-      redirect(302, "/login");
+      throw redirect(302, "/login");
     } else {
       return fail(400, {
         data,
-        errors: [
-          { field: "email", message: "Email already registered" },
-        ],
+        errors: [{ field: "email", message: "Email already registered" }],
       });
     }
   },
@@ -73,4 +71,8 @@ export function load({ cookies }: any) {
   if (logedIn) {
     return redirect(302, "/me");
   }
+
+  return {
+    form: null,
+  };
 }

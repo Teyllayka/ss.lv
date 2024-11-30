@@ -1,23 +1,22 @@
 query Advert($id: Int!) {
-	advert(id: $id)  {
-		id
-		title
-		description
-		price
-		createdAt
-		location
-		oldPrice
-		isFavorited
-		photoUrl
-		additionalPhotos
+  advert(id: $id) {
+    id
+    title
+    description
+    price
+    createdAt
+    location
+    oldPrice
+    isFavorited
+    photoUrl
+    additionalPhotos
 
-
-		user {
-			id
-			rating
-			name
-			surname
-			createdAt
-		}
-	}
+    user {
+      id
+      rating
+      name
+      surname
+      createdAt
+    }
+  }
 }

@@ -1,5 +1,15 @@
-query Search($title: String!, $location: String, $category: String, $offset: Int!) {
-  searchAdverts(title: $title, location: $location, category: $category, offset:$offset) {
+query Search(
+  $title: String!
+  $location: String
+  $category: String
+  $offset: Int!
+) {
+  searchAdverts(
+    title: $title
+    location: $location
+    category: $category
+    offset: $offset
+  ) {
     id
     title
     price

@@ -20,7 +20,7 @@
   import InputField from "$lib/components/InputField.svelte";
   import * as m from "$lib/paraglide/messages.js";
   import { enhance } from "$app/forms";
-  
+
   export let form;
 
   export let data: PageData;
@@ -42,11 +42,13 @@
   function preventFormReset(formElement: any) {
     enhance(formElement, ({ formElement }) => {
       return async ({ result, update }) => {
-        if (result.type === 'success') {
+        if (result.type === "success") {
           await update({ reset: false });
 
-          const passwordField = formElement.querySelector('input[name="password"]') as HTMLInputElement;
-          if (passwordField) passwordField.value = '';
+          const passwordField = formElement.querySelector(
+            'input[name="password"]'
+          ) as HTMLInputElement;
+          if (passwordField) passwordField.value = "";
         } else {
           await update();
         }
@@ -55,20 +57,7 @@
   }
 
   $: ({ me } = data);
-  $: userData = {...$me.data?.me, ...form?.data} as UserData;
-  $: {
-    console.log('$me.data:', $me.data);
-    console.log('form?.data:', form?.data);
-    
-    // Detailed merge with logging
-    userData = {
-      ...$me.data?.me, 
-      ...(form?.data || {}),
-    } as UserData;
-    
-    console.log('Resulting userData:', userData);
-  }
-
+  $: userData = { ...$me.data?.me, ...form?.data } as UserData;
 
   let activeTab: "profile" | "adverts" | "edit" = "profile";
   let activeReviewTab: "received" | "written" = "received";
@@ -127,7 +116,6 @@
   let showSuccessMessage = false;
   $: showSuccessMessage = form?.success || false;
   $: console.log(form);
-
 </script>
 
 <div
@@ -647,13 +635,20 @@
           {:else if activeTab === "edit"}
             <div in:fade>
               {#if showSuccessMessage}
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert" transition:fly={{ y: -20, duration: 300 }}>
+                <div
+                  class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4"
+                  role="alert"
+                  transition:fly={{ y: -20, duration: 300 }}
+                >
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
                       <CheckCircle class="w-5 h-5 mr-2" />
                       <p>User information successfully updated!</p>
                     </div>
-                    <button on:click={() => showSuccessMessage = false} class="text-green-700 hover:text-green-900">
+                    <button
+                      on:click={() => (showSuccessMessage = false)}
+                      class="text-green-700 hover:text-green-900"
+                    >
                       <X class="w-5 h-5" />
                     </button>
                   </div>
@@ -677,7 +672,7 @@
                     name="surname"
                     placeholder="Surname"
                     type="text"
-                    value={userData.surname }
+                    value={userData.surname}
                     errors={form?.errors || []}
                   />
                 {:else}
@@ -686,7 +681,7 @@
                     placeholder="Company Name"
                     type="text"
                     errors={form?.errors || []}
-                    value={userData.companyName }
+                    value={userData.companyName}
                   />
                 {/if}
                 <InputField
@@ -694,7 +689,7 @@
                   placeholder="Phone"
                   type="text"
                   errors={form?.errors || []}
-                  value={userData.phone }
+                  value={userData.phone}
                 />
 
                 <InputField

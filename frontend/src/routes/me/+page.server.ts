@@ -40,7 +40,7 @@ export const actions = {
       return { sucess: true };
     } else {
       return fail(400, {
-        errors: { field: 'password', message: 'wrong password' },
+        errors: { field: "password", message: "wrong password" },
       });
     }
   },
@@ -124,67 +124,67 @@ export const actions = {
           password: $password
         ) {
           id
-		name
-		surname
-		companyName
-		email
-		emailVerified
-		rating
-		telegramUsername
-		phone
+          name
+          surname
+          companyName
+          email
+          emailVerified
+          rating
+          telegramUsername
+          phone
 
-		reviewedAdverts {
-			title
-			location
-			price
-			createdAt
-			review {
-				message
-				rating
-				createdAt
-			}
-		}
+          reviewedAdverts {
+            title
+            location
+            price
+            createdAt
+            review {
+              message
+              rating
+              createdAt
+            }
+          }
 
-		advertsWithReviews {
-			title
-			price
-			location
-			available
-			review {
-				rating
-				message
-				createdAt
-				user {
-					name
-				}
-			}
-		}
+          advertsWithReviews {
+            title
+            price
+            location
+            available
+            review {
+              rating
+              message
+              createdAt
+              user {
+                name
+              }
+            }
+          }
 
-		adverts {
-			id
-			title
-			price
-			description
-			location
-			createdAt
-			photoUrl
-			additionalPhotos
-			oldPrice
-			available
+          adverts {
+            id
+            title
+            price
+            description
+            location
+            createdAt
+            photoUrl
+            additionalPhotos
+            oldPrice
+            available
 
-			review {
-				rating
-				id
-				message
-			}
-		}
+            review {
+              rating
+              id
+              message
+            }
+          }
         }
       }
     `);
 
     const res = await editProfile.mutate(
       { ...updateFields, password: data.password },
-      { event }
+      { event },
     );
 
     console.log(res);
@@ -192,10 +192,10 @@ export const actions = {
     if (!res.data || !res.data.edit) {
       return fail(400, {
         updateFields,
-        errors: [{ field: 'password', message: 'wrong password' }],
+        errors: [{ field: "password", message: "wrong password" }],
       });
     }
 
-    return { success: true,  data: res.data.edit};
+    return { success: true, data: res.data.edit };
   },
 };

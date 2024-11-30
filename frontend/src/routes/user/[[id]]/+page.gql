@@ -1,58 +1,58 @@
 query User($id: Int!) {
-	user(id: $id) {
-		id
-		name
-		surname
-		phone
-		email
-		rating
-		avatarUrl
-		telegramUsername
-		adverts {
-			id
-			title
-			price
-			description
-			location
-			createdAt
-			available
-			photoUrl
-			additionalPhotos
-			oldPrice
-			isFavorited
+  user(id: $id) {
+    id
+    name
+    surname
+    phone
+    email
+    rating
+    avatarUrl
+    telegramUsername
+    adverts {
+      id
+      title
+      price
+      description
+      location
+      createdAt
+      available
+      photoUrl
+      additionalPhotos
+      oldPrice
+      isFavorited
 
-			review {
-				rating
-				id
-				message
-			}
-		}
+      review {
+        rating
+        id
+        message
+      }
+    }
 
-		reviewedAdverts {
-			title
-			location
-			price
-			createdAt
-			review {
-				message
-				rating
-				createdAt
-			}
-		}
+    reviewedAdverts {
+      title
+      location
+      price
+      createdAt
+      review {
+        message
+        rating
+        createdAt
+      }
+    }
 
-		advertsWithReviews {
-			title
-			price
-			location
-			available
-			review {
-				rating
-				message
-				createdAt
-				user {
-					name
-				}
-			}
-		}
-	}
+    advertsWithReviews {
+      title
+      price
+      location
+      available
+      review {
+        rating
+        message
+        createdAt
+        user {
+          name
+        }
+      }
+    }
+  }
 }
