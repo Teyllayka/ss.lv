@@ -8,7 +8,7 @@ use actix_web::Result;
 use async_graphql::{Json, Object};
 use chrono::Utc;
 use entity::{
-    advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews::{self, Entity as Reviews}, specifications::{self, Entity as Specifications}, user::{self, Entity as User}
+    advert::{self, Entity as Advert}, favorites::{self, Entity as Favorites}, reviews::{self, Entity as Reviews}, specifications::{self, Entity as Specifications}, user::{self, Entity as User, Role}
 };
 use jwt::VerifyWithKey;
 use sea_orm::{
@@ -663,7 +663,7 @@ impl AdvertMutation {
         let req_user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
 
         match req_user {
-            Some(req_user) => match req_user.is_admin {
+            Some(req_user) => match req_user.role == Role::Admin {
                 true => (),
                 false => {
                     return Err(async_graphql::Error::new(
