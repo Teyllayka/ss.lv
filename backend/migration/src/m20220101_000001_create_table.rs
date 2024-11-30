@@ -8,6 +8,17 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+
+        let schema = Schema::new(DbBackend::Postgres);
+
+
+        manager.create_type(
+            schema.create_enum_from_active_enum::<Status>(),
+        ).await?;
+
+        manager.create_type(
+            schema.create_enum_from_active_enum::<Role>(),
+        ).await?;
         // Create User Table with Updated Constraints
         manager
             .create_table(
@@ -42,18 +53,17 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Balance).float().not_null())
                     // Authentication Details (PasswordHash Nullable)
                     .col(ColumnDef::new(User::PasswordHash).string().null())
-                    // Administrative Flags
-                    .col(
-                        ColumnDef::new(User::IsAdmin)
-                            .boolean()
-                            .not_null()
-                            .default("false"),
-                    )
                     .col(
                         ColumnDef::new(User::EmailVerified)
                             .boolean()
                             .not_null()
                             .default("false"),
+                    )
+                    .col(
+                        ColumnDef::new(User::Role)
+                            .custom(Role::name())
+                            .not_null()
+                            .default(Expr::value("U")),
                     )
                     // CHECK Constraints
                     .check(
@@ -190,12 +200,7 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-            let schema = Schema::new(DbBackend::Postgres);
-
-
-            manager.create_type(
-                schema.create_enum_from_active_enum::<Status>(),
-            ).await?;
+         
 
 
             manager
@@ -272,13 +277,12 @@ impl MigrationTrait for Migration {
 
             let user = Query::insert()
                 .into_table(User::Table)
-                .columns([User::Name, User::Surname, User::Email, User::PasswordHash, User::IsAdmin, User::EmailVerified,  User::Balance, User::TelegramUsername, User::TelegramId])
+                .columns([User::Name, User::Surname, User::Email, User::PasswordHash, User::EmailVerified,  User::Balance, User::TelegramUsername, User::TelegramId])
                 .values_panic(vec![
                     "John".into(),
                     "Doe".into(),
                     "johndoe@gmail.com".into(),
                     "hashed_password".into(),
-                    false.into(),
                     false.into(),
                     0.0.into(),
                     "johndoe".into(),
@@ -394,8 +398,8 @@ enum User {
     TelegramUsername,
     Balance,
     PasswordHash,
-    IsAdmin,
     EmailVerified,
+    Role
 }
 
 #[derive(DeriveIden)]
@@ -469,4 +473,16 @@ enum Status {
 
     #[sea_orm(string_value = "F")]
     Failed,
+}
+
+
+#[derive(EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "role")]
+enum Role {
+    #[sea_orm(string_value = "A")]
+    Admin,
+    #[sea_orm(string_value = "U")]
+    User,
+    #[sea_orm(string_value = "M")]
+    Moderator,
 }

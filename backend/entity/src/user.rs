@@ -1,4 +1,4 @@
-use async_graphql::{self, SimpleObject};
+use async_graphql::{self, Enum, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
@@ -8,10 +8,12 @@ use sea_orm::entity::prelude::*;
     db_type = "Enum",         
     rs_type = "String",
 )]
+#[derive(Default)]
 pub enum Role {
     #[sea_orm(string_value = "A")]
     Admin,
     #[sea_orm(string_value = "U")]
+    #[default]
     User,
     #[sea_orm(string_value = "M")]
     Moderator,
@@ -36,7 +38,6 @@ pub struct Model {
     pub telegram_id: Option<String>,
     pub telegram_username: Option<String>,
     pub balance: f32,
-    pub is_admin: bool,
     pub email_verified: bool,
     #[graphql(visible = false)]
     pub password_hash: Option<String>,
@@ -48,7 +49,7 @@ pub struct Model {
     pub reviewed_adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]
     pub rating: f32,
-    pub status: Status,
+    pub role: Role,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
