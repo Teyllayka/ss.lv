@@ -25,8 +25,49 @@
 
   export let data: PageData;
 
+  interface UserData {
+    name: string;
+    surname: string;
+    email: string;
+    phone: string;
+    emailVerified: boolean;
+    telegramUsername: string;
+    rating: number;
+    adverts: any[];
+    advertsWithReviews: any[];
+    reviewedAdverts: any[];
+    companyName: string;
+  }
+
+  function preventFormReset(formElement: any) {
+    enhance(formElement, ({ formElement }) => {
+      return async ({ result, update }) => {
+        if (result.type === 'success') {
+          await update({ reset: false });
+
+          const passwordField = formElement.querySelector('input[name="password"]') as HTMLInputElement;
+          if (passwordField) passwordField.value = '';
+        } else {
+          await update();
+        }
+      };
+    });
+  }
+
   $: ({ me } = data);
-  $: userData = $me.data?.me || form?.data;
+  $: userData = {...$me.data?.me, ...form?.data} as UserData;
+  $: {
+    console.log('$me.data:', $me.data);
+    console.log('form?.data:', form?.data);
+    
+    // Detailed merge with logging
+    userData = {
+      ...$me.data?.me, 
+      ...(form?.data || {}),
+    } as UserData;
+    
+    console.log('Resulting userData:', userData);
+  }
 
 
   let activeTab: "profile" | "adverts" | "edit" = "profile";
@@ -619,7 +660,7 @@
                 </div>
               {/if}
               <form
-                use:enhance
+                use:preventFormReset
                 method="POST"
                 action="?/updateProfile"
                 class="space-y-6"
@@ -629,14 +670,14 @@
                     name="name"
                     placeholder="Name"
                     type="text"
-                    value={form?.data?.name || userData.name}
+                    value={userData.name}
                     errors={form?.errors || []}
                   />
                   <InputField
                     name="surname"
                     placeholder="Surname"
                     type="text"
-                    value={form?.data?.surname || userData.surname }
+                    value={userData.surname }
                     errors={form?.errors || []}
                   />
                 {:else}
@@ -645,7 +686,7 @@
                     placeholder="Company Name"
                     type="text"
                     errors={form?.errors || []}
-                    value={form?.data?.companyName || userData.companyName }
+                    value={userData.companyName }
                   />
                 {/if}
                 <InputField
@@ -653,7 +694,7 @@
                   placeholder="Phone"
                   type="text"
                   errors={form?.errors || []}
-                  value={form?.data?.phone || userData.phone }
+                  value={userData.phone }
                 />
 
                 <InputField

@@ -1,38 +1,43 @@
 <script lang="ts">
-import { fade } from "svelte/transition";
-import {
-	Star,
-	Phone,
-	Mail,
-	MapPin,
-	ChevronLeft,
-	ChevronRight,
-} from "lucide-svelte";
-import type { PageData } from "./$houdini";
-import Advertt from "$lib/components/Advert.svelte";
-import { renderStars } from "$lib/helpers";
-export let data: PageData;
-$: ({ Advert } = data);
-$: advert = $Advert.data?.advert;
+  import {
+    Star,
+    Phone,
+    Mail,
+    MapPin,
+    ChevronLeft,
+    ChevronRight,
+  } from "lucide-svelte";
+  import type { PageData } from "./$houdini";
+  import { renderStars } from "$lib/helpers";
+  export let data: PageData;
+  $: ({ Advert } = data);
+  $: advert = $Advert.data?.advert;
 
-let currentImageIndex = 0;
+  let images: string[] = [];
 
-function nextImage() {
-	currentImageIndex = (currentImageIndex + 1) % advert.images.length;
-}
+  // Safely add `images` property to advert if it exists
+  $: if (advert) {
+    images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
+  }
 
-function prevImage() {
-	currentImageIndex =
-		(currentImageIndex - 1 + advert.images.length) % advert.images.length;
-}
+  let currentImageIndex = 0;
 
-function formatDate(dateString: string) {
-	return new Date(dateString).toLocaleDateString("en-US", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
-}
+  function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % images.length;
+  }
+
+  function prevImage() {
+    currentImageIndex =
+      (currentImageIndex - 1 + images.length) % images.length;
+  }
+
+  function formatDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
 </script>
 
 {#if $Advert.fetching}
@@ -51,7 +56,11 @@ function formatDate(dateString: string) {
         <div class="md:flex">
           <div class="md:w-1/2 p-4">
             <div class="relative h-96">
-              <!-- <img src={advert.images[currentImageIndex]} alt={advert.title} class="w-full h-full object-cover rounded-lg" /> -->
+              <img
+                src={images[currentImageIndex]}
+                alt={advert.title}
+                class="w-full h-full object-cover rounded-lg"
+              />
               <button
                 on:click={prevImage}
                 class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md"
@@ -66,16 +75,16 @@ function formatDate(dateString: string) {
               </button>
             </div>
             <div class="flex mt-4 space-x-2 overflow-x-auto">
-              <!-- {#each advert.images as image, index}
-                <img 
-                  src={image} 
-                  alt={`${advert.title} - Image ${index + 1}`} 
-                  class="w-20 h-20 object-cover rounded-md cursor-pointer" 
+              {#each images as image, index}
+                <img
+                  src={image}
+                  alt={`${advert.title} - Image ${index + 1}`}
+                  class="w-20 h-20 object-cover rounded-md cursor-pointer"
                   class:border-2={index === currentImageIndex}
                   class:border-blue-500={index === currentImageIndex}
-                  on:click={() => currentImageIndex = index}
+                  on:click={() => (currentImageIndex = index)}
                 />
-              {/each} -->
+              {/each}
             </div>
           </div>
           <div class="md:w-1/2 p-6">
@@ -89,41 +98,49 @@ function formatDate(dateString: string) {
               {advert.description}
             </p>
             <div class="flex items-center mb-4">
-              <MapPin class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
-              <span class="text-gray-600 dark:text-gray-400"
-                >{advert.location}</span
-              >
+              <MapPin
+                class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
+              />
+              <span class="text-gray-600 dark:text-gray-400">
+                {advert.location}
+              </span>
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Posted on {formatDate(advert.createdAt.toString())}
             </p>
             <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-6">
               <div class="flex items-center mb-4">
+                <!-- Uncomment and adjust if you have user avatars -->
                 <!-- <img src={advert.user.avatarUrl} alt={advert.user.name} class="w-12 h-12 rounded-full mr-4" /> -->
                 <div>
                   <a
-                    class="text-lg font-semibold text-gray-900 dark:text-white cursor-pointer hover:underline"
-                    href={`user/${advert.user.id}`}
+                    class="text-lg font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer hover:underline"
+                    href={`/user/${advert.user.id}`}
                   >
                     {advert.user.name}
                   </a>
                   <div class="flex items-center">
                     {#each renderStars(advert.user.rating) as star, index}
                       <Star
-                        class={star.isFilled
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300"}
+                        class={
+                          star.isFilled
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }
                         size="16"
                       />
                     {/each}
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span
+                      class="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                    >
                       ({advert.user.rating.toFixed(1)})
                     </span>
                   </div>
                 </div>
               </div>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Member since {formatDate(advert.user.createdAt.toString())}
+                Member since{" "}
+                {formatDate(advert.user.createdAt.toString())}
               </p>
               <div class="flex space-x-4">
                 <button
@@ -144,22 +161,33 @@ function formatDate(dateString: string) {
         </div>
       </div>
 
+      <!-- Related Adverts Section (Uncomment and adjust if needed) -->
+      <!--
       <div class="mt-12">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           Related Adverts
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- {#each relatedAdverts as relatedAdvert}
+          {#each relatedAdverts as relatedAdvert}
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
-              <img src={relatedAdvert.image} alt={relatedAdvert.title} class="w-full h-48 object-cover" />
+              <img
+                src={relatedAdvert.image}
+                alt={relatedAdvert.title}
+                class="w-full h-48 object-cover"
+              />
               <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{relatedAdvert.title}</h3>
-                <p class="text-gray-600 dark:text-gray-400">${relatedAdvert.price.toFixed(2)}</p>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {relatedAdvert.title}
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                  ${relatedAdvert.price.toFixed(2)}
+                </p>
               </div>
             </div>
-          {/each} -->
+          {/each}
         </div>
       </div>
+      -->
     </div>
   </div>
 {/if}

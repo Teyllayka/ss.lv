@@ -40,7 +40,7 @@ export const actions = {
       return { sucess: true };
     } else {
       return fail(400, {
-        errors: res.errors,
+        errors: { field: 'password', message: 'wrong password' },
       });
     }
   },
@@ -192,7 +192,7 @@ export const actions = {
     if (!res.data || !res.data.edit) {
       return fail(400, {
         updateFields,
-        errors: { form: "Failed to update profile." },
+        errors: [{ field: 'password', message: 'wrong password' }],
       });
     }
 

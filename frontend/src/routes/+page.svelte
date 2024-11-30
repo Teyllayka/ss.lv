@@ -4,15 +4,17 @@
   import Advert from "$lib/components/Advert.svelte";
 
   const adverts = graphql(`
-    query Adverts($offset: Int!) {
-      getAdverts(limit: 10, offset: $offset) @cache(policy: NetworkOnly) @paginate {
+    query Adverts($offset: Int!) @cache(policy: NoCache)  {
+      getAdverts(limit: 10, offset: $offset)  @paginate {
         id
         title
         price
         oldPrice
-        location
+        location  
         createdAt
         isFavorited
+        photoUrl
+        additionalPhotos
         user {
           id
           name

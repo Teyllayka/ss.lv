@@ -516,7 +516,7 @@ impl UserMutation {
 
         if !response {
             return Err(async_graphql::Error::new(
-                "Wrong email or password".to_string(),
+                "Wrong password".to_string(),
             ));
         }
 

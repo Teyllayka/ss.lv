@@ -30,6 +30,7 @@ export const actions = {
 		if (errs.length > 0) {
 			const serializableData = { ...data };
 			delete serializableData.mainPhoto;
+			delete serializableData.additionalPhotos;
 
 			return fail(400, {
 				data: serializableData,
@@ -38,16 +39,32 @@ export const actions = {
 		}
 
 		let urls = [];
+		const additionalPhotos = formData.getAll('additionalPhotos');
 
-		const formGachi = new FormData();
-		formGachi.append("file", data.mainPhoto);
-
-		const response = await fetch("https://gachi.gay/api/upload", {
-			method: "POST",
-			body: formGachi,
-		});
-		const dataGachi = await response.json();
-		urls.push(dataGachi.link);
+		if(data.mainPhoto instanceof File) {
+			const formGachi = new FormData();
+			formGachi.append("file", data.mainPhoto);
+			const response = await fetch("https://gachi.gay/api/upload", {
+				method: "POST",
+				body: formGachi,
+			});
+			const dataGachi = await response.json();
+			urls.push(dataGachi.link);
+		}
+		for (const file of additionalPhotos) {
+			if (file instanceof File) {
+				const formGachi = new FormData();
+				formGachi.append('file', file);
+			
+				const response = await fetch('https://gachi.gay/api/upload', {
+				method: 'POST',
+				body: formGachi,
+				});
+				const dataGachi = await response.json();
+				urls.push(dataGachi.link);
+			}
+		}
+		
 
 		const create = graphql(`
       mutation createAdvert(
@@ -87,7 +104,8 @@ export const actions = {
 		);
 
 		if (!res.errors && res.data) {
-			console.log("created");
+			const advertId = res.data.createAdvert.id;
+			throw redirect(302, `/advert/${advertId}`);
 		} else {
 			console.log("errors", res.errors);
 		}

@@ -1,5 +1,5 @@
 query Advert($id: Int!) {
-	advert(id: $id) {
+	advert(id: $id)  {
 		id
 		title
 		description
@@ -8,6 +8,9 @@ query Advert($id: Int!) {
 		location
 		oldPrice
 		isFavorited
+		photoUrl
+		additionalPhotos
+
 
 		user {
 			id

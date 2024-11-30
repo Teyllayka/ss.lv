@@ -1,5 +1,5 @@
-query Favorites {
-	getFavorites  @cache(policy: NetworkOnly) {
+query Favorites @cache(policy: NoCache) {
+	getFavorites {
 		id
 		title
 		description

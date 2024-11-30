@@ -319,6 +319,7 @@ function removeAdditionalPhoto(index: number) {
                 </div>
                 <input
                   id="additionalPhotos"
+                  name="additionalPhotos"
                   type="file"
                   accept="image/*"
                   on:change={handleAdditionalPhotosChange}

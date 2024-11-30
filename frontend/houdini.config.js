@@ -14,7 +14,7 @@ const config = {
 		JSON: {
 			type: "Record<string, unknown>",
 		},
-	},
+	}
 };
 
 export default config;

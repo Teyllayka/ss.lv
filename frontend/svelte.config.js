@@ -22,8 +22,8 @@ const config = {
 			  "frame-src": ["'self'"],
 			  "object-src": ["'self'"],
 			  "form-action": ["'self'"],	
-			  "media-src": ["'self'"],
-			  "img-src": ["'self'", "data:"],
+			//   "media-src": ["'self'"],
+			//   "img-src": ["'self'", "data:"],
 
 			},
 		},
