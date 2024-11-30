@@ -2,6 +2,22 @@ use async_graphql::{self, SimpleObject};
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, EnumIter, DeriveActiveEnum)]
+#[sea_orm(
+    enum_name = "role",      
+    db_type = "Enum",         
+    rs_type = "String",
+)]
+pub enum Role {
+    #[sea_orm(string_value = "A")]
+    Admin,
+    #[sea_orm(string_value = "U")]
+    User,
+    #[sea_orm(string_value = "M")]
+    Moderator,
+}
+
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject, Default)]
 #[sea_orm(table_name = "user")]
 #[graphql(name = "User")]
@@ -32,6 +48,7 @@ pub struct Model {
     pub reviewed_adverts: Vec<super::advert::Model>,
     #[sea_orm(ignore)]
     pub rating: f32,
+    pub status: Status,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

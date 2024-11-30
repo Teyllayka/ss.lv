@@ -3,18 +3,16 @@ use sea_orm::entity::prelude::*;
 
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, EnumIter, DeriveActiveEnum)]
 #[sea_orm(
-    enum_name = "status",       // Optional: Specifies the enum name in the database
-    db_type = "Enum",         // Change to "Integer" if you prefer numeric enums
-    rs_type = "String",         // Specifies the Rust type for the enum mapping
+    enum_name = "status",      
+    db_type = "Enum",         
+    rs_type = "String",
 )]
 pub enum Status {
     #[sea_orm(string_value = "P")]
     Pending,
     #[sea_orm(string_value = "C")]
-
     Completed,
     #[sea_orm(string_value = "F")]
-
     Failed,
 }
 
