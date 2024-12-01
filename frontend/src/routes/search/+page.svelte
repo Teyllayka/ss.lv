@@ -131,6 +131,16 @@
       const value = (event.target as HTMLInputElement).value;
       customFields[field.id] = field.type === 'number' ? Number(value) : value;
     }
+
+  
+
+    onMount(() => {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      searchTerm = q || '';
+    })
+
+   
   </script>
   
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

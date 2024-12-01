@@ -27,7 +27,6 @@ let isSubmitted = false;
       </h1>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
           {#if !isSubmitted}
             <form method="post" use:enhance class="space-y-6">
               <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
@@ -116,7 +115,6 @@ let isSubmitted = false;
               </p>
             </div>
           {/if}
-        </div>
 
         <div
           class="space-y-6"
