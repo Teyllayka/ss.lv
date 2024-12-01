@@ -86,6 +86,93 @@ impl AdvertQuery {
         Ok(updated_advert)
     }
 
+    async fn similar_adverts(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        id: i32,
+    ) -> Result<Vec<advert::Model>, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+    
+        let advert = Advert::find_by_id(id)
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("Advert not found"))?;
+    
+        let main_advert_specs = advert
+            .find_related(specifications::Entity)
+            .all(&my_ctx.db)
+            .await?;
+    
+        let main_specs_set: HashSet<(String, String)> = main_advert_specs
+            .iter()
+            .map(|spec| (spec.key.clone(), spec.value.clone()))
+            .collect();
+    
+        let adverts_with_specs = Advert::find()
+            .filter(advert::Column::Category.eq(advert.category.clone()))
+            .filter(advert::Column::Id.ne(id))
+            .find_with_related(specifications::Entity)
+            .all(&my_ctx.db)
+            .await?;
+    
+        let mut matching_adverts = Vec::new();
+        for (other_advert, specs) in &adverts_with_specs {
+            let other_specs_set: HashSet<(String, String)> = specs
+                .iter()
+                .map(|spec| (spec.key.clone(), spec.value.clone()))
+                .collect();
+    
+            if other_specs_set == main_specs_set {
+                matching_adverts.push(other_advert.clone());
+                if matching_adverts.len() >= 4 {
+                    break;
+                }
+            }
+        }
+    
+        if matching_adverts.len() >= 4 {
+            return Ok(matching_adverts);
+        }
+    
+        let mut adverts_by_matching_specs: Vec<(advert::Model, usize)> = adverts_with_specs
+            .iter()
+            .map(|(other_advert, specs)| {
+                let other_specs_set: HashSet<(String, String)> = specs
+                    .iter()
+                    .map(|spec| (spec.key.clone(), spec.value.clone()))
+                    .collect();
+                let matching_specs_count = main_specs_set
+                    .intersection(&other_specs_set)
+                    .count();
+                (other_advert.clone(), matching_specs_count)
+            })
+            .collect();
+    
+        adverts_by_matching_specs.sort_by(|a, b| b.1.cmp(&a.1));
+    
+        for (advert, _) in adverts_by_matching_specs {
+            if !matching_adverts.contains(&advert) {
+                matching_adverts.push(advert);
+                if matching_adverts.len() >= 4 {
+                    break;
+                }
+            }
+        }
+    
+        if !matching_adverts.is_empty() {
+            return Ok(matching_adverts);
+        }
+    
+        let adverts = Advert::find()
+            .filter(advert::Column::Category.eq(advert.category.clone()))
+            .filter(advert::Column::Id.ne(id))
+            .limit(4)
+            .all(&my_ctx.db)
+            .await?;
+    
+        Ok(adverts)
+    }
+
 
     async fn get_adverts(
         &self,
