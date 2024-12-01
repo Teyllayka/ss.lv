@@ -9,6 +9,7 @@ query me {
     rating
     telegramUsername
     phone
+    role
 
     reviewedAdverts {
       title

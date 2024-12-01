@@ -6,12 +6,10 @@
     Phone,
     Mail,
     CheckCircle,
-    Heart,
     MapPin,
     Edit,
     User,
     ShoppingBag,
-    MessageSquare,
     AlertCircle,
     AtSign,
   } from "lucide-svelte";

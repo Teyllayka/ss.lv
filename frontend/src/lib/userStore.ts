@@ -5,6 +5,8 @@ function createUserStore() {
     emailVerified: false,
     isCompany: false,
     isLogedIn: false,
+    role: "USER",
+    id: 0,
   };
 
   if (typeof window !== "undefined") {

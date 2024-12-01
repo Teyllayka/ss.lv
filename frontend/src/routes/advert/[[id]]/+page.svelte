@@ -11,6 +11,7 @@
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
+  import { user } from "$lib/userStore";
   export let data: PageData;
   $: ({ Advert } = data);
   $: advert = $Advert.data?.advert;
@@ -200,6 +201,7 @@
                   {advert.title}
                 </h1>
                 <div class="flex space-x-2">
+                  {#if $user.id == advert.user.id}
                   <button
                     on:click={toggleEditMode}
                     class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
@@ -207,13 +209,16 @@
                     <Edit class="w-5 h-5 inline-block" />
                     Edit
                   </button>
-                  <button
+                  {/if}
+                  {#if $user.role == "ADMIN" || $user.role == "MODERATOR" || $user.id == advert.user.id}
+                    <button
                     on:click={handleDelete}
                     class="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
                   >
                     <Trash2 class="w-5 h-5 inline-block mr-2" />
                     Delete
                   </button>
+                  {/if}
                 </div>
               </div>
               <p

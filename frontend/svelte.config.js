@@ -28,6 +28,7 @@ const config = {
           "http://localhost:90",
           "http://localhost:80",
           "http://127.0.0.1:80",
+          "http://127.0.0.1:90",
         ],
         "frame-src": ["'self'"],
         "object-src": ["'self'"],

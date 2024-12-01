@@ -6,5 +6,6 @@ query HeaderMe {
     companyName
     email
     emailVerified
+    role
   }
 }

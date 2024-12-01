@@ -21,6 +21,8 @@
       emailVerified: $HeaderMe.data.me.emailVerified || false,
       isCompany: $HeaderMe.data.me.companyName != null,
       isLogedIn: $HeaderMe.data.me != null,
+      role: $HeaderMe.data.me.role,
+      id: $HeaderMe.data.me.id,
     });
   }
 
