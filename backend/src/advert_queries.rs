@@ -643,48 +643,53 @@ impl AdvertMutation {
         advert_id: i32,
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone())  {
+    
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             Some(token) => token,
             None => {
-                return Err(async_graphql::Error::new(
-                    "you are not logged in".to_string(),
-                ));
+                return Err(async_graphql::Error::new("You are not logged in."));
             }
         };
-
+    
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
         };
-
-        let user_id = claims["id"].parse::<i32>().unwrap();
-
-        let req_user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
-
-        match req_user {
-            Some(req_user) => match req_user.role == Role::Admin {
-                true => (),
-                false => {
-                    return Err(async_graphql::Error::new(
-                        "You dont have rights to do it".to_string(),
-                    ))
-                }
-            },
-            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
-        };
-
+    
         let advert: Option<advert::Model> = Advert::find_by_id(advert_id).one(&my_ctx.db).await?;
-
+    
         let advert = match advert {
             Some(advert) => advert,
-            None => return Err(async_graphql::Error::new("advert not found".to_string())),
+            None => return Err(async_graphql::Error::new("Advert not found.")),
         };
-
+    
+        let user_id = claims["id"].parse::<i32>().unwrap();
+    
+        let req_user: Option<user::Model> = User::find_by_id(user_id).one(&my_ctx.db).await?;
+    
+        match req_user {
+            Some(req_user) => {
+                if req_user.role == Role::Admin || req_user.role == Role::Moderator {
+                } else if advert.user_id == user_id {
+                    if !advert.sold_to.is_none() {
+                        return Err(async_graphql::Error::new(
+                            "You cannot delete this advert as it has already been sold.",
+                        ));
+                    } 
+                } else {
+                    return Err(async_graphql::Error::new(
+                        "You do not have the rights to delete this advert.",
+                    ));
+                }
+            }
+            None => return Err(async_graphql::Error::new("Invalid token.")),
+        };
+    
         advert.clone().delete(&my_ctx.db).await?;
-
-        return Ok(advert);
+    
+        Ok(advert)
     }
+    
 
     async fn write_review(
         &self,

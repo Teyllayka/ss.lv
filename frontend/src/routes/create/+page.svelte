@@ -1,103 +1,104 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { Camera, X } from "lucide-svelte";
-import { enhance } from "$app/forms";
-import InputField from "$lib/components/InputField.svelte";
-import SelectField from "$lib/components/SelectField.svelte";
-import TextField from "$lib/components/TextField.svelte";
-export let form;
+  import { fade, fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { Camera, X } from "lucide-svelte";
+  import { enhance } from "$app/forms";
+  import InputField from "$lib/components/InputField.svelte";
+  import SelectField from "$lib/components/SelectField.svelte";
+  import TextField from "$lib/components/TextField.svelte";
+  import { user } from "$lib/userStore";
+  export let form;
 
-let category: keyof typeof categoryFields | "" = "";
-let isLoading = false;
-let errors: Record<string, string> = {};
-let dynamicFields: Record<string, string> = {};
-let mainPhoto: string | null = null;
-let additionalPhotos: string[] = [];
+  let category: keyof typeof categoryFields | "" = "";
+  let isLoading = false;
+  let errors: Record<string, string> = {};
+  let dynamicFields: Record<string, string> = {};
+  let mainPhoto: string | null = null;
+  let additionalPhotos: string[] = [];
 
-const categories = [
-	{ value: "electronics", label: "Electronics" },
-	{ value: "vehicles", label: "Vehicles" },
-	{ value: "furniture", label: "Furniture" },
-	{ value: "clothing", label: "Clothing" },
-];
+  const categories = [
+    { value: "electronics", label: "Electronics" },
+    { value: "vehicles", label: "Vehicles" },
+    { value: "furniture", label: "Furniture" },
+    { value: "clothing", label: "Clothing" },
+  ];
 
-const categoryFields = {
-	electronics: [
-		{ name: "brand", label: "Brand", type: "text" },
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used", "For Parts"],
-		},
-	],
-	vehicles: [
-		{ name: "make", label: "Make", type: "text" },
-		{ name: "model", label: "Model", type: "text" },
-		{ name: "year", label: "Year", type: "number" },
-		{ name: "mileage", label: "Mileage", type: "number" },
-		{
-			name: "fuelType",
-			label: "Fuel Type",
-			type: "select",
-			options: ["Petrol", "Diesel", "Electric", "Hybrid"],
-		},
-	],
-	furniture: [
-		{ name: "material", label: "Material", type: "text" },
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used", "Antique"],
-		},
-	],
-	clothing: [
-		{ name: "size", label: "Size", type: "text" },
-		{
-			name: "gender",
-			label: "Gender",
-			type: "select",
-			options: ["Men", "Women", "Unisex", "Kids"],
-		},
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used"],
-		},
-	],
-};
+  const categoryFields = {
+    electronics: [
+      { name: "brand", label: "Brand", type: "text" },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used", "For Parts"],
+      },
+    ],
+    vehicles: [
+      { name: "make", label: "Make", type: "text" },
+      { name: "model", label: "Model", type: "text" },
+      { name: "year", label: "Year", type: "number" },
+      { name: "mileage", label: "Mileage", type: "number" },
+      {
+        name: "fuelType",
+        label: "Fuel Type",
+        type: "select",
+        options: ["Petrol", "Diesel", "Electric", "Hybrid"],
+      },
+    ],
+    furniture: [
+      { name: "material", label: "Material", type: "text" },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used", "Antique"],
+      },
+    ],
+    clothing: [
+      { name: "size", label: "Size", type: "text" },
+      {
+        name: "gender",
+        label: "Gender",
+        type: "select",
+        options: ["Men", "Women", "Unisex", "Kids"],
+      },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used"],
+      },
+    ],
+  };
 
-function handleCategoryChange() {
-	dynamicFields = {};
-	if (category && categoryFields[category]) {
-		categoryFields[category].forEach((field) => {
-			dynamicFields[field.name] = "";
-		});
-	}
-}
+  function handleCategoryChange() {
+    dynamicFields = {};
+    if (category && categoryFields[category]) {
+      categoryFields[category].forEach((field) => {
+        dynamicFields[field.name] = "";
+      });
+    }
+  }
 
-function handleMainPhotoChange(event: Event) {
-	const file = (event.target as HTMLInputElement).files?.[0];
-	if (file) {
-		mainPhoto = URL.createObjectURL(file);
-	}
-}
+  function handleMainPhotoChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      mainPhoto = URL.createObjectURL(file);
+    }
+  }
 
-function handleAdditionalPhotosChange(event: Event) {
-	const files = (event.target as HTMLInputElement).files;
-	if (files) {
-		for (let i = 0; i < files.length; i++) {
-			additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
-		}
-	}
-}
+  function handleAdditionalPhotosChange(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
+      }
+    }
+  }
 
-function removeAdditionalPhoto(index: number) {
-	additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
-}
+  function removeAdditionalPhoto(index: number) {
+    additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
+  }
 </script>
 
 <div
@@ -114,11 +115,28 @@ function removeAdditionalPhoto(index: number) {
         Create New Advert
       </h1>
 
+      {#if !$user.emailVerified}
+        <div
+          class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
+          role="alert"
+        >
+          <p class="font-bold">Email Not Verified</p>
+          <p>Please verify your email address to create an advert.</p>
+          <!-- <button
+            on:click={toggleVerificationPopup}
+            class="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Verify Email
+          </button> -->
+        </div>
+      {/if}
+
       <form
         method="post"
         use:enhance
         class="space-y-6"
         enctype="multipart/form-data"
+        class:blur-sm={!$user.emailVerified}
       >
         <div
           class="relative"
@@ -130,6 +148,7 @@ function removeAdditionalPhoto(index: number) {
             placeholder="Title"
             errors={form?.errors || []}
             value={form?.data.title}
+            disabled={!$user.emailVerified}
           />
         </div>
 
@@ -143,6 +162,7 @@ function removeAdditionalPhoto(index: number) {
             placeholder="Location"
             errors={form?.errors || []}
             value={form?.data.location}
+            disabled={!$user.emailVerified}
           />
         </div>
 
@@ -156,6 +176,7 @@ function removeAdditionalPhoto(index: number) {
             placeholder="Price"
             errors={form?.errors || []}
             value={form?.data.price}
+            disabled={!$user.emailVerified}
           />
         </div>
 
@@ -168,6 +189,7 @@ function removeAdditionalPhoto(index: number) {
             placeholder="Description"
             errors={form?.errors || []}
             value={form?.data.description || ""}
+            disabled={!$user.emailVerified}
           />
         </div>
 
@@ -188,6 +210,7 @@ function removeAdditionalPhoto(index: number) {
             name="category"
             bind:value={category}
             on:change={handleCategoryChange}
+            disabled={!$user.emailVerified}
             required
             class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out text-gray-800 dark:text-white {errors.category
               ? 'border-red-500'
@@ -222,6 +245,7 @@ function removeAdditionalPhoto(index: number) {
                     options={field.options}
                     errors={form?.errors || []}
                     value={form?.data[field.name]}
+                    disabled={!$user.emailVerified}
                   />
                 {:else if field.type === "text" || field.type == "number"}
                   <InputField
@@ -230,6 +254,7 @@ function removeAdditionalPhoto(index: number) {
                     placeholder={field.label}
                     errors={form?.errors || []}
                     value={form?.data[field.name]}
+                    disabled={!$user.emailVerified}
                   />
                 {/if}
               </div>
@@ -280,6 +305,7 @@ function removeAdditionalPhoto(index: number) {
                   accept="image/*"
                   on:change={handleMainPhotoChange}
                   class="hidden"
+                  disabled={!$user.emailVerified}
                 />
               </label>
             </div>
@@ -325,6 +351,7 @@ function removeAdditionalPhoto(index: number) {
                   on:change={handleAdditionalPhotosChange}
                   multiple
                   class="hidden"
+                  disabled={!$user.emailVerified}
                 />
               </label>
             </div>
@@ -355,7 +382,7 @@ function removeAdditionalPhoto(index: number) {
         <button
           type="submit"
           class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-          disabled={isLoading}
+          disabled={isLoading || !$user.emailVerified}
           in:fly={{ y: 20, duration: 300, delay: 700, easing: cubicOut }}
         >
           {#if isLoading}

@@ -262,32 +262,50 @@
                   </div>
                 {/if}
               </div>
+
               {#if !userData.emailVerified}
                 <div
-                  class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2"
+                  class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
                   role="alert"
                 >
                   <div class="flex">
                     <AlertCircle class="w-6 h-6 mr-2" />
-                    <p>
-                      Your email is not verified. Please check your inbox for a
-                      verification email.
-                    </p>
+                    <p>Your email is not verified.</p>
                   </div>
+                  <button
+                    type="button"
+                    on:click={sendVerificationEmail}
+                    disabled={sent}
+                    class={`mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      sent
+                        ? "text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
+                        : "text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
+                    }`}
+                  >
+                    <Mail class="w-4 h-4 mr-2" />
+                    {sent
+                      ? "Verification Email Sent"
+                      : "Resend Verification Email"}
+                  </button>
                 </div>
               {/if}
+
               {#if !userData.telegramUsername}
                 <div
-                  class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
+                  class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4"
                   role="alert"
                 >
                   <div class="flex">
-                    <AlertCircle class="w-6 h-6 mr-2" />
-                    <p>
-                      Do not forget to link your Telegram account. It may be
-                      useful for communication with other users.
-                    </p>
+                    <AtSign class="w-6 h-6 mr-2" />
+                    <p>Link your Telegram account for easier communication.</p>
                   </div>
+                  <button
+                    type="button"
+                    class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <AtSign class="w-4 h-4 mr-2" />
+                    Link Telegram Account
+                  </button>
                 </div>
               {/if}
 
@@ -697,54 +715,6 @@
                   errors={form?.errors || []}
                   disableAutoFill={true}
                 />
-
-                {#if !userData.emailVerified}
-                  <div
-                    class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
-                    role="alert"
-                  >
-                    <div class="flex">
-                      <AlertCircle class="w-6 h-6 mr-2" />
-                      <p>Your email is not verified.</p>
-                    </div>
-                    <button
-                      type="button"
-                      on:click={sendVerificationEmail}
-                      disabled={sent}
-                      class={`mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                        sent
-                          ? "text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
-                          : "text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
-                      }`}
-                    >
-                      <Mail class="w-4 h-4 mr-2" />
-                      {sent
-                        ? "Verification Email Sent"
-                        : "Resend Verification Email"}
-                    </button>
-                  </div>
-                {/if}
-
-                {#if !userData.telegramUsername}
-                  <div
-                    class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4"
-                    role="alert"
-                  >
-                    <div class="flex">
-                      <AtSign class="w-6 h-6 mr-2" />
-                      <p>
-                        Link your Telegram account for easier communication.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <AtSign class="w-4 h-4 mr-2" />
-                      Link Telegram Account
-                    </button>
-                  </div>
-                {/if}
 
                 <div class="flex justify-between">
                   <button

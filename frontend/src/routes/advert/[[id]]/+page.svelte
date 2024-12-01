@@ -12,6 +12,7 @@
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
   import { user } from "$lib/userStore";
+  import { goto } from "$app/navigation";
   export let data: PageData;
   $: ({ Advert } = data);
   $: advert = $Advert.data?.advert;
@@ -34,17 +35,26 @@
     isEditMode = false;
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!advert) return;
 
-    if (confirm("Are you sure you want to delete this advert?")) {
-      console.log("Deleting advert:", advert.id);
+    const response = await fetch(`/advert/${advert.id}?/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(),
+    });
+
+    if (response.ok) {
+      goto("/");
+    } else {
+      console.error("Failed to delete the advert");
     }
   }
 
   let images: string[] = [];
 
-  // Safely add `images` property to advert if it exists
   $: if (advert) {
     images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
   }
@@ -197,36 +207,39 @@
               </form>
             {:else}
               <div class="flex justify-between items-start mb-4">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1
+                  class="flex-1 text-3xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap"
+                >
                   {advert.title}
                 </h1>
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 flex-shrink-0">
                   {#if $user.id == advert.user.id}
-                  <button
-                    on:click={toggleEditMode}
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
-                  >
-                    <Edit class="w-5 h-5 inline-block" />
-                    Edit
-                  </button>
+                    <button
+                      on:click={toggleEditMode}
+                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+                    >
+                      <Edit class="w-5 h-5 inline-block" />
+                      Edit
+                    </button>
                   {/if}
                   {#if $user.role == "ADMIN" || $user.role == "MODERATOR" || $user.id == advert.user.id}
                     <button
-                    on:click={handleDelete}
-                    class="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
-                  >
-                    <Trash2 class="w-5 h-5 inline-block mr-2" />
-                    Delete
-                  </button>
+                      on:click={handleDelete}
+                      class="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out"
+                    >
+                      <Trash2 class="w-5 h-5 inline-block mr-2" />
+                      Delete
+                    </button>
                   {/if}
                 </div>
               </div>
+
               <p
                 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
               >
                 ${advert.price.toFixed(2)}
               </p>
-              <p class="text-gray-600 dark:text-gray-400 mb-4">
+              <p class="text-gray-600 dark:text-gray-400 mb-4 break-words">
                 {advert.description}
               </p>
               <div class="flex items-center mb-4">

@@ -11,6 +11,7 @@
     errors?: any | any[];
     value?: string | undefined | null;
     disableAutoFill?: boolean;
+    disabled?: boolean;
   }
 
   let {
@@ -20,11 +21,12 @@
     errors = [],
     value = null,
     disableAutoFill = false,
+    disabled = false,
   }: Props = $props();
 
   let e: any = $state(null);
   run(() => {
-    e = errors.find((x) => x.field === name);
+    e = errors.find((x: any) => x.field === name);
   });
 </script>
 
@@ -40,6 +42,7 @@
     value={value || null}
     {placeholder}
     autocomplete={disableAutoFill ? "off" : undefined}
+    {disabled}
   />
   <label
     class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"

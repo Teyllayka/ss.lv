@@ -6,6 +6,7 @@ import {
 } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 import { graphql } from "$houdini";
+import { user } from "$lib/userStore";
 
 export const actions = {
   default: async (event: RequestEvent) => {
@@ -99,7 +100,7 @@ export const actions = {
         price: parseFloat(data.price),
         title: data.title,
       },
-      { event },
+      { event }
     );
 
     if (!res.errors && res.data) {
@@ -117,6 +118,16 @@ export function load({ cookies }: any) {
   if (!logedIn) {
     return redirect(302, "/login");
   }
+
+  // let userValue: any;
+
+  // user.subscribe((value) => {
+  //   userValue = value;
+  // });
+
+  // if (!userValue || !userValue.emailVerified) {
+  //   return redirect(302, "/me");
+  // }
 }
 
 function getCategorySchema(category: string) {

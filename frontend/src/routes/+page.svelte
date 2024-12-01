@@ -4,13 +4,13 @@
   import Advert from "$lib/components/Advert.svelte";
 
   const adverts = graphql(`
-    query Adverts($offset: Int!) @cache(policy: NoCache)  {
-      getAdverts(limit: 10, offset: $offset)  @paginate {
+    query Adverts($offset: Int!) @cache(policy: NoCache) {
+      getAdverts(limit: 10, offset: $offset) @paginate {
         id
         title
         price
         oldPrice
-        location  
+        location
         createdAt
         isFavorited
         photoUrl
@@ -31,6 +31,11 @@
     await adverts.fetch({ variables: { offset: 0 } });
   });
 </script>
+
+<svelte:head>
+  <title>Recent Adverts</title>
+  <meta name="description" content="Recent Adverts" />
+</svelte:head>
 
 <div
   class="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300"
