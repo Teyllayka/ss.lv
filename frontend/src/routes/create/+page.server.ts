@@ -17,16 +17,14 @@ export const actions = {
       data[key] = value;
     });
 
-    const category = formData.get("category") as string;
+    const category = data.category;
     const schema = getCategorySchema(category);
     if (!schema) {
-      console.log("grr");
-      return;
+      return fail(400, { error: "Unknown category" });
     }
     const fullSchema = advertSchema.concat(schema);
 
     const errs = await validateSchema(fullSchema, data);
-    console.log(formData, errs);
 
     if (errs.length > 0) {
       const serializableData = { ...data };
@@ -52,11 +50,11 @@ export const actions = {
       const dataGachi = await response.json();
       urls.push(dataGachi.link);
     }
+
     for (const file of additionalPhotos) {
       if (file instanceof File) {
         const formGachi = new FormData();
         formGachi.append("file", file);
-
         const response = await fetch("https://gachi.gay/api/upload", {
           method: "POST",
           body: formGachi,
@@ -65,6 +63,30 @@ export const actions = {
         urls.push(dataGachi.link);
       }
     }
+
+    const baseFields = [
+      'title',
+      'description',
+      'price',
+      'location',
+      'mainPhoto',
+      'additionalPhotos',
+      'category',
+    ];
+
+    const baseData: any = {};
+    const categoryData: any = {};
+
+    for (const key in data) {
+      if (baseFields.includes(key)) {
+        baseData[key] = data[key];
+      } else {
+        categoryData[key] = data[key];
+      }
+    }
+
+    delete baseData.mainPhoto;
+    delete baseData.additionalPhotos;
 
     const create = graphql(`
       mutation createAdvert(
@@ -93,12 +115,12 @@ export const actions = {
     let res = await create.mutate(
       {
         category,
-        data,
-        description: data.description,
-        location: data.location,
+        data: categoryData,
+        description: baseData.description,
+        location: baseData.location,
         photos: urls,
-        price: parseFloat(data.price),
-        title: data.title,
+        price: parseFloat(baseData.price),
+        title: baseData.title,
       },
       { event }
     );
@@ -108,9 +130,11 @@ export const actions = {
       throw redirect(302, `/advert/${advertId}`);
     } else {
       console.log("errors", res.errors);
+      return fail(500, { error: "Failed to create advert" });
     }
   },
 };
+
 
 export function load({ cookies }: any) {
   const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");
