@@ -98,13 +98,12 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
     }),
 });
 
-
 export let contactSchema = object({
   name: string().required(),
   email: string().email().required(),
   message: string().required(),
   subject: string().required(),
-})
+});
 
 export let advertCarSchema = object({
   engineFuelType: string().required(),

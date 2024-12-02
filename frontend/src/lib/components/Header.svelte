@@ -9,6 +9,8 @@
     Heart,
     User,
     Plus,
+    Shield,
+    Settings,
     Building2,
   } from "lucide-svelte";
   import { fly } from "svelte/transition";
@@ -223,7 +225,11 @@
           href="/me"
           class="ml-8 whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
         >
-          {#if $user.isCompany}
+          {#if $user.role == "ADMIN"}
+            <Settings class="h-6 w-6" />
+          {:else if $user.role == "MODERATOR"}
+            <Shield class="h-6 w-6" />
+          {:else if $user.isCompany}
             <Building2 class="h-6 w-6" />
           {:else}
             <User class="h-6 w-6" />

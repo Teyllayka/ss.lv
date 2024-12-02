@@ -1,12 +1,11 @@
-<!-- ImageGallery.svelte -->
 <script lang="ts">
   export let images: string[] = [];
 </script>
 
-<div class="thumbnail">
+<div class="thumbnail relative h-[200px]">
   {#each images as image, index}
     <div class="li">
-      <img src={image} alt={`Image ${index + 1}`} />
+      <img class="h-full w-full" src={image} alt={`Image ${index + 1}`} />
     </div>
   {/each}
   {#if images.length > 5}
@@ -14,21 +13,15 @@
       +{images.length - 5} images
     </div>
   {/if}
-  <div class="h">
+  <div class="h h-full w-full">
     {#each images.slice(0, 5) as _, index}
-      <div class="hovers"></div>
+      <div class="hovers relative"></div>
     {/each}
   </div>
 </div>
 
 <style lang="scss">
-  .relative {
-    z-index: 20;
-  }
-
   .thumbnail {
-    position: relative;
-    height: 200px;
 
     .li {
       position: absolute;
@@ -36,8 +29,6 @@
       z-index: -1;
 
       img {
-        width: 100%;
-        height: 100%;
         object-fit: cover;
       }
     }
@@ -45,8 +36,6 @@
     .h {
       display: flex;
       opacity: 0;
-      width: 100%;
-      height: 100%;
 
       &:has(.hovers:nth-of-type(2)) {
         &:hover {
@@ -56,7 +45,6 @@
 
       .hovers {
         flex: 1 1;
-        position: relative;
 
         &::after {
           position: absolute;

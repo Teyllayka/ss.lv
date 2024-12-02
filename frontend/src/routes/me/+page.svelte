@@ -20,6 +20,7 @@
   import { enhance } from "$app/forms";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
   import { goto } from "$app/navigation";
+    import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
 
   export let form;
 
@@ -37,6 +38,7 @@
     advertsWithReviews: any[];
     reviewedAdverts: any[];
     companyName: string;
+    role: string;
   }
 
   function preventFormReset(formElement: any) {
@@ -142,9 +144,23 @@
               class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
             />
             <div class="text-center md:text-left">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {userData.name}
-                {userData.surname}
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                {userData.name} {userData.surname}
+                {#if userData.role === "ADMIN"}
+                  <span
+                    class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                    style="align-self: center;"
+                  >
+                    Admin
+                  </span>
+                {:else if userData.role === "MODERATOR"}
+                  <span
+                    class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    style="align-self: center;"
+                  >
+                    Moderator
+                  </span>
+                {/if}
               </h1>
               {#if userData.advertsWithReviews.length > 0}
                 <div
@@ -528,56 +544,7 @@
                   class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                   {#each userData.adverts.filter((a) => a.available) as advert (advert.id)}
-                    <div
-                      class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
-                      in:fade
-                    >
-                      <div
-                        class="relative cursor-pointer"
-                        on:click={() => goto(`/advert/${advert.id}`)}
-                      >
-                        <ImageGallery
-                          images={[
-                            advert.photoUrl,
-                            ...(advert.additionalPhotos || []),
-                          ]}
-                        />
-                      </div>
-
-                      <div class="p-4">
-                        <h3
-                          class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                        >
-                          {advert.title}
-                        </h3>
-                        <div class="flex justify-between items-center">
-                          <p
-                            class="text-xl font-bold text-gray-900 dark:text-white mb-2"
-                          >
-                            ${advert.price.toFixed(2)}
-                          </p>
-                          <span
-                            class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
-                            >Active</span
-                          >
-                        </div>
-                        <div class="flex items-center mb-2">
-                          <MapPin
-                            class="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1"
-                          />
-                          <span
-                            class="text-sm text-gray-600 dark:text-gray-300"
-                          >
-                            {advert.location}
-                          </span>
-                        </div>
-                        <p
-                          class="text-sm text-gray-500 dark:text-gray-400 mb-3"
-                        >
-                          {formatDate(advert.createdAt.toString())}
-                        </p>
-                      </div>
-                    </div>
+                    <ProfileAdvert  advert={advert} />
                   {/each}
                 </div>
 
@@ -764,7 +731,4 @@
     scrollbar-width: none;
   }
 
-  .relative {
-    z-index: 20;
-  }
 </style>

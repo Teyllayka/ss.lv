@@ -65,13 +65,13 @@ export const actions = {
     }
 
     const baseFields = [
-      'title',
-      'description',
-      'price',
-      'location',
-      'mainPhoto',
-      'additionalPhotos',
-      'category',
+      "title",
+      "description",
+      "price",
+      "location",
+      "mainPhoto",
+      "additionalPhotos",
+      "category",
     ];
 
     const baseData: any = {};
@@ -122,7 +122,7 @@ export const actions = {
         price: parseFloat(baseData.price),
         title: baseData.title,
       },
-      { event }
+      { event },
     );
 
     if (!res.errors && res.data) {
@@ -134,7 +134,6 @@ export const actions = {
     }
   },
 };
-
 
 export function load({ cookies }: any) {
   const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");

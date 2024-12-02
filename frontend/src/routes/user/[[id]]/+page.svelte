@@ -14,6 +14,7 @@ import {
 } from "lucide-svelte";
 import type { PageData } from "./$houdini";
 import { formatDate, renderStars } from "$lib/helpers";
+    import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
 
 export let data: PageData;
 
@@ -385,48 +386,7 @@ function switchAdvertTab(tab: "active" | "sold") {
                   class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                   {#each userData.adverts.filter((a) => a.available) as advert (advert.id)}
-                    <div
-                      class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
-                      in:fade
-                    >
-                      <img
-                        alt={advert.title}
-                        class="w-full h-48 object-cover"
-                      />
-                      <div class="p-4">
-                        <h3
-                          class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                        >
-                          {advert.title}
-                        </h3>
-                        <div class="flex justify-between items-center">
-                          <p
-                            class="text-xl font-bold text-gray-900 dark:text-white mb-2"
-                          >
-                            ${advert.price.toFixed(2)}
-                          </p>
-                          <span
-                            class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
-                            >Active</span
-                          >
-                        </div>
-                        <div class="flex items-center mb-2">
-                          <MapPin
-                            class="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1"
-                          />
-                          <span
-                            class="text-sm text-gray-600 dark:text-gray-300"
-                          >
-                            {advert.location}
-                          </span>
-                        </div>
-                        <p
-                          class="text-sm text-gray-500 dark:text-gray-400 mb-3"
-                        >
-                          {formatDate(advert.createdAt.toString())}
-                        </p>
-                      </div>
-                    </div>
+                    <ProfileAdvert  advert={advert} />
                   {/each}
                 </div>
 

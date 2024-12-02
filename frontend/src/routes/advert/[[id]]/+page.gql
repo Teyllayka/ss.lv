@@ -11,11 +11,11 @@ query Advert($id: Int!) {
     photoUrl
     additionalPhotos
 
-	specs {
-		id
-		key
-		value
-	}
+    specs {
+      id
+      key
+      value
+    }
 
     user {
       id

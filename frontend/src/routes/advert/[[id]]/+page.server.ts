@@ -21,7 +21,7 @@ export const actions = {
 
     const res = await deleteAdvert.mutate(
       { advertId: parseInt(id) },
-      { event }
+      { event },
     );
 
     console.log(res);
