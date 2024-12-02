@@ -18,6 +18,8 @@
   import InputField from "$lib/components/InputField.svelte";
   import * as m from "$lib/paraglide/messages.js";
   import { enhance } from "$app/forms";
+  import ImageGallery from "$lib/components/ImageGallery.svelte";
+  import { goto } from "$app/navigation";
 
   export let form;
 
@@ -530,10 +532,18 @@
                       class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
                       in:fade
                     >
-                      <img
-                        alt={advert.title}
-                        class="w-full h-48 object-cover"
-                      />
+                      <div
+                        class="relative cursor-pointer"
+                        on:click={() => goto(`/advert/${advert.id}`)}
+                      >
+                        <ImageGallery
+                          images={[
+                            advert.photoUrl,
+                            ...(advert.additionalPhotos || []),
+                          ]}
+                        />
+                      </div>
+
                       <div class="p-4">
                         <h3
                           class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
@@ -752,5 +762,9 @@
   .overflow-hidden {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .relative {
+    z-index: 20;
   }
 </style>

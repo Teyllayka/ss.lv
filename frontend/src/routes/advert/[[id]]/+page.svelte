@@ -32,13 +32,15 @@
 
   function handleSubmit() {
     console.log("Submitting updated advert:", editForm);
+    // Add your update logic here
     isEditMode = false;
   }
 
   async function handleDelete() {
     if (!advert) return;
 
-    const response = await fetch(`/advert/${advert.id}?/delete`, {
+    const response = await fetch(`/advert/${advert.id}/delete`, {
+      // Removed the extra "?" in the URL
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -133,6 +135,7 @@
           <div class="md:w-1/2 p-6">
             {#if isEditMode}
               <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+                <!-- Edit Form Fields -->
                 <div>
                   <label
                     for="title"
@@ -242,6 +245,35 @@
               <p class="text-gray-600 dark:text-gray-400 mb-4 break-words">
                 {advert.description}
               </p>
+
+              <!-- Specs Section -->
+              {#if advert.specs && advert.specs.length > 0}
+                <div class="mb-6">
+                  <h2
+                    class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2"
+                  >
+                    Specifications
+                  </h2>
+                  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    {#each advert.specs as spec}
+                      <div>
+                        <dt
+                          class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                        >
+                          {spec.key.charAt(0).toUpperCase() + spec.key.slice(1)}
+                        </dt>
+                        <dd
+                          class="mt-1 text-sm text-gray-900 dark:text-gray-100"
+                        >
+                          {spec.value}
+                        </dd>
+                      </div>
+                    {/each}
+                  </dl>
+                </div>
+              {/if}
+              <!-- End of Specs Section -->
+
               <div class="flex items-center mb-4">
                 <MapPin class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
                 <span class="text-gray-600 dark:text-gray-400">
