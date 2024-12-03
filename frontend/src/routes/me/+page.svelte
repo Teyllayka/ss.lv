@@ -1,106 +1,107 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import {
-	X,
-	Star,
-	Phone,
-	Mail,
-	CheckCircle,
-	Edit,
-	User,
-	ShoppingBag,
-	AlertCircle,
-	AtSign,
-} from "lucide-svelte";
-import type { PageData } from "./$houdini";
-import { renderStars } from "$lib/helpers";
-import InputField from "$lib/components/InputField.svelte";
-import * as m from "$lib/paraglide/messages.js";
-import { enhance } from "$app/forms";
-import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
-import ProfileReview from "$lib/components/ProfileReview.svelte";
-import { activeTabClass, inactiveTabClass } from "$lib/consts";
+  import { fade, fly } from "svelte/transition";
+  import {
+    X,
+    Star,
+    Phone,
+    Mail,
+    CheckCircle,
+    Edit,
+    User,
+    ShoppingBag,
+    AlertCircle,
+    AtSign,
+  } from "lucide-svelte";
+  import type { PageData } from "./$houdini";
+  import { renderStars } from "$lib/helpers";
+  import InputField from "$lib/components/InputField.svelte";
+  import * as m from "$lib/paraglide/messages.js";
+  import { enhance } from "$app/forms";
+  import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
+  import ProfileReview from "$lib/components/ProfileReview.svelte";
+  import { activeTabClass, inactiveTabClass } from "$lib/consts";
 
-export let form;
+  export let form;
 
-export let data: PageData;
+  export let data: PageData;
 
-function preventFormReset(formElement: any) {
-	enhance(formElement, ({ formElement }) => {
-		return async ({ result, update }) => {
-			if (result.type === "success") {
-				await update({ reset: false });
+  function preventFormReset(formElement: any) {
+    enhance(formElement, ({ formElement }) => {
+      return async ({ result, update }) => {
+        if (result.type === "success") {
+          await update({ reset: false });
 
-				const passwordField = formElement.querySelector(
-					'input[name="password"]',
-				) as HTMLInputElement;
-				if (passwordField) passwordField.value = "";
-			} else {
-				await update();
-			}
-		};
-	});
-}
+          const passwordField = formElement.querySelector(
+            'input[name="password"]'
+          ) as HTMLInputElement;
+          if (passwordField) passwordField.value = "";
+        } else {
+          await update();
+        }
+      };
+    });
+  }
 
-$: ({ me } = data);
-$: userData = { ...$me.data?.me, ...form?.data } as UserData;
+  $: ({ me } = data);
+  $: userData = { ...$me.data?.me, ...form?.data } as UserData;
 
-let activeTab: TabType = "profile";
-let activeReviewTab: ReviewTabType = "received";
-let activeAdvertTab: AdvertTabType = "active";
+  let activeTab: TabType = "profile";
+  let activeReviewTab: ReviewTabType = "received";
+  let activeAdvertTab: AdvertTabType = "active";
 
-function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
-	activeTab = tab;
-	if (tab === "adverts") {
-		activeAdvertTab = (subTab as AdvertTabType) || "active";
-	} else if (tab === "profile") {
-		activeReviewTab = (subTab as ReviewTabType) || "received";
-	}
-}
+  function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
+    activeTab = tab;
+    if (tab === "adverts") {
+      activeAdvertTab = (subTab as AdvertTabType) || "active";
+    } else if (tab === "profile") {
+      activeReviewTab = (subTab as ReviewTabType) || "received";
+    }
+  }
 
-let sent: boolean = false;
+  let sent: boolean = false;
 
-function sendVerificationEmail() {
-	fetch("?/verify", {
-		method: "POST",
-		body: JSON.stringify({}),
-	})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.status == 200) {
-				sent = true;
-			}
-		});
-}
+  function sendVerificationEmail() {
+    fetch("?/verify", {
+      method: "POST",
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          sent = true;
+        }
+      });
+  }
 
-function linkTelegramAccount() {}
+  function linkTelegramAccount() {}
 
-function logout() {
-	fetch("/api/logout", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({}),
-	})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.status == 200) {
-				window.location.href = "/";
-			}
-		});
-}
+  function logout() {
+    fetch("/api/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status == 200) {
+          window.location.href = "/";
+        }
+      });
+  }
 
-let showSuccessMessage = false;
-$: showSuccessMessage = form?.success || false;
+  let showSuccessMessage = false;
+  $: showSuccessMessage = form?.success || false;
 
-const roleStyles = {
-	ADMIN: "bg-indigo-100 text-indigo-800",
-	MODERATOR: "bg-green-100 text-green-800",
-};
+  const roleStyles = {
+    ADMIN: "bg-indigo-100 text-indigo-800",
+    MODERATOR: "bg-green-100 text-green-800",
+  };
 
-$: filteredActiveAdverts = userData?.adverts?.filter((a) => a.available) || [];
-$: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
+  $: filteredActiveAdverts =
+    userData?.adverts?.filter((a) => a.available) || [];
+  $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
 </script>
 
 <div
@@ -134,7 +135,7 @@ $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
                 {userData.surname}
                 {#if userData.role in roleStyles}
                   <span
-                    class={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${roleStyles[userData.role as keyof typeof roleStyles]}`}
+                    class={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${roleStyles[userData.role]}`}
                     style="align-self: center;"
                   >
                     {userData.role}

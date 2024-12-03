@@ -1,53 +1,52 @@
 <script lang="ts">
-import { formatDate } from "$lib/helpers";
-import { fade } from "svelte/transition";
-import { goto } from "$app/navigation";
-import { Heart, Star, MapPin } from "lucide-svelte";
-import { user } from "$lib/userStore";
-import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
-import ImageGallery from "./ImageGallery.svelte";
+  import { formatDate } from "$lib/helpers";
+  import { fade } from "svelte/transition";
+  import { goto } from "$app/navigation";
+  import { Heart, Star, MapPin } from "lucide-svelte";
+  import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
+  import ImageGallery from "./ImageGallery.svelte";
 
-const addFavorite = new AddFavoriteStore();
-const removeFavorite = new RemoveFavoriteStore();
+  const addFavorite = new AddFavoriteStore();
+  const removeFavorite = new RemoveFavoriteStore();
 
-let isLoggedIn = $state(false);
+  let isLoggedIn = $state(false);
 
-interface Props {
-	onFavoriteChange?: (advertId: number, isFavorited: boolean) => void;
-	advert: any;
-	userPage: any;
-}
+  interface Props {
+    onFavoriteChange?: (advertId: number, isFavorited: boolean) => void;
+    advert: any;
+    userPage: any;
+  }
 
-let { onFavoriteChange = () => {}, advert, userPage }: Props = $props();
+  let { onFavoriteChange = () => {}, advert, userPage }: Props = $props();
 
-let isFavorited = $state(advert.isFavorited);
+  let isFavorited = $state(advert.isFavorited);
 
-let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
+  let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
 
-console.log(allPhotos, advert.title);
+  console.log(allPhotos, advert.title);
 
-async function toggleSaveAdvert() {
-	try {
-		let res;
-		if (isFavorited) {
-			res = await removeFavorite.mutate({ advertId: advert.id });
-		} else {
-			res = await addFavorite.mutate({ advertId: advert.id });
-		}
-		console.log(res);
+  async function toggleSaveAdvert() {
+    try {
+      let res;
+      if (isFavorited) {
+        res = await removeFavorite.mutate({ advertId: advert.id });
+      } else {
+        res = await addFavorite.mutate({ advertId: advert.id });
+      }
+      console.log(res);
 
-		isFavorited = !isFavorited;
-		onFavoriteChange(advert.id, isFavorited);
-	} catch (error) {
-		console.error("Error toggling favorite:", error);
-	}
-}
+      isFavorited = !isFavorited;
+      onFavoriteChange(advert.id, isFavorited);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  }
 
-$effect(() => {
-	console.log(
-		`Advert ${advert.id} is ${isFavorited ? "favorited" : "unfavorited"}`,
-	);
-});
+  $effect(() => {
+    console.log(
+      `Advert ${advert.id} is ${isFavorited ? "favorited" : "unfavorited"}`
+    );
+  });
 </script>
 
 <div

@@ -1,19 +1,21 @@
 query Favorites @cache(policy: NoCache) {
-	getFavorites {
-		id
-		title
-		description
-		price
-		createdAt
-		location
-		oldPrice
-		isFavorited
+  getFavorites {
+    id
+    title
+    description
+    price
+    createdAt
+    location
+    oldPrice
+    isFavorited
+    photoUrl
+    additionalPhotos
 
-		user {
-			id
-			rating
-			name
-			surname
-		}
-	}
+    user {
+      id
+      rating
+      name
+      surname
+    }
+  }
 }
