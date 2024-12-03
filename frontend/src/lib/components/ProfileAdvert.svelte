@@ -1,9 +1,9 @@
 <script>
     import { goto } from "$app/navigation";
-    import { MapPin } from "lucide-svelte";
-    import { fade, fly } from "svelte/transition";
+    import { MapPin, Star } from "lucide-svelte";
+    import { fade } from "svelte/transition";
     import ImageGallery from "./ImageGallery.svelte";
-    import { formatDate } from "$lib/helpers";
+    import { formatDate, renderStars } from "$lib/helpers";
 
     export let advert;
 
@@ -38,10 +38,18 @@
       >
         ${advert.price.toFixed(2)}
       </p>
-      <span
-        class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
-        >Active</span
-      >
+
+      {#if advert.available}
+        <span
+          class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
+          >Active</span
+        >
+      {:else}
+                <span
+                  class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-200 rounded-full"
+                  >Sold</span>
+      {/if}
+      
     </div>
     <div class="flex items-center mb-2">
       <MapPin
@@ -58,5 +66,29 @@
     >
       {formatDate(advert.createdAt.toString())}
     </p>
+    {#if advert.review}
+                          <div>
+                            <div class="flex items-center">
+                              {#each renderStars(advert.review.rating) as star, index}
+                                <Star
+                                  class={star.isFilled
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"}
+                                  size="16"
+                                />
+                              {/each}
+
+                              <span
+                                class="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                                >{advert.review.rating.toFixed(1)}</span
+                              >
+                            </div>
+                            <p
+                              class="text-sm text-gray-600 dark:text-gray-300 mt-1"
+                            >
+                              {advert.review.message}
+                            </p>
+                          </div>
+                        {/if}
   </div>
 </div>

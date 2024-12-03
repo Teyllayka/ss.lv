@@ -40,9 +40,7 @@
     let sortOption = 'price';
     let sortOrder = 'asc';
   
-    // Fetch categories and adverts
     onMount(async () => {
-      // In a real application, these would be API calls
       categories = [
         {
           id: '1',
