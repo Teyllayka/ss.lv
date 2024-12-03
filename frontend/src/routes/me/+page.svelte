@@ -6,7 +6,6 @@
     Phone,
     Mail,
     CheckCircle,
-    MapPin,
     Edit,
     User,
     ShoppingBag,
@@ -14,32 +13,17 @@
     AtSign,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
-  import { formatDate, renderStars } from "$lib/helpers";
+  import { renderStars } from "$lib/helpers";
   import InputField from "$lib/components/InputField.svelte";
   import * as m from "$lib/paraglide/messages.js";
   import { enhance } from "$app/forms";
-  import ImageGallery from "$lib/components/ImageGallery.svelte";
-  import { goto } from "$app/navigation";
-    import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
+  import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
+  import ProfileReview from "$lib/components/ProfileReview.svelte";
+  import { activeTabClass, inactiveTabClass } from "$lib/consts";
 
   export let form;
 
   export let data: PageData;
-
-  interface UserData {
-    name: string;
-    surname: string;
-    email: string;
-    phone: string;
-    emailVerified: boolean;
-    telegramUsername: string;
-    rating: number;
-    adverts: any[];
-    advertsWithReviews: any[];
-    reviewedAdverts: any[];
-    companyName: string;
-    role: string;
-  }
 
   function preventFormReset(formElement: any) {
     enhance(formElement, ({ formElement }) => {
@@ -61,16 +45,16 @@
   $: ({ me } = data);
   $: userData = { ...$me.data?.me, ...form?.data } as UserData;
 
-  let activeTab: "profile" | "adverts" | "edit" = "profile";
-  let activeReviewTab: "received" | "written" = "received";
-  let activeAdvertTab: "active" | "sold" = "active";
+  let activeTab: TabType = "profile";
+  let activeReviewTab: ReviewTabType = "received";
+  let activeAdvertTab: AdvertTabType = "active";
 
-  function switchTab(tab: "profile" | "adverts" | "edit") {
+  function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
     activeTab = tab;
     if (tab === "adverts") {
-      activeAdvertTab = "active";
+      activeAdvertTab = (subTab as AdvertTabType) || "active";
     } else if (tab === "profile") {
-      activeReviewTab = "received";
+      activeReviewTab = (subTab as ReviewTabType) || "received";
     }
   }
 
@@ -107,17 +91,17 @@
       });
   }
 
-  function switchReviewTab(tab: "received" | "written") {
-    activeReviewTab = tab;
-  }
-
-  function switchAdvertTab(tab: "active" | "sold") {
-    activeAdvertTab = tab;
-  }
-
   let showSuccessMessage = false;
   $: showSuccessMessage = form?.success || false;
-  $: console.log(form);
+
+  const roleStyles = {
+    ADMIN: "bg-indigo-100 text-indigo-800",
+    MODERATOR: "bg-green-100 text-green-800",
+  };
+
+  $: filteredActiveAdverts =
+    userData?.adverts?.filter((a) => a.available) || [];
+  $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
 </script>
 
 <div
@@ -144,21 +128,17 @@
               class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
             />
             <div class="text-center md:text-left">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
-                {userData.name} {userData.surname}
-                {#if userData.role === "ADMIN"}
+              <h1
+                class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center"
+              >
+                {userData.name}
+                {userData.surname}
+                {#if userData.role in roleStyles}
                   <span
-                    class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                    class={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${roleStyles[userData.role as keyof typeof roleStyles]}`}
                     style="align-self: center;"
                   >
-                    Admin
-                  </span>
-                {:else if userData.role === "MODERATOR"}
-                  <span
-                    class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                    style="align-self: center;"
-                  >
-                    Moderator
+                    {userData.role}
                   </span>
                 {/if}
               </h1>
@@ -197,9 +177,7 @@
           <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
-                activeTab === "profile"
-                  ? "border-b-2 border-blue-500 text-blue-500"
-                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                activeTab === "profile" ? activeTabClass : inactiveTabClass
               }`}
               on:click={() => switchTab("profile")}
             >
@@ -208,9 +186,7 @@
             </button>
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
-                activeTab === "adverts"
-                  ? "border-b-2 border-blue-500 text-blue-500"
-                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                activeTab === "adverts" ? activeTabClass : inactiveTabClass
               }`}
               on:click={() => switchTab("adverts")}
             >
@@ -219,9 +195,7 @@
             </button>
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
-                activeTab === "edit"
-                  ? "border-b-2 border-blue-500 text-blue-500"
-                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                activeTab === "edit" ? activeTabClass : inactiveTabClass
               }`}
               on:click={() => switchTab("edit")}
             >
@@ -340,7 +314,7 @@
                         ? "bg-blue-500 text-white"
                         : "bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                     }`}
-                    on:click={() => switchReviewTab("received")}
+                    on:click={() => switchTab("profile", "received")}
                   >
                     Received Reviews
                   </button>
@@ -351,7 +325,7 @@
                         ? "bg-blue-500 text-white"
                         : "bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                     }`}
-                    on:click={() => switchReviewTab("written")}
+                    on:click={() => switchTab("profile", "written")}
                   >
                     Written Reviews
                   </button>
@@ -362,68 +336,7 @@
                 {#if userData.advertsWithReviews && userData.advertsWithReviews.length > 0}
                   {#each userData.advertsWithReviews as advert}
                     {#if advert.review}
-                      <div
-                        class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-4"
-                        in:fade
-                      >
-                        <div class="p-4">
-                          <div class="flex flex-col md:flex-row">
-                            <div class="flex-grow">
-                              <div class="flex items-start mb-2">
-                                <div
-                                  class="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center"
-                                >
-                                  <span
-                                    class="text-xl font-semibold text-gray-700"
-                                    >{advert.review.user?.name?.[0] ?? ""}</span
-                                  >
-                                </div>
-                                <div>
-                                  <h3 class="text-sm font-semibold">
-                                    {advert.review.user?.name}
-                                  </h3>
-                                  <div class="flex items-center">
-                                    {#each renderStars(advert.review.rating) as star, index}
-                                      <Star
-                                        class={star.isFilled
-                                          ? "text-yellow-400 fill-current"
-                                          : "text-gray-300"}
-                                        size="16"
-                                      />
-                                    {/each}
-                                    <span class="ml-2 text-sm text-gray-500">
-                                      {formatDate(
-                                        advert.review.createdAt.toString()
-                                      )}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <p
-                                class="text-sm text-gray-600 dark:text-gray-300"
-                              >
-                                {advert.review.message}
-                              </p>
-                            </div>
-                            <div class="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
-                              <div
-                                class="bg-gray-100 dark:bg-gray-700 rounded-lg p-2 w-full md:w-48"
-                              >
-                                <img
-                                  alt={advert.title}
-                                  class="w-full h-24 object-cover mb-2 rounded"
-                                />
-                                <h4 class="text-sm font-semibold truncate">
-                                  {advert.title}
-                                </h4>
-                                <p class="text-xs text-gray-500">
-                                  ${advert.price.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <ProfileReview {advert} />
                     {/if}
                   {/each}
                 {:else}
@@ -431,79 +344,16 @@
                     No reviews received yet.
                   </p>
                 {/if}
-              {:else if activeReviewTab === "written"}
-                {#if userData.reviewedAdverts && userData.reviewedAdverts.length > 0}
-                  {#each userData.reviewedAdverts as advert}
-                    {#if advert.review}
-                      <div
-                        class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-4"
-                        in:fade
-                      >
-                        <div class="p-4">
-                          <div class="flex flex-col md:flex-row">
-                            <div class="flex-grow">
-                              <div class="flex items-start mb-2">
-                                <div
-                                  class="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center"
-                                >
-                                  <span
-                                    class="text-xl font-semibold text-gray-700"
-                                    >{userData.name?.[0] ?? ""}</span
-                                  >
-                                </div>
-                                <div>
-                                  <h3 class="text-sm font-semibold">
-                                    {userData.name}
-                                  </h3>
-                                  <div class="flex items-center">
-                                    {#each renderStars(advert.review.rating) as star, index}
-                                      <Star
-                                        class={star.isFilled
-                                          ? "text-yellow-400 fill-current"
-                                          : "text-gray-300"}
-                                        size="16"
-                                      />
-                                    {/each}
-                                    <span class="ml-2 text-sm text-gray-500">
-                                      {formatDate(
-                                        advert.review.createdAt.toString()
-                                      )}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <p
-                                class="text-sm text-gray-600 dark:text-gray-300"
-                              >
-                                {advert.review.message}
-                              </p>
-                            </div>
-                            <div class="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
-                              <div
-                                class="bg-gray-100 dark:bg-gray-700 rounded-lg p-2 w-full md:w-48"
-                              >
-                                <img
-                                  alt={advert.title}
-                                  class="w-full h-24 object-cover mb-2 rounded"
-                                />
-                                <h4 class="text-sm font-semibold truncate">
-                                  {advert.title}
-                                </h4>
-                                <p class="text-xs text-gray-500">
-                                  ${advert.price.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    {/if}
-                  {/each}
-                {:else}
-                  <p class="text-gray-600 dark:text-gray-400 text-center">
-                    No reviews written yet.
-                  </p>
-                {/if}
+              {:else if userData.reviewedAdverts?.length > 0}
+                {#each userData.reviewedAdverts as advert}
+                  {#if advert.review}
+                    <ProfileReview {advert} userName={userData.name || ""} />
+                  {/if}
+                {/each}
+              {:else}
+                <p class="text-gray-600 dark:text-gray-400 text-center">
+                  No reviews written yet.
+                </p>
               {/if}
             </div>
           {:else if activeTab === "adverts"}
@@ -512,7 +362,7 @@
                 <div
                   class="inline-flex rounded-md shadow-sm"
                   role="group"
-                  aria-label="Review Tabs"
+                  aria-label="Advert Tabs"
                 >
                   <button
                     type="button"
@@ -521,7 +371,7 @@
                         ? "bg-blue-500 text-white"
                         : "bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                     }`}
-                    on:click={() => switchAdvertTab("active")}
+                    on:click={() => switchTab("adverts", "active")}
                   >
                     Active Adverts
                   </button>
@@ -532,41 +382,23 @@
                         ? "bg-blue-500 text-white"
                         : "bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                     }`}
-                    on:click={() => switchAdvertTab("sold")}
+                    on:click={() => switchTab("adverts", "sold")}
                   >
                     Sold Adverts
                   </button>
                 </div>
               </div>
 
-              {#if activeAdvertTab === "active"}
-                <div
-                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {#each userData.adverts.filter((a) => a.available) as advert (advert.id)}
-                    <ProfileAdvert  advert={advert} />
-                  {/each}
-                </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {#each activeAdvertTab === "active" ? filteredActiveAdverts : filteredSoldAdverts as advert (advert.id)}
+                  <ProfileAdvert {advert} />
+                {/each}
+              </div>
 
-                {#if userData.adverts.filter((a) => a.available).length === 0}
-                  <p class="text-gray-600 dark:text-gray-400 text-center mt-4">
-                    No active adverts to display.
-                  </p>
-                {/if}
-              {:else if activeAdvertTab === "sold"}
-                <div
-                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {#each userData.adverts.filter((a) => !a.available) as advert (advert.id)}
-                      <ProfileAdvert  advert={advert} />
-                  {/each}
-                </div>
-
-                {#if userData.adverts.filter((a) => !a.available).length === 0}
-                  <p class="text-gray-600 dark:text-gray-400 text-center mt-4">
-                    No sold adverts to display.
-                  </p>
-                {/if}
+              {#if (activeAdvertTab === "active" ? filteredActiveAdverts : filteredSoldAdverts).length === 0}
+                <p class="text-gray-600 dark:text-gray-400 text-center mt-4">
+                  No {activeAdvertTab} adverts to display.
+                </p>
               {/if}
             </div>
           {:else if activeTab === "edit"}
@@ -674,5 +506,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
 </style>
