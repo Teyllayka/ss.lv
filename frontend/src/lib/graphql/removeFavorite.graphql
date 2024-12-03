@@ -1,5 +1,5 @@
 mutation RemoveFavorite($advertId: Int!) {
-  removeFavorite(advertId: $advertId) @cache(policy: NetworkOnly) {
-    id
-  }
+	removeFavorite(advertId: $advertId) @cache(policy: NetworkOnly) {
+		id
+	}
 }

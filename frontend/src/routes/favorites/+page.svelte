@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type { PageData } from "./$houdini";
-  import Advert from "$lib/components/Advert.svelte";
+import type { PageData } from "./$houdini";
+import Advert from "$lib/components/Advert.svelte";
 
-  export let data: PageData;
+export let data: PageData;
 
-  $: ({ Favorites } = data);
+$: ({ Favorites } = data);
 
-  $: favoritedAdverts = $Favorites.data?.getFavorites || [];
+$: favoritedAdverts = $Favorites.data?.getFavorites || [];
 
-  function handleFavoriteChange(advertId: number, isFavorited: boolean) {
-    if (!isFavorited) {
-      favoritedAdverts = favoritedAdverts.filter((ad) => ad.id !== advertId);
-    }
-  }
+function handleFavoriteChange(advertId: number, isFavorited: boolean) {
+	if (!isFavorited) {
+		favoritedAdverts = favoritedAdverts.filter((ad) => ad.id !== advertId);
+	}
+}
 </script>
 
 <div

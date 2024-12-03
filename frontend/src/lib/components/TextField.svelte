@@ -1,29 +1,29 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
+import { run } from "svelte/legacy";
 
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { capitalizeFirstLetter } from "../helpers";
-  interface Props {
-    name: any;
-    placeholder: any;
-    errors?: any[];
-    value?: string | undefined | null;
-    disabled?: boolean;
-  }
+import { fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { capitalizeFirstLetter } from "../helpers";
+interface Props {
+	name: any;
+	placeholder: any;
+	errors?: any[];
+	value?: string | undefined | null;
+	disabled?: boolean;
+}
 
-  let {
-    name,
-    placeholder,
-    errors = [],
-    value = null,
-    disabled = false,
-  }: Props = $props();
+let {
+	name,
+	placeholder,
+	errors = [],
+	value = null,
+	disabled = false,
+}: Props = $props();
 
-  let e: any = $state(null);
-  run(() => {
-    e = errors.find((x) => x.field === name);
-  });
+let e: any = $state(null);
+run(() => {
+	e = errors.find((x) => x.field === name);
+});
 </script>
 
 <textarea

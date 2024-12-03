@@ -2,17 +2,17 @@ import { HoudiniClient } from "$houdini";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 interface Session {
-  accessToken?: string;
+	accessToken?: string;
 }
 
 export default new HoudiniClient({
-  url: apiUrl || "http://127.0.0.1:90",
+	url: apiUrl || "http://127.0.0.1:90",
 
-  fetchParams({ session }: { session?: Session | null }) {
-    return {
-      headers: {
-        Authorization: `Bearer ${session?.accessToken}`,
-      },
-    };
-  },
+	fetchParams({ session }: { session?: Session | null }) {
+		return {
+			headers: {
+				Authorization: `Bearer ${session?.accessToken}`,
+			},
+		};
+	},
 });

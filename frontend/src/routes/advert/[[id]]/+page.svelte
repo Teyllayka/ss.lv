@@ -1,83 +1,83 @@
 <script lang="ts">
-  import {
-    Star,
-    Phone,
-    Mail,
-    MapPin,
-    ChevronLeft,
-    ChevronRight,
-    Edit,
-    Trash2,
-  } from "lucide-svelte";
-  import type { PageData } from "./$houdini";
-  import { renderStars } from "$lib/helpers";
-  import { user } from "$lib/userStore";
-  import { goto } from "$app/navigation";
-  export let data: PageData;
-  $: ({ Advert } = data);
-  $: advert = $Advert.data?.advert;
+import {
+	Star,
+	Phone,
+	Mail,
+	MapPin,
+	ChevronLeft,
+	ChevronRight,
+	Edit,
+	Trash2,
+} from "lucide-svelte";
+import type { PageData } from "./$houdini";
+import { renderStars } from "$lib/helpers";
+import { user } from "$lib/userStore";
+import { goto } from "$app/navigation";
+export let data: PageData;
+$: ({ Advert } = data);
+$: advert = $Advert.data?.advert;
 
-  let isEditMode = false;
+let isEditMode = false;
 
-  let editForm = {
-    title: advert?.title || "",
-    price: advert?.price || 0,
-    description: advert?.description || "",
-    location: advert?.location || "",
-  };
+let editForm = {
+	title: advert?.title || "",
+	price: advert?.price || 0,
+	description: advert?.description || "",
+	location: advert?.location || "",
+};
 
-  function toggleEditMode() {
-    isEditMode = !isEditMode;
-  }
+function toggleEditMode() {
+	isEditMode = !isEditMode;
+}
 
-  function handleSubmit() {
-    console.log("Submitting updated advert:", editForm);
-    // Add your update logic here
-    isEditMode = false;
-  }
+function handleSubmit() {
+	console.log("Submitting updated advert:", editForm);
+	// Add your update logic here
+	isEditMode = false;
+}
 
-  async function handleDelete() {
-    if (!advert) return;
+async function handleDelete() {
+	if (!advert) return;
 
-    const response = await fetch(`/advert/${advert.id}/delete`, {
-      // Removed the extra "?" in the URL
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams(),
-    });
+	const response = await fetch(`/advert/${advert.id}/delete`, {
+		// Removed the extra "?" in the URL
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		body: new URLSearchParams(),
+	});
 
-    if (response.ok) {
-      goto("/");
-    } else {
-      console.error("Failed to delete the advert");
-    }
-  }
+	if (response.ok) {
+		goto("/");
+	} else {
+		console.error("Failed to delete the advert");
+	}
+}
 
-  let images: string[] = [];
+let images: string[] = [];
 
-  $: if (advert) {
-    images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
-  }
+$: if (advert) {
+	images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
+}
 
-  let currentImageIndex = 0;
+let currentImageIndex = 0;
 
-  function nextImage() {
-    currentImageIndex = (currentImageIndex + 1) % images.length;
-  }
+function nextImage() {
+	currentImageIndex = (currentImageIndex + 1) % images.length;
+}
 
-  function prevImage() {
-    currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-  }
+function prevImage() {
+	currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+}
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
+function formatDate(dateString: string) {
+	return new Date(dateString).toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
 </script>
 
 {#if $Advert.fetching}

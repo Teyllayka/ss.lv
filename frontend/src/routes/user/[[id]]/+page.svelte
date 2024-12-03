@@ -1,41 +1,40 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import {
-    Star,
-    Phone,
-    Mail,
-    CheckCircle,
-    User,
-    ShoppingBag,
-    AtSign,
-  } from "lucide-svelte";
-  import type { PageData } from "./$houdini";
-  import { renderStars } from "$lib/helpers";
-  import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
-  import ProfileReview from "$lib/components/ProfileReview.svelte";
-  import { activeTabClass, inactiveTabClass } from "$lib/consts";
+import { fade } from "svelte/transition";
+import {
+	Star,
+	Phone,
+	Mail,
+	CheckCircle,
+	User,
+	ShoppingBag,
+	AtSign,
+} from "lucide-svelte";
+import type { PageData } from "./$houdini";
+import { renderStars } from "$lib/helpers";
+import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
+import ProfileReview from "$lib/components/ProfileReview.svelte";
+import { activeTabClass, inactiveTabClass } from "$lib/consts";
 
-  export let data: PageData;
+export let data: PageData;
 
-  $: ({ User: UserInfo } = data);
-  $: userData = $UserInfo.data?.user;
+$: ({ User: UserInfo } = data);
+$: userData = $UserInfo.data?.user;
 
-  let activeTab: TabType = "profile";
-  let activeReviewTab: ReviewTabType = "received";
-  let activeAdvertTab: AdvertTabType = "active";
+let activeTab: TabType = "profile";
+let activeReviewTab: ReviewTabType = "received";
+let activeAdvertTab: AdvertTabType = "active";
 
-  function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
-    activeTab = tab;
-    if (tab === "adverts") {
-      activeAdvertTab = (subTab as AdvertTabType) || "active";
-    } else if (tab === "profile") {
-      activeReviewTab = (subTab as ReviewTabType) || "received";
-    }
-  }
+function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
+	activeTab = tab;
+	if (tab === "adverts") {
+		activeAdvertTab = (subTab as AdvertTabType) || "active";
+	} else if (tab === "profile") {
+		activeReviewTab = (subTab as ReviewTabType) || "received";
+	}
+}
 
-  $: filteredActiveAdverts =
-    userData?.adverts?.filter((a) => a.available) || [];
-  $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
+$: filteredActiveAdverts = userData?.adverts?.filter((a) => a.available) || [];
+$: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
 </script>
 
 <div

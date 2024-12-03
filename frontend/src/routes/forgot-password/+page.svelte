@@ -11,7 +11,7 @@ import { enhance } from "$app/forms";
 export let form;
 import InputField from "$lib/components/InputField.svelte";
 
-let csrfToken = '';
+let csrfToken = "";
 </script>
   
   <div class="min-h-[58vh] bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 flex justify-center items-center">

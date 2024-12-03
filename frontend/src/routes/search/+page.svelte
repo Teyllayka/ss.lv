@@ -1,145 +1,152 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-  
-    // Types
-    type Category = {
-      id: string;
-      name: string;
-      fields: AdvertField[];
-    };
-  
-    type AdvertField = {
-      id: string;
-      name: string;
-      type: 'text' | 'number' | 'boolean';
-    };
-  
-    type Advert = {
-      id: string;
-      title: string;
-      description: string;
-      price: number;
-      category: string;
-      location: string;
-      image: string;
-      fields: Record<string, string | number | boolean>;
-      rating: number; // Max 5
-      dateCreated: string;
-    };
-  
-    // State
-    let categories: Category[] = [];
-    let selectedCategory: Category | null = null;
-    let adverts: Advert[] = [];
-    let minPrice = 0;
-    let maxPrice = 1000;
-    let locationRange = 50;
-    let searchTerm = '';
-    let minRating = 0;
-    let customFields: Record<string, string | number | boolean> = {};
-    let sortOption = 'price';
-    let sortOrder = 'asc';
-  
-    onMount(async () => {
-      categories = [
-        {
-          id: '1',
-          name: 'Electronics',
-          fields: [
-            { id: 'brand', name: 'Brand', type: 'text' },
-            { id: 'condition', name: 'Condition', type: 'text' },
-          ],
-        },
-        {
-          id: '2',
-          name: 'Vehicles',
-          fields: [
-            { id: 'make', name: 'Make', type: 'text' },
-            { id: 'model', name: 'Model', type: 'text' },
-            { id: 'year', name: 'Year', type: 'number' },
-          ],
-        },
-      ];
-  
-      adverts = [
-        {
-          id: '1',
-          title: 'iPhone 12',
-          description: 'Great condition iPhone 12',
-          price: 500,
-          category: '1',
-          location: 'New York',
-          image: '/placeholder.svg?height=200&width=300',
-          fields: { brand: 'Apple', condition: 'Used' },
-          rating: 4.5, // Max 5
-          dateCreated: '2023-10-01',
-        },
-        {
-          id: '2',
-          title: 'Toyota Camry',
-          description: '2018 Toyota Camry in excellent condition',
-          price: 15000,
-          category: '2',
-          location: 'Los Angeles',
-          image: '/placeholder.svg?height=200&width=300',
-          fields: { make: 'Toyota', model: 'Camry', year: 2018 },
-          rating: 4.9, // Max 5
-          dateCreated: '2023-09-25',
-        },
-      ];
-    });
-  
-    // Filter adverts based on search criteria
-    $: filteredAdverts = adverts.filter((advert) => {
-      const matchesCategory = !selectedCategory || advert.category === selectedCategory.id;
-      const matchesPrice = advert.price >= minPrice && advert.price <= maxPrice;
-      const matchesSearch = advert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            advert.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCustomFields = Object.entries(customFields).every(([key, value]) => {
-        if (value === '') return true;
-        return advert.fields[key] === value;
-      });
-      const matchesRating = advert.rating >= minRating && advert.rating <= 5; // Ensure rating is max 5
-  
-      return matchesCategory && matchesPrice && matchesSearch && matchesCustomFields && matchesRating;
-    });
-  
-    // Sort adverts based on the selected option
-    $: sortedAdverts = [...filteredAdverts].sort((a, b) => {
-      let comparison = 0;
-  
-      if (sortOption === 'price') {
-        comparison = a.price - b.price;
-      } else if (sortOption === 'rating') {
-        comparison = a.rating - b.rating;
-      } else if (sortOption === 'dateCreated') {
-        comparison = new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
-      }
-  
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-  
-    function handleCategoryChange(event: Event) {
-      const categoryId = (event.target as HTMLSelectElement).value;
-      selectedCategory = categories.find((c) => c.id === categoryId) || null;
-      customFields = {};
-    }
-  
-    function handleCustomFieldChange(field: AdvertField, event: Event) {
-      const value = (event.target as HTMLInputElement).value;
-      customFields[field.id] = field.type === 'number' ? Number(value) : value;
-    }
+import { onMount } from "svelte";
 
-  
+// Types
+type Category = {
+	id: string;
+	name: string;
+	fields: AdvertField[];
+};
 
-    onMount(() => {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get('q');
-      searchTerm = q || '';
-    })
+type AdvertField = {
+	id: string;
+	name: string;
+	type: "text" | "number" | "boolean";
+};
 
-   
-  </script>
+type Advert = {
+	id: string;
+	title: string;
+	description: string;
+	price: number;
+	category: string;
+	location: string;
+	image: string;
+	fields: Record<string, string | number | boolean>;
+	rating: number; // Max 5
+	dateCreated: string;
+};
+
+// State
+let categories: Category[] = [];
+let selectedCategory: Category | null = null;
+let adverts: Advert[] = [];
+let minPrice = 0;
+let maxPrice = 1000;
+let locationRange = 50;
+let searchTerm = "";
+let minRating = 0;
+let customFields: Record<string, string | number | boolean> = {};
+let sortOption = "price";
+let sortOrder = "asc";
+
+onMount(async () => {
+	categories = [
+		{
+			id: "1",
+			name: "Electronics",
+			fields: [
+				{ id: "brand", name: "Brand", type: "text" },
+				{ id: "condition", name: "Condition", type: "text" },
+			],
+		},
+		{
+			id: "2",
+			name: "Vehicles",
+			fields: [
+				{ id: "make", name: "Make", type: "text" },
+				{ id: "model", name: "Model", type: "text" },
+				{ id: "year", name: "Year", type: "number" },
+			],
+		},
+	];
+
+	adverts = [
+		{
+			id: "1",
+			title: "iPhone 12",
+			description: "Great condition iPhone 12",
+			price: 500,
+			category: "1",
+			location: "New York",
+			image: "/placeholder.svg?height=200&width=300",
+			fields: { brand: "Apple", condition: "Used" },
+			rating: 4.5, // Max 5
+			dateCreated: "2023-10-01",
+		},
+		{
+			id: "2",
+			title: "Toyota Camry",
+			description: "2018 Toyota Camry in excellent condition",
+			price: 15000,
+			category: "2",
+			location: "Los Angeles",
+			image: "/placeholder.svg?height=200&width=300",
+			fields: { make: "Toyota", model: "Camry", year: 2018 },
+			rating: 4.9, // Max 5
+			dateCreated: "2023-09-25",
+		},
+	];
+});
+
+// Filter adverts based on search criteria
+$: filteredAdverts = adverts.filter((advert) => {
+	const matchesCategory =
+		!selectedCategory || advert.category === selectedCategory.id;
+	const matchesPrice = advert.price >= minPrice && advert.price <= maxPrice;
+	const matchesSearch =
+		advert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+		advert.description.toLowerCase().includes(searchTerm.toLowerCase());
+	const matchesCustomFields = Object.entries(customFields).every(
+		([key, value]) => {
+			if (value === "") return true;
+			return advert.fields[key] === value;
+		},
+	);
+	const matchesRating = advert.rating >= minRating && advert.rating <= 5; // Ensure rating is max 5
+
+	return (
+		matchesCategory &&
+		matchesPrice &&
+		matchesSearch &&
+		matchesCustomFields &&
+		matchesRating
+	);
+});
+
+// Sort adverts based on the selected option
+$: sortedAdverts = [...filteredAdverts].sort((a, b) => {
+	let comparison = 0;
+
+	if (sortOption === "price") {
+		comparison = a.price - b.price;
+	} else if (sortOption === "rating") {
+		comparison = a.rating - b.rating;
+	} else if (sortOption === "dateCreated") {
+		comparison =
+			new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+	}
+
+	return sortOrder === "asc" ? comparison : -comparison;
+});
+
+function handleCategoryChange(event: Event) {
+	const categoryId = (event.target as HTMLSelectElement).value;
+	selectedCategory = categories.find((c) => c.id === categoryId) || null;
+	customFields = {};
+}
+
+function handleCustomFieldChange(field: AdvertField, event: Event) {
+	const value = (event.target as HTMLInputElement).value;
+	customFields[field.id] = field.type === "number" ? Number(value) : value;
+}
+
+onMount(() => {
+	const params = new URLSearchParams(window.location.search);
+	const q = params.get("q");
+	searchTerm = q || "";
+});
+</script>
   
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-3xl font-bold mb-6">Search Adverts</h1>

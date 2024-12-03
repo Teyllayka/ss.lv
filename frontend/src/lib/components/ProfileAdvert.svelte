@@ -1,12 +1,11 @@
 <script>
-    import { goto } from "$app/navigation";
-    import { MapPin, Star } from "lucide-svelte";
-    import { fade } from "svelte/transition";
-    import ImageGallery from "./ImageGallery.svelte";
-    import { formatDate, renderStars } from "$lib/helpers";
+import { goto } from "$app/navigation";
+import { MapPin, Star } from "lucide-svelte";
+import { fade } from "svelte/transition";
+import ImageGallery from "./ImageGallery.svelte";
+import { formatDate, renderStars } from "$lib/helpers";
 
-    export let advert;
-
+export let advert;
 </script>
 
 

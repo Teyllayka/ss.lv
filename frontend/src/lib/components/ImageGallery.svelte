@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let images: string[] = [];
+export let images: string[] = [];
 </script>
 
 <div class="thumbnail relative h-[200px]">

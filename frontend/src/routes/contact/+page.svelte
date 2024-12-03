@@ -7,7 +7,7 @@ import InputField from "$lib/components/InputField.svelte";
 import TextField from "$lib/components/TextField.svelte";
 export let form;
 
-  let csrfToken = '';
+let csrfToken = "";
 
 let isSubmitted = false;
 </script>

@@ -1,15 +1,15 @@
 <script>
-  import { fade, fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { enhance } from "$app/forms";
-  export let form;
-  import InputField from "$lib/components/InputField.svelte";
+import { fade, fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { enhance } from "$app/forms";
+export let form;
+import InputField from "$lib/components/InputField.svelte";
 
-  let registrationType = "user";
+let registrationType = "user";
 
-  let isLoading = false;
+let isLoading = false;
 
-  let csrfToken = "";
+let csrfToken = "";
 </script>
 
 <div

@@ -1,10 +1,10 @@
 <script>
-  import { formatDate, renderStars } from "$lib/helpers";
-  import { Star } from "lucide-svelte";
-  import { fade } from "svelte/transition";
+import { formatDate, renderStars } from "$lib/helpers";
+import { Star } from "lucide-svelte";
+import { fade } from "svelte/transition";
 
-  export let advert;
-  export let userName = "";
+export let advert;
+export let userName = "";
 </script>
 
 <div

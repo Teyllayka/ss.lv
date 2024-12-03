@@ -1,33 +1,33 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
+import { run } from "svelte/legacy";
 
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { capitalizeFirstLetter } from "../helpers";
-  interface Props {
-    name: any;
-    placeholder: any;
-    options?: any[];
-    errors?: any[];
-    value?: string | undefined | null;
-    disabled?: boolean;
-    onChange?: (e: any) => void;
-  }
+import { fly } from "svelte/transition";
+import { cubicOut } from "svelte/easing";
+import { capitalizeFirstLetter } from "../helpers";
+interface Props {
+	name: any;
+	placeholder: any;
+	options?: any[];
+	errors?: any[];
+	value?: string | undefined | null;
+	disabled?: boolean;
+	onChange?: (e: any) => void;
+}
 
-  let {
-    name,
-    placeholder,
-    options = [],
-    errors = [],
-    value = null,
-    disabled = false,
-    onChange = () => {},
-  }: Props = $props();
+let {
+	name,
+	placeholder,
+	options = [],
+	errors = [],
+	value = null,
+	disabled = false,
+	onChange = () => {},
+}: Props = $props();
 
-  let e: any = $state(null);
-  run(() => {
-    e = errors.find((x) => x.field === name);
-  });
+let e: any = $state(null);
+run(() => {
+	e = errors.find((x) => x.field === name);
+});
 </script>
 
 <select

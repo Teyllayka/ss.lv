@@ -1,78 +1,78 @@
 <script lang="ts">
-  import { preventDefault } from "svelte/legacy";
+import { preventDefault } from "svelte/legacy";
 
-  import {
-    Menu,
-    X,
-    Search,
-    MapPin,
-    Heart,
-    User,
-    Plus,
-    Shield,
-    Settings,
-    Building2,
-  } from "lucide-svelte";
-  import { fly } from "svelte/transition";
-  import { clickOutside } from "$lib/helpers";
-  import { getContext, onMount } from "svelte";
-  import type { Writable } from "svelte/store";
-  import { user } from "$lib/userStore";
-  import * as m from "$lib/paraglide/messages.js";
-    import { goto } from "$app/navigation";
-    import { page } from '$app/stores';
+import {
+	Menu,
+	X,
+	Search,
+	MapPin,
+	Heart,
+	User,
+	Plus,
+	Shield,
+	Settings,
+	Building2,
+} from "lucide-svelte";
+import { fly } from "svelte/transition";
+import { clickOutside } from "$lib/helpers";
+import { getContext, onMount } from "svelte";
+import type { Writable } from "svelte/store";
+import { user } from "$lib/userStore";
+import * as m from "$lib/paraglide/messages.js";
+import { goto } from "$app/navigation";
+import { page } from "$app/stores";
 
-  const region: Writable<string> = getContext("region");
+const region: Writable<string> = getContext("region");
 
-  let isMenuOpen = $state(false);
-  let searchQuery = $state("");
-  let isCategoriesOpen = $state(false);
-  let isRegionsOpen = $state(false);
+let isMenuOpen = $state(false);
+let searchQuery = $state("");
+let isCategoriesOpen = $state(false);
+let isRegionsOpen = $state(false);
 
-  const regions = ["North", "South", "East", "West", "Central"];
-  const categories = [
-    "Electronics",
-    "Fashion",
-    "Home & Garden",
-    "Sports",
-    "Vehicles",
-    "Toys & Games",
-  ];
+const regions = ["North", "South", "East", "West", "Central"];
+const categories = [
+	"Electronics",
+	"Fashion",
+	"Home & Garden",
+	"Sports",
+	"Vehicles",
+	"Toys & Games",
+];
 
-  let csrfToken = $state("");
+let csrfToken = $state("");
 
-  onMount(async () => {
-    // const response = await fetch('/csrf-token'); // Adjust to your API endpoint
-    // const data = await response.json();
-    // csrfToken = data.csrfToken;
-    csrfToken = 'aa';
-  });
+onMount(async () => {
+	// const response = await fetch('/csrf-token'); // Adjust to your API endpoint
+	// const data = await response.json();
+	// csrfToken = data.csrfToken;
+	csrfToken = "aa";
+});
 
-  function toggleMenu() {
-    isMenuOpen = !isMenuOpen;
-  }
+function toggleMenu() {
+	isMenuOpen = !isMenuOpen;
+}
 
-  async function handleSearch() {
-    const url = `/search?q=${encodeURIComponent(searchQuery.trim())}&region=${encodeURIComponent($region)}`;
-    await goto(url, {
-      keepFocus: true,
-    });
-  }
+async function handleSearch() {
+	const url = `/search?q=${encodeURIComponent(searchQuery.trim())}&region=${encodeURIComponent($region)}`;
+	await goto(url, {
+		keepFocus: true,
+	});
+}
 
-  function selectRegion(rg: string) {
-    region.set(rg);
-    isRegionsOpen = false;
-  }
+function selectRegion(rg: string) {
+	region.set(rg);
+	isRegionsOpen = false;
+}
 
-  function toggleCategories() {
-    isCategoriesOpen = !isCategoriesOpen;
-    if (isCategoriesOpen) isRegionsOpen = false;
-  }
+function toggleCategories() {
+	isCategoriesOpen = !isCategoriesOpen;
+	if (isCategoriesOpen) isRegionsOpen = false;
+}
 
-  function toggleRegions() {
-    isRegionsOpen = !isRegionsOpen;
-    if (isRegionsOpen) isCategoriesOpen = false;
-  }
+function toggleRegions() {
+	isRegionsOpen = !isRegionsOpen;
+	if (isRegionsOpen) isCategoriesOpen = false;
+}
 </script>
 
 <header class="bg-white dark:bg-gray-800 shadow-md">

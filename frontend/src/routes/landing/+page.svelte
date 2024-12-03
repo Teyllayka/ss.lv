@@ -1,14 +1,14 @@
 <script>
-    import { fade, fly, scale } from 'svelte/transition';
-    import { elasticOut } from 'svelte/easing';
-  
-    let showFAQ = Array(4).fill(false);
-  
-    function toggleFAQ(index) {
-      showFAQ[index] = !showFAQ[index];
-      showFAQ = showFAQ;
-    }
-  </script>
+import { fade, fly, scale } from "svelte/transition";
+import { elasticOut } from "svelte/easing";
+
+let showFAQ = Array(4).fill(false);
+
+function toggleFAQ(index) {
+	showFAQ[index] = !showFAQ[index];
+	showFAQ = showFAQ;
+}
+</script>
   
   <main class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     <!-- Hero Section -->
