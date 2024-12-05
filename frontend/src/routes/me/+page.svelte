@@ -20,6 +20,7 @@
   import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
   import ProfileReview from "$lib/components/ProfileReview.svelte";
   import { activeTabClass, inactiveTabClass } from "$lib/consts";
+  import { user } from "$lib/userStore";
 
   export let form;
 
@@ -87,6 +88,7 @@
       .then((data) => {
         if (data.status == 200) {
           window.location.href = "/";
+          user.logout();
         }
       });
   }
@@ -94,7 +96,7 @@
   let showSuccessMessage = false;
   $: showSuccessMessage = form?.success || false;
 
-  const roleStyles = {
+  const roleStyles: { [key: string]: string } = {
     ADMIN: "bg-indigo-100 text-indigo-800",
     MODERATOR: "bg-green-100 text-green-800",
   };
@@ -332,27 +334,19 @@
                 </div>
               </div>
 
-              {#if activeReviewTab === "received"}
-                {#if userData.advertsWithReviews && userData.advertsWithReviews.length > 0}
-                  {#each userData.advertsWithReviews as advert}
-                    {#if advert.review}
-                      <ProfileReview {advert} />
-                    {/if}
-                  {/each}
-                {:else}
-                  <p class="text-gray-600 dark:text-gray-400 text-center">
-                    No reviews received yet.
-                  </p>
-                {/if}
-              {:else if userData.reviewedAdverts?.length > 0}
-                {#each userData.reviewedAdverts as advert}
+              {#if activeReviewTab === "received" ? userData.advertsWithReviews?.length > 0 : userData.reviewedAdverts?.length > 0}
+                {#each activeReviewTab === "received" ? userData.advertsWithReviews : userData.reviewedAdverts as advert}
                   {#if advert.review}
-                    <ProfileReview {advert} userName={userData.name || ""} />
+                    <ProfileReview
+                      {advert}
+                      written={activeReviewTab == "written"}
+                      userName={userData.name || ""}
+                    />
                   {/if}
                 {/each}
-              {:else}
+              {:else if activeReviewTab === "written" ? userData.reviewedAdverts?.length === 0 : userData.advertsWithReviews?.length === 0}
                 <p class="text-gray-600 dark:text-gray-400 text-center">
-                  No reviews written yet.
+                  No reviews {activeReviewTab} yet.
                 </p>
               {/if}
             </div>

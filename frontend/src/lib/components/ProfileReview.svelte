@@ -1,10 +1,11 @@
 <script>
-import { formatDate, renderStars } from "$lib/helpers";
-import { Star } from "lucide-svelte";
-import { fade } from "svelte/transition";
+  import { formatDate, renderStars } from "$lib/helpers";
+  import { Star } from "lucide-svelte";
+  import { fade } from "svelte/transition";
 
-export let advert;
-export let userName = "";
+  export let advert;
+  export let userName = "";
+  export let written = false;
 </script>
 
 <div
@@ -19,7 +20,7 @@ export let userName = "";
             class="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center"
           >
             <span class="text-xl font-semibold text-gray-700">
-              {#if userName != ""}
+              {#if written}
                 {userName?.[0] ?? ""}
               {:else}
                 {advert.review.user?.name?.[0] ?? ""}
@@ -28,7 +29,7 @@ export let userName = "";
           </div>
           <div>
             <h3 class="text-sm font-semibold">
-              {#if userName != ""}
+              {#if written}
                 {userName}
               {:else}
                 {advert.review.user?.name}

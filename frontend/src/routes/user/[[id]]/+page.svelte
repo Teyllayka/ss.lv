@@ -1,40 +1,41 @@
 <script lang="ts">
-import { fade } from "svelte/transition";
-import {
-	Star,
-	Phone,
-	Mail,
-	CheckCircle,
-	User,
-	ShoppingBag,
-	AtSign,
-} from "lucide-svelte";
-import type { PageData } from "./$houdini";
-import { renderStars } from "$lib/helpers";
-import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
-import ProfileReview from "$lib/components/ProfileReview.svelte";
-import { activeTabClass, inactiveTabClass } from "$lib/consts";
+  import { fade } from "svelte/transition";
+  import {
+    Star,
+    Phone,
+    Mail,
+    CheckCircle,
+    User,
+    ShoppingBag,
+    AtSign,
+  } from "lucide-svelte";
+  import type { PageData } from "./$houdini";
+  import { renderStars } from "$lib/helpers";
+  import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
+  import ProfileReview from "$lib/components/ProfileReview.svelte";
+  import { activeTabClass, inactiveTabClass } from "$lib/consts";
 
-export let data: PageData;
+  export let data: PageData;
 
-$: ({ User: UserInfo } = data);
-$: userData = $UserInfo.data?.user;
+  $: ({ User: UserInfo } = data);
+  $: userData = $UserInfo.data?.user;
 
-let activeTab: TabType = "profile";
-let activeReviewTab: ReviewTabType = "received";
-let activeAdvertTab: AdvertTabType = "active";
+  let activeTab: TabType = "profile";
+  let activeReviewTab: ReviewTabType = "received";
+  let activeAdvertTab: AdvertTabType = "active";
 
-function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
-	activeTab = tab;
-	if (tab === "adverts") {
-		activeAdvertTab = (subTab as AdvertTabType) || "active";
-	} else if (tab === "profile") {
-		activeReviewTab = (subTab as ReviewTabType) || "received";
-	}
-}
+  function switchTab(tab: TabType, subTab?: ReviewTabType | AdvertTabType) {
+    activeTab = tab;
+    if (tab === "adverts") {
+      activeAdvertTab = (subTab as AdvertTabType) || "active";
+    } else if (tab === "profile") {
+      activeReviewTab = (subTab as ReviewTabType) || "received";
+    }
+  }
 
-$: filteredActiveAdverts = userData?.adverts?.filter((a) => a.available) || [];
-$: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
+  $: filteredActiveAdverts =
+    userData?.adverts?.filter((a) => a.available) || [];
+  $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
 </script>
 
 <div
@@ -195,27 +196,19 @@ $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
                   </div>
                 </div>
 
-                {#if activeReviewTab === "received"}
-                  {#if userData.advertsWithReviews?.length > 0}
-                    {#each userData.advertsWithReviews as advert}
-                      {#if advert.review}
-                        <ProfileReview {advert} />
-                      {/if}
-                    {/each}
-                  {:else}
-                    <p class="text-gray-600 dark:text-gray-400 text-center">
-                      No reviews received yet.
-                    </p>
-                  {/if}
-                {:else if userData.reviewedAdverts?.length > 0}
-                  {#each userData.reviewedAdverts as advert}
+                {#if activeReviewTab === "received" ? userData.advertsWithReviews?.length > 0 : userData.reviewedAdverts?.length > 0}
+                  {#each activeReviewTab === "received" ? userData.advertsWithReviews : userData.reviewedAdverts as advert}
                     {#if advert.review}
-                      <ProfileReview {advert} userName={userData.name || ""} />
+                      <ProfileReview
+                        {advert}
+                        written={activeReviewTab == "written"}
+                        userName={userData.name || ""}
+                      />
                     {/if}
                   {/each}
-                {:else}
+                {:else if activeReviewTab === "written" ? userData.reviewedAdverts?.length === 0 : userData.advertsWithReviews?.length === 0}
                   <p class="text-gray-600 dark:text-gray-400 text-center">
-                    No reviews written yet.
+                    No reviews {activeReviewTab} yet.
                   </p>
                 {/if}
               </div>
