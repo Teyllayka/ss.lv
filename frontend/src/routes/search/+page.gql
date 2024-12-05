@@ -1,40 +1,41 @@
 query Search(
-	$title: String!
-	$location: String
-	$category: String
-	$offset: Int!
+  $title: String!
+  $location: String
+  $category: String
+  $offset: Int!
 ) {
-	searchAdverts(
-		title: $title
-		location: $location
-		category: $category
-		offset: $offset
-	) {
-		id
-		title
-		price
-		description
-		location
-		createdAt
-		available
-		photoUrl
-		additionalPhotos
-		oldPrice
-		isFavorited
-		user {
-			id
-			name
-			surname
-			phone
-			email
-			rating
-			avatarUrl
-			telegramUsername
-		}
-		review {
-			rating
-			id
-			message
-		}
-	}
+  searchAdverts(
+    title: $title
+    location: $location
+    category: $category
+    offset: $offset
+  ) {
+    id
+    title
+    price
+    description
+    lat
+    lon
+    createdAt
+    available
+    photoUrl
+    additionalPhotos
+    oldPrice
+    isFavorited
+    user {
+      id
+      name
+      surname
+      phone
+      email
+      rating
+      avatarUrl
+      telegramUsername
+    }
+    review {
+      rating
+      id
+      message
+    }
+  }
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
-export let images: string[] = [];
+  export let images: string[] = [];
+  console.log(images);
 </script>
 
 <div class="thumbnail relative h-[200px]">
@@ -22,7 +23,6 @@ export let images: string[] = [];
 
 <style lang="scss">
   .thumbnail {
-
     .li {
       position: absolute;
       inset: 0;
@@ -72,6 +72,14 @@ export let images: string[] = [];
       opacity: 1;
     }
     &:has(.hovers:nth-of-type(3):hover) .li:nth-of-type(3) {
+      opacity: 1;
+    }
+
+    &:has(.hovers:nth-of-type(4):hover) .li:nth-of-type(4) {
+      opacity: 1;
+    }
+
+    &:has(.hovers:nth-of-type(5):hover) .last-pager {
       opacity: 1;
     }
 

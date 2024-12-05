@@ -1,10 +1,16 @@
 <script lang="ts">
-  import { formatDate } from "$lib/helpers";
+  import { calculateDistance, formatDate } from "$lib/helpers";
   import { fade } from "svelte/transition";
   import { goto } from "$app/navigation";
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
   import ImageGallery from "./ImageGallery.svelte";
+  import { transliterate as tr } from "transliteration";
+
+  import { getContext } from "svelte";
+  import type { Writable } from "svelte/store";
+
+  const locationStore = getContext<Writable<[number, number]>>("location");
 
   const addFavorite = new AddFavoriteStore();
   const removeFavorite = new RemoveFavoriteStore();
@@ -24,6 +30,19 @@
   let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
 
   console.log(allPhotos, advert.title);
+
+  let location = $state("");
+
+  fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${advert.lat}&lon=${advert.lon}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      const name = data.address.road + ", " + data.address.city;
+      location = tr(name);
+    })
+    .catch((err) => console.error("Error with reverse geocoding:", err));
 
   async function toggleSaveAdvert() {
     try {
@@ -47,6 +66,11 @@
       `Advert ${advert.id} is ${isFavorited ? "favorited" : "unfavorited"}`
     );
   });
+
+  const distance = calculateDistance(
+    [advert.lat, advert.lon],
+    [$locationStore[0], $locationStore[1]]
+  );
 </script>
 
 <div
@@ -104,10 +128,12 @@
       class="flex items-center mb-1 text-sm text-gray-600 dark:text-gray-300"
     >
       <MapPin size={16} class="mr-1" />
-      <span class="truncate">{advert.location}</span>
-      {#if !userPage}<span class="ml-1 text-gray-500 dark:text-gray-400"
-          >2 km</span
-        >{/if}
+      <p class="flex flex-col items-start justify-start">
+        <span class="truncate">{location}</span>
+        {#if !userPage && $locationStore[0] != 0 && $locationStore[1] != 0}<span
+            class="text-gray-500 dark:text-gray-400">{distance} km</span
+          >{/if}
+      </p>
     </div>
 
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">

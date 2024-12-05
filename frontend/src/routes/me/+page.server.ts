@@ -135,7 +135,8 @@ export const actions = {
 
           reviewedAdverts {
             title
-            location
+            lat
+            lon
             price
             createdAt
             review {
@@ -148,7 +149,8 @@ export const actions = {
           advertsWithReviews {
             title
             price
-            location
+            lat
+            lon
             available
             review {
               rating
@@ -165,7 +167,8 @@ export const actions = {
             title
             price
             description
-            location
+            lat
+            lon
             createdAt
             photoUrl
             additionalPhotos

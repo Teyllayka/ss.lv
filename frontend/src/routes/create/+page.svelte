@@ -1,104 +1,105 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { Camera, X } from "lucide-svelte";
-import { enhance } from "$app/forms";
-import InputField from "$lib/components/InputField.svelte";
-import SelectField from "$lib/components/SelectField.svelte";
-import TextField from "$lib/components/TextField.svelte";
-import { user } from "$lib/userStore";
-export let form;
+  import { fade, fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { Camera, X } from "lucide-svelte";
+  import { enhance } from "$app/forms";
+  import InputField from "$lib/components/InputField.svelte";
+  import SelectField from "$lib/components/SelectField.svelte";
+  import TextField from "$lib/components/TextField.svelte";
+  import { user } from "$lib/userStore";
+  import AddressField from "$lib/components/AddressField.svelte";
+  export let form;
 
-let category: keyof typeof categoryFields | "" = "";
-let isLoading = false;
-let errors: Record<string, string> = {};
-let dynamicFields: Record<string, string> = {};
-let mainPhoto: string | null = null;
-let additionalPhotos: string[] = [];
+  let category: keyof typeof categoryFields | "" = "";
+  let isLoading = false;
+  let errors: Record<string, string> = {};
+  let dynamicFields: Record<string, string> = {};
+  let mainPhoto: string | null = null;
+  let additionalPhotos: string[] = [];
 
-const categories = [
-	{ value: "electronics", label: "Electronics" },
-	{ value: "vehicles", label: "Vehicles" },
-	{ value: "furniture", label: "Furniture" },
-	{ value: "clothing", label: "Clothing" },
-];
+  const categories = [
+    { value: "electronics", label: "Electronics" },
+    { value: "vehicles", label: "Vehicles" },
+    { value: "furniture", label: "Furniture" },
+    { value: "clothing", label: "Clothing" },
+  ];
 
-const categoryFields = {
-	electronics: [
-		{ name: "brand", label: "Brand", type: "text" },
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used", "For Parts"],
-		},
-	],
-	vehicles: [
-		{ name: "make", label: "Make", type: "text" },
-		{ name: "model", label: "Model", type: "text" },
-		{ name: "year", label: "Year", type: "number" },
-		{ name: "mileage", label: "Mileage", type: "number" },
-		{
-			name: "fuelType",
-			label: "Fuel Type",
-			type: "select",
-			options: ["Petrol", "Diesel", "Electric", "Hybrid"],
-		},
-	],
-	furniture: [
-		{ name: "material", label: "Material", type: "text" },
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used", "Antique"],
-		},
-	],
-	clothing: [
-		{ name: "size", label: "Size", type: "text" },
-		{
-			name: "gender",
-			label: "Gender",
-			type: "select",
-			options: ["Men", "Women", "Unisex", "Kids"],
-		},
-		{
-			name: "condition",
-			label: "Condition",
-			type: "select",
-			options: ["New", "Like New", "Used"],
-		},
-	],
-};
+  const categoryFields = {
+    electronics: [
+      { name: "brand", label: "Brand", type: "text" },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used", "For Parts"],
+      },
+    ],
+    vehicles: [
+      { name: "make", label: "Make", type: "text" },
+      { name: "model", label: "Model", type: "text" },
+      { name: "year", label: "Year", type: "number" },
+      { name: "mileage", label: "Mileage", type: "number" },
+      {
+        name: "fuelType",
+        label: "Fuel Type",
+        type: "select",
+        options: ["Petrol", "Diesel", "Electric", "Hybrid"],
+      },
+    ],
+    furniture: [
+      { name: "material", label: "Material", type: "text" },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used", "Antique"],
+      },
+    ],
+    clothing: [
+      { name: "size", label: "Size", type: "text" },
+      {
+        name: "gender",
+        label: "Gender",
+        type: "select",
+        options: ["Men", "Women", "Unisex", "Kids"],
+      },
+      {
+        name: "condition",
+        label: "Condition",
+        type: "select",
+        options: ["New", "Like New", "Used"],
+      },
+    ],
+  };
 
-function handleCategoryChange() {
-	dynamicFields = {};
-	if (category && categoryFields[category]) {
-		categoryFields[category].forEach((field) => {
-			dynamicFields[field.name] = "";
-		});
-	}
-}
+  function handleCategoryChange() {
+    dynamicFields = {};
+    if (category && categoryFields[category]) {
+      categoryFields[category].forEach((field) => {
+        dynamicFields[field.name] = "";
+      });
+    }
+  }
 
-function handleMainPhotoChange(event: Event) {
-	const file = (event.target as HTMLInputElement).files?.[0];
-	if (file) {
-		mainPhoto = URL.createObjectURL(file);
-	}
-}
+  function handleMainPhotoChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      mainPhoto = URL.createObjectURL(file);
+    }
+  }
 
-function handleAdditionalPhotosChange(event: Event) {
-	const files = (event.target as HTMLInputElement).files;
-	if (files) {
-		for (let i = 0; i < files.length; i++) {
-			additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
-		}
-	}
-}
+  function handleAdditionalPhotosChange(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
+      }
+    }
+  }
 
-function removeAdditionalPhoto(index: number) {
-	additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
-}
+  function removeAdditionalPhoto(index: number) {
+    additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
+  }
 </script>
 
 <div
@@ -156,14 +157,16 @@ function removeAdditionalPhoto(index: number) {
           class="relative"
           in:fly={{ y: 20, duration: 300, delay: 200, easing: cubicOut }}
         >
-          <InputField
+          <!-- <InputField
             name="location"
             type="text"
             placeholder="Location"
             errors={form?.errors || []}
             value={form?.data.location}
             disabled={!$user.emailVerified}
-          />
+          /> -->
+
+          <AddressField name="location" placeholder="location" />
         </div>
 
         <div

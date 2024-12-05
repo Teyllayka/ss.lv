@@ -103,7 +103,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::Available).boolean().not_null())
                     .col(ColumnDef::new(Advert::Price).float().not_null())
                     .col(ColumnDef::new(Advert::PhotoUrl).string().not_null())
-                    .col(ColumnDef::new(Advert::Location).string().not_null())
+                    .col(ColumnDef::new(Advert::Lat).string().not_null())
+                    .col(ColumnDef::new(Advert::Lon).string().not_null())
                     .col(
                         ColumnDef::new(Advert::AdditionalPhotos)
                             .array(ColumnType::String(StringLen::None))
@@ -293,14 +294,15 @@ impl MigrationTrait for Migration {
 
             let advert = Query::insert()
                 .into_table(Advert::Table)
-                .columns([Advert::Title, Advert::Description, Advert::PhotoUrl, Advert::Available, Advert::Price, Advert::Location, Advert::UserId, Advert::Category, Advert::SoldTo, Advert::OldPrice])
+                .columns([Advert::Title, Advert::Description, Advert::PhotoUrl, Advert::Available, Advert::Price, Advert::Lat, Advert::Lon, Advert::UserId, Advert::Category, Advert::SoldTo, Advert::OldPrice])
                 .values_panic(vec![
                     "Title".into(),
                     "Description".into(),
                     "photo_url".into(),
                     true.into(),
                     100.0.into(),
-                    "Location".into(),
+                    "56.83660910852027".into(),
+                    "60.60894764157235".into(),
                     1.into(),
                     "Category".into(),
                     1.into(),
@@ -414,7 +416,8 @@ enum Advert {
     AdditionalPhotos,
     Available,
     Price,
-    Location,
+    Lat,
+    Lon,
     UserId,
     Category,
     SoldTo,

@@ -5,7 +5,8 @@ query Favorites @cache(policy: NoCache) {
     description
     price
     createdAt
-    location
+    lat
+    lon
     oldPrice
     isFavorited
     photoUrl

@@ -29,6 +29,8 @@ const config = {
 					"http://localhost:80",
 					"http://127.0.0.1:80",
 					"http://127.0.0.1:90",
+					"nominatim.openstreetmap.org",
+
 				],
 				"frame-src": ["'self'"],
 				"object-src": ["'self'"],

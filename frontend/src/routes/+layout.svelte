@@ -14,7 +14,23 @@
 
   const region = writable("Select Region");
 
+  const location = writable([0, 0]);
+
+  onMount(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          location.set([pos.coords.latitude, pos.coords.longitude]);
+        },
+        () => {
+          location.set([0, 0]);
+        }
+      );
+    }
+  });
+
   setContext("region", region);
+  setContext("location", location);
 
   $: if (HeaderMe && $HeaderMe.data && $HeaderMe.data.me) {
     user.set({

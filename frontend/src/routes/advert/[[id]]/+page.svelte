@@ -1,83 +1,111 @@
 <script lang="ts">
-import {
-	Star,
-	Phone,
-	Mail,
-	MapPin,
-	ChevronLeft,
-	ChevronRight,
-	Edit,
-	Trash2,
-} from "lucide-svelte";
-import type { PageData } from "./$houdini";
-import { renderStars } from "$lib/helpers";
-import { user } from "$lib/userStore";
-import { goto } from "$app/navigation";
-export let data: PageData;
-$: ({ Advert } = data);
-$: advert = $Advert.data?.advert;
+  import {
+    Star,
+    Phone,
+    Mail,
+    MapPin,
+    ChevronLeft,
+    ChevronRight,
+    Edit,
+    Trash2,
+  } from "lucide-svelte";
+  import type { PageData } from "./$houdini";
+  import { calculateDistance, renderStars } from "$lib/helpers";
+  import { user } from "$lib/userStore";
+  import { goto } from "$app/navigation";
+  import { getContext, onMount } from "svelte";
+  import type { Writable } from "svelte/store";
+  import { transliterate as tr } from "transliteration";
 
-let isEditMode = false;
+  export let data: PageData;
+  $: ({ Advert } = data);
+  $: advert = $Advert.data?.advert;
 
-let editForm = {
-	title: advert?.title || "",
-	price: advert?.price || 0,
-	description: advert?.description || "",
-	location: advert?.location || "",
-};
+  let isEditMode = false;
 
-function toggleEditMode() {
-	isEditMode = !isEditMode;
-}
+  let editForm = {
+    title: advert?.title || "",
+    price: advert?.price || 0,
+    description: advert?.description || "",
+  };
 
-function handleSubmit() {
-	console.log("Submitting updated advert:", editForm);
-	// Add your update logic here
-	isEditMode = false;
-}
+  function toggleEditMode() {
+    isEditMode = !isEditMode;
+  }
 
-async function handleDelete() {
-	if (!advert) return;
+  function handleSubmit() {
+    console.log("Submitting updated advert:", editForm);
+    // Add your update logic here
+    isEditMode = false;
+  }
 
-	const response = await fetch(`/advert/${advert.id}/delete`, {
-		// Removed the extra "?" in the URL
-		method: "POST",
-		headers: {
-			"Content-Type": "application/x-www-form-urlencoded",
-		},
-		body: new URLSearchParams(),
-	});
+  async function handleDelete() {
+    if (!advert) return;
 
-	if (response.ok) {
-		goto("/");
-	} else {
-		console.error("Failed to delete the advert");
-	}
-}
+    const response = await fetch(`/advert/${advert.id}/delete`, {
+      // Removed the extra "?" in the URL
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(),
+    });
 
-let images: string[] = [];
+    if (response.ok) {
+      goto("/");
+    } else {
+      console.error("Failed to delete the advert");
+    }
+  }
 
-$: if (advert) {
-	images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
-}
+  let images: string[] = [];
 
-let currentImageIndex = 0;
+  $: if (advert) {
+    images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
+  }
 
-function nextImage() {
-	currentImageIndex = (currentImageIndex + 1) % images.length;
-}
+  let currentImageIndex = 0;
 
-function prevImage() {
-	currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-}
+  function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % images.length;
+  }
 
-function formatDate(dateString: string) {
-	return new Date(dateString).toLocaleDateString("en-US", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
-}
+  function prevImage() {
+    currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+  }
+
+  function formatDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  const locationStore = getContext<Writable<[number, number]>>("location");
+
+  let location = "";
+  let distance = 0;
+
+  onMount(() => {
+    distance = calculateDistance(
+      [advert?.lat, advert?.lon],
+      [$locationStore[0], $locationStore[1]]
+    );
+
+    console.log(advert);
+
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${advert?.lat}&lon=${advert?.lon}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        const name = data.address.road + ", " + data.address.city;
+        location = tr(name);
+      })
+      .catch((err) => console.error("Error with reverse geocoding:", err));
+  });
 </script>
 
 {#if $Advert.fetching}
@@ -184,13 +212,6 @@ function formatDate(dateString: string) {
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                     >Location</label
                   >
-                  <input
-                    type="text"
-                    id="location"
-                    bind:value={editForm.location}
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    required
-                  />
                 </div>
                 <div class="flex justify-end space-x-2">
                   <button
@@ -276,9 +297,13 @@ function formatDate(dateString: string) {
 
               <div class="flex items-center mb-4">
                 <MapPin class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
-                <span class="text-gray-600 dark:text-gray-400">
-                  {advert.location}
-                </span>
+                <p class="flex flex-col items-start justify-start">
+                  <span class="truncate">{location}</span>
+                  {#if $locationStore[0] != 0 && $locationStore[1] != 0}<span
+                      class="text-gray-500 dark:text-gray-400"
+                      >{distance} km</span
+                    >{/if}
+                </p>
               </div>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 Posted on {formatDate(advert.createdAt.toString())}

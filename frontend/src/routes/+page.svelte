@@ -10,7 +10,8 @@
         title
         price
         oldPrice
-        location
+        lat
+        lon
         createdAt
         isFavorited
         photoUrl
