@@ -62,7 +62,7 @@
   let sent: boolean = false;
 
   function sendVerificationEmail() {
-    fetch("?/verify", {
+    fetch("/me?/verify", {
       method: "POST",
       body: JSON.stringify({}),
     })

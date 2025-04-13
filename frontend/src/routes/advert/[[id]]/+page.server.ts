@@ -1,17 +1,17 @@
 import { graphql } from "$houdini";
-import { redirect, type RequestEvent } from "@sveltejs/kit";
+import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
 export const actions = {
-	delete: async (event: RequestEvent) => {
-		const { id } = event.params;
+  delete: async (event: RequestEvent) => {
+    const { id } = event.params;
 
-		if (!id) {
-			return { success: false };
-		}
+    if (!id) {
+      return { success: false };
+    }
 
-		console.log("delete", id);
+    console.log("delete", id);
 
-		const deleteAdvert = graphql(`
+    const deleteAdvert = graphql(`
       mutation deleteAdvert($advertId: Int!) {
         deleteAdvert(advertId: $advertId) {
           id
@@ -19,17 +19,137 @@ export const actions = {
       }
     `);
 
-		const res = await deleteAdvert.mutate(
-			{ advertId: parseInt(id) },
-			{ event },
-		);
+    const res = await deleteAdvert.mutate(
+      { advertId: parseInt(id) },
+      { event }
+    );
 
-		console.log(res);
+    console.log(res);
 
-		if (!res.errors && res.data) {
-			redirect(302, "/");
-		} else {
-			return { success: false };
-		}
-	},
+    if (!res.errors && res.data) {
+      redirect(302, "/");
+    } else {
+      return { success: false };
+    }
+  },
+
+  edit: async (event: RequestEvent) => {
+    const { id } = event.params;
+
+    if (!id) {
+      return { success: false };
+    }
+
+    console.log("edit", event);
+
+    const formData = await event.request.formData();
+
+    const data: any = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    console.log(data);
+
+    //err check
+
+    let urls: string[] = [];
+    const additionalPhotos = formData.getAll("additionalPhotos");
+    const existingPhotos = formData.getAll("existingAdditionalPhotos");
+
+    // for (const entry of additionalPhotos) {
+    //   if (entry instanceof File && entry.size > 0) {
+    //     // Upload new file
+    //     const formGachi = new FormData();
+    //     formGachi.append("file", entry);
+    //     const response = await fetch("https://gachi.gay/api/upload", {
+    //       method: "POST",
+    //       body: formGachi,
+    //     });
+    //     const dataGachi = await response.json();
+    //     urls.push(dataGachi.link);
+    //   }
+    // }
+
+    urls = [
+      ...existingPhotos.filter((photo) => typeof photo === "string"),
+      ...urls,
+    ];
+    urls = urls.filter((url) => url !== undefined);
+
+    console.log(urls);
+
+    //delete photos
+
+    const baseFields = [
+      "title",
+      "description",
+      "price",
+      "location",
+      "mainPhoto",
+      "additionalPhotos",
+      "location_json",
+      "category",
+    ];
+
+    const baseData: any = {};
+    const categoryData: any = {};
+
+    for (const key in data) {
+      if (baseFields.includes(key)) {
+        baseData[key] = data[key];
+      } else {
+        categoryData[key] = data[key];
+      }
+    }
+
+    delete baseData.mainPhoto;
+    delete baseData.additionalPhotos;
+
+    const edit = graphql(`
+      mutation editAdvert(
+        $description: String!
+        $lat: Float!
+        $lon: Float!
+        $photos: [String!]!
+        $price: Float!
+        $title: String!
+        $id: Int!
+      ) {
+        editAdvert(
+          description: $description
+          lat: $lat
+          lon: $lon
+          photos: $photos
+          price: $price
+          title: $title
+          id: $id
+        ) {
+          id
+        }
+      }
+    `);
+
+    let location_json = JSON.parse(data.location_json);
+
+    let res = await edit.mutate(
+      {
+        description: baseData.description,
+        lat: location_json.lat,
+        lon: location_json.lon,
+        photos: urls,
+        price: parseFloat(baseData.price),
+        title: baseData.title,
+        id: parseInt(id),
+      },
+      { event }
+    );
+
+    if (!res.errors && res.data) {
+      throw redirect(302, `/`);
+    } else {
+      console.log("errors", res.errors);
+      return fail(500, { error: "Failed to create advert" });
+    }
+  },
 };

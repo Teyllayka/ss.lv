@@ -2,10 +2,11 @@
   import { onMount } from "svelte";
   import { graphql } from "$houdini";
   import Advert from "$lib/components/Advert.svelte";
+  import { browser } from "$app/environment";
 
   const adverts = graphql(`
     query Adverts($offset: Int!) @cache(policy: NoCache) {
-      getAdverts(limit: 10, offset: $offset) @paginate {
+      getAdverts(limit: 12, offset: $offset) @paginate {
         id
         title
         price
@@ -26,8 +27,76 @@
     }
   `);
 
+  let allAdverts = [];
+  let isLoadingMore = false;
+  let isMore = true;
+
+  $: isMore = allAdverts.length % 12 === 0;
+
+  const loadMore = async () => {
+    if (isLoadingMore || !$adverts.data) return;
+    if (!isMore) return;
+
+    isLoadingMore = true;
+    try {
+      await adverts.loadNextPage();
+
+      if ($adverts.data?.getAdverts) {
+        const newAdverts = $adverts.data.getAdverts.filter(
+          (advert) => !allAdverts.some((existing) => existing.id === advert.id),
+        );
+
+        allAdverts = [...allAdverts, ...newAdverts];
+      }
+    } catch (error) {
+      console.error("Error loading more adverts:", error);
+    } finally {
+      isLoadingMore = false;
+    }
+  };
+
+  const throttle = (fn, delay) => {
+    let lastCall = 0;
+    return function (...args) {
+      const now = Date.now();
+      if (now - lastCall < delay) return;
+      lastCall = now;
+      return fn(...args);
+    };
+  };
+
+  const handleScroll = () => {
+    if (!browser) return;
+
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const pageHeight = document.body.scrollHeight;
+
+    if (
+      scrollPosition > pageHeight * 0.6 &&
+      !isLoadingMore &&
+      !$adverts.fetching
+    ) {
+      loadMore();
+    }
+  };
+
+  const throttledScroll = throttle(handleScroll, 200);
+
   onMount(async () => {
     await adverts.fetch({ variables: { offset: 0 } });
+    if ($adverts.data?.getAdverts) {
+      allAdverts = $adverts.data.getAdverts;
+    }
+
+    if (browser) {
+      window.addEventListener("scroll", throttledScroll);
+    }
+
+    return () => {
+      if (browser) {
+        window.removeEventListener("scroll", throttledScroll);
+      }
+    };
   });
 </script>
 
@@ -47,16 +116,29 @@
     </h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {#if $adverts.fetching}
-        loading...
+      {#if $adverts.fetching && allAdverts.length === 0}
+        <div class="col-span-full text-center py-4">Loading...</div>
       {:else if $adverts.errors}
-        err...
-        {JSON.stringify($adverts.errors)}
-      {:else if $adverts.data}
-        {#each $adverts.data.getAdverts as advert (advert.id)}
+        <div class="col-span-full text-center py-4 text-red-500">
+          Error loading adverts
+          <p class="text-sm">{JSON.stringify($adverts.errors)}</p>
+        </div>
+      {:else}
+        {#each allAdverts as advert (advert.id)}
           <Advert {advert} userPage={false} />
         {/each}
       {/if}
     </div>
+
+    {#if isLoadingMore || ($adverts.fetching && allAdverts.length > 0)}
+      <div class="text-center py-4 mt-4">
+        <div
+          class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
+        ></div>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+          Loading more adverts...
+        </p>
+      </div>
+    {/if}
   </div>
 </div>

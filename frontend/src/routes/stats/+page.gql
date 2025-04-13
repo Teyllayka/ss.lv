@@ -1,0 +1,8 @@
+query stats {
+  stats {
+    userCount
+    advertCount
+    todayUserCount
+    todayAdvertCount
+  }
+}

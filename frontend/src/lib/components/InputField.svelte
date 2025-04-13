@@ -19,7 +19,7 @@ let {
 	type,
 	placeholder,
 	errors = [],
-	value = null,
+	value = $bindable(),
 	disableAutoFill = false,
 	disabled = false,
 }: Props = $props();

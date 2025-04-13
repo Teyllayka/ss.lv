@@ -17,8 +17,8 @@ pub struct Model {
     pub additional_photos: Option<Vec<String>>,
     pub available: bool,
     pub price: f32,
-    pub lat: String,
-    pub lon: String,
+    pub lat: f32,
+    pub lon: f32,
     pub user_id: i32,
     pub old_price: f32,
     pub sold_to: Option<i32>,
@@ -63,14 +63,11 @@ impl Related<super::user::Entity> for Entity {
     }
 }
 
-
-
 // impl Related<super::user::Entity> for Entity {
 //     fn to() -> RelationDef {
 //         Relation::SoldTo.def() // The user who bought the advert
 //     }
 // }
-
 
 impl Related<super::specifications::Entity> for Entity {
     fn to() -> RelationDef {
@@ -90,5 +87,11 @@ impl Related<super::reviews::Entity> for Entity {
     }
 }
 
+impl Related<super::chat::Entity> for Entity {
+    fn to() -> RelationDef {
+        // This tells SeaORM that one advert may have many chats.
+        super::chat::Relation::Advert.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

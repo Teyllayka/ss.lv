@@ -94,8 +94,8 @@ export const actions = {
         $category: String!
         $data: JSON!
         $description: String!
-        $lat: String!
-        $lon: String!
+        $lat: Float!
+        $lon: Float!
         $photos: [String!]!
         $price: Float!
         $title: String!
@@ -115,6 +115,8 @@ export const actions = {
       }
     `);
 
+    console.log(data.location_json);
+
     let location_json = JSON.parse(data.location_json);
 
     console.log(location_json);
@@ -124,8 +126,8 @@ export const actions = {
         category,
         data: categoryData,
         description: baseData.description,
-        lat: location_json.lat,
-        lon: location_json.lon,
+        lat: parseFloat(location_json.lat),
+        lon: parseFloat(location_json.lon),
         photos: urls,
         price: parseFloat(baseData.price),
         title: baseData.title,

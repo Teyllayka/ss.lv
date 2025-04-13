@@ -20,7 +20,7 @@
     name,
     placeholder,
     errors = [],
-    value = "",
+    value = $bindable(),
     disableAutoFill = false,
     disabled = false,
     onLocationSelect = () => {},
@@ -29,6 +29,9 @@
   let query = $state(value);
   let suggestions = $state<any[]>([]);
   let isFocused = $state(false);
+  let selectedSuggestion = $state<any | null>(null);
+
+  let debounceTimer: any;
 
   let e = $derived(errors.find((x: any) => x.field === name));
 
@@ -52,9 +55,18 @@
     }
   }
 
+  // Debounced function to fetch suggestions after the user stops typing
+  function debounceFetchSuggestions() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      fetchSuggestions();
+    }, 300);
+  }
+
   function handleSuggestionClick(suggestion: any) {
     query = suggestion.display_name;
     onLocationSelect(suggestion);
+    selectedSuggestion = suggestion;
     suggestions = [];
   }
 
@@ -68,10 +80,6 @@
       isFocused = false;
     }, 200);
   }
-
-  $effect(() => {
-    fetchSuggestions();
-  });
 </script>
 
 <div class="field relative">
@@ -80,7 +88,7 @@
     {name}
     id={name}
     bind:value={query}
-    on:input={fetchSuggestions}
+    on:input={debounceFetchSuggestions}
     on:focus={handleInputFocus}
     on:blur={handleInputBlur}
     class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2
@@ -126,7 +134,11 @@
   <input
     type="hidden"
     name={`${name}_json`}
-    value={suggestions[0] ? JSON.stringify(suggestions[0]) : ""}
+    value={selectedSuggestion
+      ? JSON.stringify(selectedSuggestion)
+      : suggestions[0]
+        ? JSON.stringify(suggestions[0])
+        : ""}
   />
 </div>
 

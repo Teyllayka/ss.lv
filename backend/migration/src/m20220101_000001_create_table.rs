@@ -8,24 +8,22 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-
         let schema = Schema::new(DbBackend::Postgres);
 
+        // Create ENUM types for Status and Role.
+        manager
+            .create_type(schema.create_enum_from_active_enum::<Status>())
+            .await?;
+        manager
+            .create_type(schema.create_enum_from_active_enum::<Role>())
+            .await?;
 
-        manager.create_type(
-            schema.create_enum_from_active_enum::<Status>(),
-        ).await?;
-
-        manager.create_type(
-            schema.create_enum_from_active_enum::<Role>(),
-        ).await?;
-        // Create User Table with Updated Constraints
+        // Create User Table.
         manager
             .create_table(
                 Table::create()
                     .table(User::Table)
                     .if_not_exists()
-                    // Primary Key
                     .col(
                         ColumnDef::new(User::Id)
                             .integer()
@@ -33,25 +31,27 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Timestamps
-                    .col(ColumnDef::new(User::CreatedAt).date_time().not_null()                    .default(Expr::cust("CURRENT_TIMESTAMP"))
-                )
-                    .col(ColumnDef::new(User::UpdatedAt).date_time().not_null()                    .default(Expr::cust("CURRENT_TIMESTAMP"))
-                )
-                    // User Details
+                    .col(
+                        ColumnDef::new(User::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .col(
+                        ColumnDef::new(User::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
                     .col(ColumnDef::new(User::AvatarUrl).string().null())
-                    .col(ColumnDef::new(User::Name).string().null()) // Made nullable
-                    .col(ColumnDef::new(User::Surname).string().null()) // Made nullable
-                    .col(ColumnDef::new(User::CompanyName).string().null()) // Added company_name
-                    // Contact Information (Nullable)
+                    .col(ColumnDef::new(User::Name).string().null())
+                    .col(ColumnDef::new(User::Surname).string().null())
+                    .col(ColumnDef::new(User::CompanyName).string().null())
                     .col(ColumnDef::new(User::Email).string().unique_key().null())
                     .col(ColumnDef::new(User::Phone).string().null())
-                    // Telegram ID (Nullable and Unique)
                     .col(ColumnDef::new(User::TelegramId).string().unique_key().null())
                     .col(ColumnDef::new(User::TelegramUsername).string().null())
-                    // Financial Details
                     .col(ColumnDef::new(User::Balance).float().not_null())
-                    // Authentication Details (PasswordHash Nullable)
                     .col(ColumnDef::new(User::PasswordHash).string().null())
                     .col(
                         ColumnDef::new(User::EmailVerified)
@@ -65,10 +65,8 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::value("U")),
                     )
-                    // CHECK Constraints
                     .check(
-                        Expr::cust("(email IS NOT NULL OR phone IS NOT NULL)")
-                            .to_owned(),
+                        Expr::cust("(email IS NOT NULL OR phone IS NOT NULL)").to_owned(),
                     )
                     .check(
                         Expr::cust("(password_hash IS NOT NULL OR telegram_id IS NOT NULL)")
@@ -77,18 +75,17 @@ impl MigrationTrait for Migration {
                     .check(
                         Expr::cust("((name IS NOT NULL AND surname IS NOT NULL) OR company_name IS NOT NULL)")
                             .to_owned(),
-                    ) // Added new CHECK constraint
+                    )
                     .to_owned(),
             )
             .await?;
-        
-        // Create Advert Table
+
+        // Create Advert Table.
         manager
             .create_table(
                 Table::create()
                     .table(Advert::Table)
                     .if_not_exists()
-                    // Primary Key
                     .col(
                         ColumnDef::new(Advert::Id)
                             .integer()
@@ -96,15 +93,23 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Timestamps
-                    .col(ColumnDef::new(Advert::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
-                    .col(ColumnDef::new(Advert::UpdatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
-                    // Advert Details
+                    .col(
+                        ColumnDef::new(Advert::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .col(
+                        ColumnDef::new(Advert::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
                     .col(ColumnDef::new(Advert::Available).boolean().not_null())
                     .col(ColumnDef::new(Advert::Price).float().not_null())
                     .col(ColumnDef::new(Advert::PhotoUrl).string().not_null())
-                    .col(ColumnDef::new(Advert::Lat).string().not_null())
-                    .col(ColumnDef::new(Advert::Lon).string().not_null())
+                    .col(ColumnDef::new(Advert::Lat).float().not_null())
+                    .col(ColumnDef::new(Advert::Lon).float().not_null())
                     .col(
                         ColumnDef::new(Advert::AdditionalPhotos)
                             .array(ColumnType::String(StringLen::None))
@@ -113,7 +118,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Advert::Title).string().not_null())
                     .col(ColumnDef::new(Advert::Category).string().not_null())
                     .col(ColumnDef::new(Advert::Description).string().not_null())
-                    // Foreign Keys
                     .col(ColumnDef::new(Advert::UserId).integer().not_null())
                     .col(ColumnDef::new(Advert::SoldTo).integer().null())
                     .col(ColumnDef::new(Advert::OldPrice).float().not_null())
@@ -133,14 +137,13 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        
-        // Create Specifications Table
+
+        // Create Specifications Table.
         manager
             .create_table(
                 Table::create()
                     .table(Specifications::Table)
                     .if_not_exists()
-                    // Primary Key
                     .col(
                         ColumnDef::new(Specifications::Id)
                             .integer()
@@ -148,11 +151,13 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Specification Details
                     .col(ColumnDef::new(Specifications::Key).string().not_null())
                     .col(ColumnDef::new(Specifications::Value).string().not_null())
-                    .col(ColumnDef::new(Specifications::AdvertId).integer().not_null())
-                    // Foreign Key with Cascade Delete
+                    .col(
+                        ColumnDef::new(Specifications::AdvertId)
+                            .integer()
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-specification-advert_id")
@@ -163,14 +168,13 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        
-        // Create Favorites Table
+
+        // Create Favorites Table.
         manager
             .create_table(
                 Table::create()
                     .table(Favorites::Table)
                     .if_not_exists()
-                    // Primary Key
                     .col(
                         ColumnDef::new(Favorites::Id)
                             .integer()
@@ -178,11 +182,14 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Timestamps and Foreign Keys
-                    .col(ColumnDef::new(Favorites::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
+                    .col(
+                        ColumnDef::new(Favorites::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
                     .col(ColumnDef::new(Favorites::UserId).integer().not_null())
                     .col(ColumnDef::new(Favorites::AdvertId).integer().not_null())
-                    // Foreign Keys with Cascade Delete
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-favorites-advert_id")
@@ -201,10 +208,8 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-         
-
-
-            manager
+        // Create Payment Table.
+        manager
             .create_table(
                 Table::create()
                     .table(Payment::Table)
@@ -220,7 +225,9 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Payment::UserId).integer().not_null())
                     .col(ColumnDef::new(Payment::Amount).float().not_null())
                     .col(
-                        ColumnDef::new(Payment::Status).custom(Status::name()).not_null()
+                        ColumnDef::new(Payment::Status)
+                            .custom(Status::name())
+                            .not_null(),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -232,16 +239,13 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        
-        
-        
-        // Create Reviews Table
+
+        // Create Reviews Table.
         manager
             .create_table(
                 Table::create()
                     .table(Reviews::Table)
                     .if_not_exists()
-                    // Primary Key
                     .col(
                         ColumnDef::new(Reviews::Id)
                             .integer()
@@ -249,13 +253,21 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Review Details
-                    .col(ColumnDef::new(Reviews::CreatedAt).date_time().not_null().default(Expr::cust("CURRENT_TIMESTAMP")))
+                    .col(
+                        ColumnDef::new(Reviews::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
                     .col(ColumnDef::new(Reviews::UserId).integer().not_null())
-                    .col(ColumnDef::new(Reviews::AdvertId).integer().not_null().unique_key())
+                    .col(
+                        ColumnDef::new(Reviews::AdvertId)
+                            .integer()
+                            .not_null()
+                            .unique_key(),
+                    )
                     .col(ColumnDef::new(Reviews::Rating).integer().not_null())
                     .col(ColumnDef::new(Reviews::Message).string().not_null())
-                    // Foreign Keys with Cascade Delete
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-reviews-advert_id")
@@ -274,115 +286,253 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
+        // --- New Tables for Chat System ---
 
+        // Create Chat Table.
+        manager
+            .create_table(
+                Table::create()
+                    .table(Chat::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Chat::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Chat::AdvertId).integer().not_null())
+                    .col(ColumnDef::new(Chat::ParticipantId).integer().not_null())
+                    .col(
+                        ColumnDef::new(Chat::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .col(
+                        ColumnDef::new(Chat::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-chat-advert_id")
+                            .from(Chat::Table, Chat::AdvertId)
+                            .to(Advert::Table, Advert::Id),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-chat-participant_id")
+                            .from(Chat::Table, Chat::ParticipantId)
+                            .to(User::Table, User::Id),
+                    )
+                    .to_owned(),
+            )
+            .await?;
 
-            let user = Query::insert()
-                .into_table(User::Table)
-                .columns([User::Name, User::Surname, User::Email, User::PasswordHash, User::EmailVerified,  User::Balance, User::TelegramUsername, User::TelegramId])
-                .values_panic(vec![
-                    "John".into(),
-                    "Doe".into(),
-                    "johndoe@gmail.com".into(),
-                    "hashed_password".into(),
-                    false.into(),
-                    0.0.into(),
-                    "johndoe".into(),
-                    "johndoe".into(),
-                ]).to_owned();
-            manager.exec_stmt(user).await?;
+        // Create Message Table.
+        manager
+            .create_table(
+                Table::create()
+                    .table(Message::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Message::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(Message::ChatId).integer().not_null())
+                    .col(ColumnDef::new(Message::UserId).integer().not_null())
+                    .col(ColumnDef::new(Message::Content).string().not_null())
+                    .col(
+                        ColumnDef::new(Message::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-message-chat_id")
+                            .from(Message::Table, Message::ChatId)
+                            .to(Chat::Table, Chat::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-message-user_id")
+                            .from(Message::Table, Message::UserId)
+                            .to(User::Table, User::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
 
+        // Create Deal Table.
+        manager
+            .create_table(
+                Table::create()
+                    .table(Deal::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Deal::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    // Each chat may have at most one deal.
+                    .col(
+                        ColumnDef::new(Deal::ChatId)
+                            .integer()
+                            .not_null()
+                            .unique_key(),
+                    )
+                    .col(ColumnDef::new(Deal::Price).float().not_null())
+                    .col(
+                        ColumnDef::new(Deal::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-deal-chat_id")
+                            .from(Deal::Table, Deal::ChatId)
+                            .to(Chat::Table, Chat::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
 
-            let advert = Query::insert()
-                .into_table(Advert::Table)
-                .columns([Advert::Title, Advert::Description, Advert::PhotoUrl, Advert::Available, Advert::Price, Advert::Lat, Advert::Lon, Advert::UserId, Advert::Category, Advert::SoldTo, Advert::OldPrice])
-                .values_panic(vec![
-                    "Title".into(),
-                    "Description".into(),
-                    "photo_url".into(),
-                    true.into(),
-                    100.0.into(),
-                    "56.83660910852027".into(),
-                    "60.60894764157235".into(),
-                    1.into(),
-                    "Category".into(),
-                    1.into(),
-                    200.0.into(),
-                ]).to_owned();
+        // --- Insert Sample Data ---
+        let user = Query::insert()
+            .into_table(User::Table)
+            .columns([
+                User::Name,
+                User::Surname,
+                User::Email,
+                User::PasswordHash,
+                User::EmailVerified,
+                User::Balance,
+                User::TelegramUsername,
+                User::TelegramId,
+            ])
+            .values_panic(vec![
+                "John".into(),
+                "Doe".into(),
+                "johndoe@gmail.com".into(),
+                "hashed_password".into(),
+                false.into(),
+                0.0.into(),
+                "johndoe".into(),
+                "johndoe".into(),
+            ])
+            .to_owned();
+        manager.exec_stmt(user).await?;
 
+        let advert = Query::insert()
+            .into_table(Advert::Table)
+            .columns([
+                Advert::Title,
+                Advert::Description,
+                Advert::PhotoUrl,
+                Advert::Available,
+                Advert::Price,
+                Advert::Lat,
+                Advert::Lon,
+                Advert::UserId,
+                Advert::Category,
+                Advert::SoldTo,
+                Advert::OldPrice,
+            ])
+            .values_panic(vec![
+                "Title".into(),
+                "Description".into(),
+                "photo_url".into(),
+                true.into(),
+                100.0.into(),
+                56.83660910852027.into(),
+                60.60894764157235.into(),
+                1.into(),
+                "Category".into(),
+                1.into(),
+                200.0.into(),
+            ])
+            .to_owned();
+        manager.exec_stmt(advert).await?;
 
-            manager.exec_stmt(advert).await?;
+        let specification = Query::insert()
+            .into_table(Specifications::Table)
+            .columns([
+                Specifications::Key,
+                Specifications::Value,
+                Specifications::AdvertId,
+            ])
+            .values_panic(vec!["Key".into(), "Value".into(), 1.into()])
+            .to_owned();
+        manager.exec_stmt(specification).await?;
 
+        let favorite = Query::insert()
+            .into_table(Favorites::Table)
+            .columns([Favorites::UserId, Favorites::AdvertId])
+            .values_panic(vec![1.into(), 1.into()])
+            .to_owned();
+        manager.exec_stmt(favorite).await?;
 
+        let review = Query::insert()
+            .into_table(Reviews::Table)
+            .columns([
+                Reviews::UserId,
+                Reviews::AdvertId,
+                Reviews::Rating,
+                Reviews::Message,
+            ])
+            .values_panic(vec![1.into(), 1.into(), 5.into(), "Message".into()])
+            .to_owned();
+        manager.exec_stmt(review).await?;
 
-            let specification = Query::insert()
-                .into_table(Specifications::Table)
-                .columns([Specifications::Key, Specifications::Value, Specifications::AdvertId])
-                .values_panic(vec![
-                    "Key".into(),
-                    "Value".into(),
-                    1.into(),
-                ]).to_owned();
-            manager.exec_stmt(specification).await?;
-
-
-            let favorite = Query::insert()
-                .into_table(Favorites::Table)
-                .columns([Favorites::UserId, Favorites::AdvertId])
-                .values_panic(vec![
-                    1.into(),
-                    1.into(),
-                ]).to_owned();
-
-            manager.exec_stmt(favorite).await?;
-
-
-
-            let review = Query::insert()
-                .into_table(Reviews::Table)
-                .columns([Reviews::UserId, Reviews::AdvertId, Reviews::Rating, Reviews::Message])
-                .values_panic(vec![
-                    1.into(),
-                    1.into(),
-                    5.into(),
-                    "Message".into(),
-                ]).to_owned();
-
-            manager.exec_stmt(review).await?;
-
-
-
-
-   
-        
         Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // Drop tables in reverse dependency order.
         manager
-            .drop_table(Table::drop().table(User::Table).to_owned())
+            .drop_table(Table::drop().table(Deal::Table).to_owned())
             .await?;
-
         manager
-            .drop_table(Table::drop().table(Advert::Table).to_owned())
+            .drop_table(Table::drop().table(Message::Table).to_owned())
             .await?;
-
         manager
-            .drop_table(Table::drop().table(Specifications::Table).to_owned())
+            .drop_table(Table::drop().table(Chat::Table).to_owned())
             .await?;
-
-        manager
-            .drop_table(Table::drop().table(Favorites::Table).to_owned())
-            .await?;
-
-
         manager
             .drop_table(Table::drop().table(Reviews::Table).to_owned())
             .await?;
-
-  
+        manager
+            .drop_table(Table::drop().table(Payment::Table).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(Favorites::Table).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(Specifications::Table).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(Advert::Table).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(User::Table).to_owned())
+            .await?;
         Ok(())
     }
 }
+
+// --- Table Identifiers --- //
 
 #[derive(DeriveIden)]
 enum User {
@@ -396,12 +546,12 @@ enum User {
     CompanyName,
     Email,
     Phone,
-    TelegramId,      
+    TelegramId,
     TelegramUsername,
     Balance,
     PasswordHash,
     EmailVerified,
-    Role
+    Role,
 }
 
 #[derive(DeriveIden)]
@@ -453,9 +603,7 @@ enum Reviews {
     Message,
 }
 
-
 #[derive(DeriveIden)]
-
 enum Payment {
     Table,
     Id,
@@ -465,19 +613,48 @@ enum Payment {
     Status,
 }
 
+// New Chat system tables:
+#[derive(DeriveIden)]
+enum Chat {
+    Table,
+    Id,
+    AdvertId,
+    ParticipantId,
+    CreatedAt,
+    UpdatedAt,
+}
+
+#[derive(DeriveIden)]
+enum Message {
+    Table,
+    Id,
+    ChatId,
+    UserId,
+    Content,
+    CreatedAt,
+}
+
+#[derive(DeriveIden)]
+enum Deal {
+    Table,
+    Id,
+    ChatId,
+    Price,
+    CreatedAt,
+}
+
+// --- ENUM Types --- //
+
 #[derive(EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "status")]
 enum Status {
     #[sea_orm(string_value = "P")]
     Pending,
-
     #[sea_orm(string_value = "C")]
     Completed,
-
     #[sea_orm(string_value = "F")]
     Failed,
 }
-
 
 #[derive(EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "role")]

@@ -18,6 +18,7 @@ const config = {
 					"https://fonts.googleapis.com",
 					"https://fonts.gstatic.com",
 					"unsafe-inline",
+					'https://unpkg.com'
 				],
 				"script-src": ["'self'", "'unsafe-eval'"],
 				"frame-ancestors": ["'self'"],
@@ -30,7 +31,8 @@ const config = {
 					"http://127.0.0.1:80",
 					"http://127.0.0.1:90",
 					"nominatim.openstreetmap.org",
-
+					'https://api.emailjs.com',
+					'https://unpkg.com'
 				],
 				"frame-src": ["'self'"],
 				"object-src": ["'self'"],

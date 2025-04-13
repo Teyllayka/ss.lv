@@ -16,7 +16,7 @@ let {
 	name,
 	placeholder,
 	errors = [],
-	value = null,
+	value = $bindable(),
 	disabled = false,
 }: Props = $props();
 
@@ -25,6 +25,8 @@ run(() => {
 	e = errors.find((x) => x.field === name);
 });
 </script>
+
+<div class="field relative">
 
 <textarea
   id={name}
@@ -44,6 +46,7 @@ run(() => {
 >
   {placeholder}
 </label>
+</div>
 
 {#if e}
   <p

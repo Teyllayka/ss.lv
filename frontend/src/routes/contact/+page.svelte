@@ -1,15 +1,36 @@
-<script>
-import { fade, fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { Mail, Phone, MapPin } from "lucide-svelte";
-import { enhance } from "$app/forms";
-import InputField from "$lib/components/InputField.svelte";
-import TextField from "$lib/components/TextField.svelte";
-export let form;
+<script lang="ts">
+  import { fade, fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { Mail, Phone, MapPin } from "lucide-svelte";
+  import InputField from "$lib/components/InputField.svelte";
+  import TextField from "$lib/components/TextField.svelte";
+  import emailjs from "@emailjs/browser";
 
-let csrfToken = "";
+  export let form;
+  let csrfToken = "";
 
-let isSubmitted = false;
+  let isSubmitted = false;
+
+  const serviceID = "service_399hfz4";
+  const templateID = "template_b5ulg39";
+  const userID = "user_HUoPQRsnR9OU761JxnBoi";
+
+  function sendEmail(event: { preventDefault: () => void; target: any }) {
+    event.preventDefault();
+    emailjs
+      .sendForm(serviceID, templateID, event.target, {
+        publicKey: userID,
+      })
+      .then(
+        (result) => {
+          console.log("Email successfully sent!", result.text);
+          isSubmitted = true;
+        },
+        (error) => {
+          console.error("Error sending email:", error.text);
+        }
+      );
+  }
 </script>
 
 <div
@@ -27,94 +48,93 @@ let isSubmitted = false;
       </h1>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {#if !isSubmitted}
-            <form method="post" use:enhance class="space-y-6">
-              <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-              <div
-                class="relative"
-                in:fly={{ y: 20, duration: 300, delay: 100, easing: cubicOut }}
-              >
-                <InputField
-                  type="text"
-                  name="name"
-                  placeholder="Name"
-                  errors={form?.errors || []}
-                />
-              </div>
-
-              <div
-                class="relative"
-                in:fly={{ y: 20, duration: 300, delay: 200, easing: cubicOut }}
-              >
-                <InputField
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  errors={form?.errors || []}
-                />
-              </div>
-
-              <div
-                class="relative"
-                in:fly={{ y: 20, duration: 300, delay: 300, easing: cubicOut }}
-              >
-                <InputField
-                  type="text"
-                  name="subject"
-                  placeholder="Subject"
-                  errors={form?.errors || []}
-                />
-              </div>
-
-              <div
-                class="relative"
-                in:fly={{ y: 20, duration: 300, delay: 400, easing: cubicOut }}
-              >
-                <TextField
-                  name="message"
-                  placeholder="Message"
-                  errors={form?.errors || []}
-                />
-              </div>
-
-              <button
-                type="submit"
-                class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-                in:fly={{ y: 20, duration: 300, delay: 500, easing: cubicOut }}
-              >
-                Send Message
-              </button>
-            </form>
-          {:else}
+        {#if !isSubmitted}
+          <form method="post" on:submit={sendEmail} class="space-y-6">
+            <!-- CSRF token is kept in case it's needed for other integrations -->
+            <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
             <div
-              class="text-center"
-              in:fly={{ y: 20, duration: 300, easing: cubicOut }}
+              class="relative"
+              in:fly={{ y: 20, duration: 300, delay: 100, easing: cubicOut }}
             >
-              <svg
-                class="mx-auto h-12 w-12 text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              <h2
-                class="mt-2 text-lg font-medium text-gray-900 dark:text-white"
-              >
-                Message Sent!
-              </h2>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Thank you for contacting us. We'll get back to you as soon as
-                possible.
-              </p>
+              <InputField
+                type="text"
+                name="from_name"
+                placeholder="Name"
+                errors={form?.errors || []}
+              />
             </div>
-          {/if}
+
+            <div
+              class="relative"
+              in:fly={{ y: 20, duration: 300, delay: 200, easing: cubicOut }}
+            >
+              <InputField
+                type="email"
+                name="from_email"
+                placeholder="Email"
+                errors={form?.errors || []}
+              />
+            </div>
+
+            <div
+              class="relative"
+              in:fly={{ y: 20, duration: 300, delay: 300, easing: cubicOut }}
+            >
+              <InputField
+                type="text"
+                name="from_category"
+                placeholder="Subject"
+                errors={form?.errors || []}
+              />
+            </div>
+
+            <div
+              class="relative"
+              in:fly={{ y: 20, duration: 300, delay: 400, easing: cubicOut }}
+            >
+              <TextField
+                name="message"
+                placeholder="Message"
+                errors={form?.errors || []}
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              in:fly={{ y: 20, duration: 300, delay: 500, easing: cubicOut }}
+            >
+              Send Message
+            </button>
+          </form>
+        {:else}
+          <div
+            class="text-center"
+            in:fly={{ y: 20, duration: 300, easing: cubicOut }}
+          >
+            <svg
+              class="mx-auto h-12 w-12 text-green-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <h2 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+              Message Sent!
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Thank you for contacting us. We'll get back to you as soon as
+              possible.
+            </p>
+          </div>
+        {/if}
 
         <div
           class="space-y-6"

@@ -3,11 +3,7 @@ use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, EnumIter, DeriveActiveEnum)]
-#[sea_orm(
-    enum_name = "role",      
-    db_type = "Enum",         
-    rs_type = "String",
-)]
+#[sea_orm(enum_name = "role", db_type = "Enum", rs_type = "String")]
 #[derive(Default)]
 pub enum Role {
     #[sea_orm(string_value = "A")]
@@ -18,7 +14,6 @@ pub enum Role {
     #[sea_orm(string_value = "M")]
     Moderator,
 }
-
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject, Default)]
 #[sea_orm(table_name = "user")]
@@ -82,6 +77,13 @@ impl Related<super::favorites::Entity> for Entity {
 impl Related<super::reviews::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Review.def()
+    }
+}
+
+impl Related<super::chat::Entity> for Entity {
+    fn to() -> RelationDef {
+        // This defines the relation for chats where the user is the second participant.
+        super::chat::Relation::Participant.def()
     }
 }
 

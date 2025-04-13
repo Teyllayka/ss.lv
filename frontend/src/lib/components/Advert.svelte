@@ -6,7 +6,6 @@
   import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
   import ImageGallery from "./ImageGallery.svelte";
   import { transliterate as tr } from "transliteration";
-
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
 
@@ -20,31 +19,35 @@
   interface Props {
     onFavoriteChange?: (advertId: number, isFavorited: boolean) => void;
     advert: any;
-    userPage: any;
+    userPage?: boolean;
   }
 
-  let { onFavoriteChange = () => {}, advert, userPage }: Props = $props();
+  let {
+    onFavoriteChange = () => {},
+    advert,
+    userPage = false,
+  }: Props = $props();
 
   let isFavorited = $state(advert.isFavorited);
 
   let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
 
-  console.log(allPhotos, advert.title);
-
+  // Replace direct fetch to Nominatim with a call to our cached server endpoint.
   let location = $state("");
 
-  fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${advert.lat}&lon=${advert.lon}`
-  )
+  fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
-      const name = data.address.road + ", " + data.address.city;
-      location = tr(name);
+      location = data.location;
     })
     .catch((err) => console.error("Error with reverse geocoding:", err));
 
   async function toggleSaveAdvert() {
+    // if (!isLoggedIn) {
+    //   goto("/login");
+    //   return;
+    // }
+
     try {
       let res;
       if (isFavorited) {
@@ -52,7 +55,6 @@
       } else {
         res = await addFavorite.mutate({ advertId: advert.id });
       }
-      console.log(res);
 
       isFavorited = !isFavorited;
       onFavoriteChange(advert.id, isFavorited);
@@ -61,16 +63,14 @@
     }
   }
 
+  let distance = $state(0);
+
   $effect(() => {
-    console.log(
-      `Advert ${advert.id} is ${isFavorited ? "favorited" : "unfavorited"}`
+    distance = calculateDistance(
+      [advert.lat, advert.lon],
+      [$locationStore[0], $locationStore[1]]
     );
   });
-
-  const distance = calculateDistance(
-    [advert.lat, advert.lon],
-    [$locationStore[0], $locationStore[1]]
-  );
 </script>
 
 <div
@@ -130,9 +130,9 @@
       <MapPin size={16} class="mr-1" />
       <p class="flex flex-col items-start justify-start">
         <span class="truncate">{location}</span>
-        {#if !userPage && $locationStore[0] != 0 && $locationStore[1] != 0}<span
-            class="text-gray-500 dark:text-gray-400">{distance} km</span
-          >{/if}
+        {#if !userPage && $locationStore[0] != 0 && $locationStore[1] != 0}
+          <span class="text-gray-500 dark:text-gray-400">{distance} km</span>
+        {/if}
       </p>
     </div>
 

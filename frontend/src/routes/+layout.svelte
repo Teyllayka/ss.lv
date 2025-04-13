@@ -21,6 +21,7 @@
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           location.set([pos.coords.latitude, pos.coords.longitude]);
+          console.log("Location set to: ", pos.coords);
         },
         () => {
           location.set([0, 0]);
