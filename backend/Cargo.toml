@@ -10,7 +10,7 @@ members = [".", "entity", "migration"]
 [dependencies]
 async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper", "billing", "checkout", "webhook-events"] }
 actix-web = "4.9.0"
-async-graphql = "6.0.6"
+async-graphql = "7.0.10"
 async-graphql-actix-web = "6.0.6"
 dotenvy = "0.15.7"
 sea-orm = { version = "1.0.1", features = ["runtime-tokio" , "sqlx-postgres", "macros" ] }
