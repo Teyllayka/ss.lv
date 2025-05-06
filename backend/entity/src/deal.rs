@@ -8,11 +8,11 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    // Link to the chat that produced the deal
     pub chat_id: i32,
-    // Example fields – you can adjust these as needed
     pub price: f32,
     pub created_at: NaiveDateTime,
+    pub request_id: i32,
+    pub status: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

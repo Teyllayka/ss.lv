@@ -1,6 +1,46 @@
 import { graphql } from "$houdini";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
+import type { LoadEvent } from "@sveltejs/kit";
+
+export async function load(event: LoadEvent) {
+  const advertId = parseInt(event.params.id ?? "0");
+
+  const similarAdvertsQuery = graphql(`
+    query similarAdverts($id: Int!) {
+      similarAdverts(id: $id) {
+        id
+        title
+        price
+        oldPrice
+        lat
+        lon
+        createdAt
+        isFavorited
+        photoUrl
+        additionalPhotos
+        user {
+          id
+          name
+          surname
+          rating
+        }
+      }
+    }
+  `);
+
+  if (!advertId) {
+    return { similarAdverts: null };
+  }
+
+  const similarAdverts = await similarAdvertsQuery.fetch({
+    variables: { id: advertId },
+    event,
+  });
+
+  return { similarAdverts };
+}
+
 export const actions = {
   delete: async (event: RequestEvent) => {
     const { id } = event.params;
@@ -21,7 +61,7 @@ export const actions = {
 
     const res = await deleteAdvert.mutate(
       { advertId: parseInt(id) },
-      { event }
+      { event },
     );
 
     console.log(res);
@@ -142,11 +182,74 @@ export const actions = {
         title: baseData.title,
         id: parseInt(id),
       },
-      { event }
+      { event },
     );
 
     if (!res.errors && res.data) {
       throw redirect(302, `/`);
+    } else {
+      console.log("errors", res.errors);
+      return fail(500, { error: "Failed to create advert" });
+    }
+  },
+  chat: async (event: RequestEvent) => {
+    const formData = await event.request.formData();
+    const advertId = formData.get("advertId");
+
+    if (!advertId) {
+      return fail(400, { error: "Invalid advert or user ID" });
+    }
+
+    const response = await fetch("http://localhost:4000/create-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + event.cookies.get("accessToken"),
+      },
+      body: JSON.stringify({ postId: advertId }),
+    });
+
+    let data = await response.json();
+
+    console.log("chat response", data);
+
+    throw redirect(303, `/chats/${data.id}`);
+  },
+
+  review: async (event: RequestEvent) => {
+    const { id } = event.params;
+
+    if (!id) {
+      return { success: false };
+    }
+
+    const formData = await event.request.formData();
+    const rating = formData.get("rating");
+    const text = formData.get("text");
+
+    if (!rating || !text) {
+      return fail(400, { error: "Invalid rating or text" });
+    }
+
+    const writeReview = graphql(`
+      mutation writeReview($advertId: Int!, $message: String!, $rating: Int!) {
+        writeReview(advertId: $advertId, message: $message, rating: $rating) {
+          id
+        }
+      }
+    `);
+
+    const res = await writeReview.mutate(
+      {
+        advertId: parseInt(id),
+        message: text.toString(),
+        rating: parseInt(rating.toString()),
+      },
+      { event },
+    );
+
+    if (!res.errors && res.data) {
+      console.log("review", res.data);
     } else {
       console.log("errors", res.errors);
       return fail(500, { error: "Failed to create advert" });

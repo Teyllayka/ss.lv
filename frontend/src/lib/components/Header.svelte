@@ -14,6 +14,7 @@
     BarChart2,
     Sun,
     Moon,
+    MessageSquare, // <-- Imported chat icon
   } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { clickOutside } from "$lib/helpers";
@@ -54,7 +55,7 @@
 
   async function handleSearch() {
     const url = `/search?q=${encodeURIComponent(
-      searchQuery.trim()
+      searchQuery.trim(),
     )}&region=${encodeURIComponent($region)}`;
     await goto(url, { keepFocus: true });
   }
@@ -71,7 +72,7 @@
       if (lat !== 0 && lon !== 0) {
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`,
           );
           const data = await response.json();
           locationName =
@@ -106,7 +107,7 @@
       }).setView(currentCoords, 13);
       L.tileLayer(
         "http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
-        {}
+        {},
       ).addTo(map);
       map.on("click", function (e: any) {
         if (marker) {
@@ -186,13 +187,20 @@
         </button>
 
         {#if $user.isLoggedIn}
-          <!-- Desktop controls -->
           <div class="hidden md:flex items-center space-x-4">
             <a
               href="/favorites"
               class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               <Heart class="h-6 w-6" />
+            </a>
+
+            <a
+              href="/chats"
+              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              aria-label="Chat"
+            >
+              <MessageSquare class="h-6 w-6" />
             </a>
 
             {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
@@ -221,14 +229,13 @@
 
             <a
               href="/create"
-              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
             >
               <Plus class="h-5 w-5 mr-1" />
               {m.header_create()}
             </a>
           </div>
 
-          <!-- Mobile burger icon on right side -->
           <button
             type="button"
             class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -248,7 +255,6 @@
     </div>
   </div>
 
-  <!-- MOBILE MENU (only if logged in) -->
   {#if isMenuOpen && $user.isLoggedIn}
     <div class="md:hidden">
       <div class="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 shadow">
@@ -258,6 +264,14 @@
         >
           Favorites
         </a>
+
+        <a
+          href="/chats"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          Chat
+        </a>
+
         {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
           <a
             href="/stats"
@@ -282,7 +296,6 @@
     </div>
   {/if}
 
-  <!-- LOCATION MODAL -->
   {#if showLocationModal}
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"

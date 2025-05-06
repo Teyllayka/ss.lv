@@ -9,6 +9,9 @@
     Edit,
     X,
     Camera,
+    MessageSquare,
+    CheckCircle,
+    Tag,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { calculateDistance, renderStars } from "$lib/helpers";
@@ -28,40 +31,12 @@
   $: ({ Advert: AdvertData } = data);
   $: advert = $AdvertData.data?.advert;
   console.log(advert);
+  $: gridCols = $user.isLoggedIn ? "grid-cols-3" : "grid-cols-2";
+  $: ({ similarAdverts: similarAdvertsQuery } = data);
 
-  const similarAdvertsQuery = graphql(`
-    query similarAdverts($id: Int!) {
-      similarAdverts(id: $id) {
-        id
-        title
-        price
-        oldPrice
-        lat
-        lon
-        createdAt
-        isFavorited
-        photoUrl
-        additionalPhotos
-        user {
-          id
-          name
-          surname
-          rating
-        }
-      }
-    }
-  `);
-
-  $: {
-    const advertId = $page.params.id ? parseInt($page.params.id) : null;
-    if (advertId) {
-      similarAdvertsQuery.fetch({
-        variables: { id: advertId },
-      });
-    }
-  }
-
-  $: console.log("sim:", $similarAdvertsQuery);
+  let rating = 0;
+  let reviewText = "";
+  let message = "";
 
   let isEditMode = false;
   let editForm = { title: "", description: "", price: 0 };
@@ -113,7 +88,7 @@
     const photoUrl = currentAdditionalPhotos[index];
     removedPhotos.push(photoUrl);
     currentAdditionalPhotos = currentAdditionalPhotos.filter(
-      (_, i) => i !== index
+      (_, i) => i !== index,
     );
   }
 
@@ -148,7 +123,7 @@
   $: if (advert?.lat && advert?.lon && $locationStore[0] && $locationStore[1]) {
     distance = calculateDistance(
       [advert.lat, advert.lon],
-      [$locationStore[0], $locationStore[1]]
+      [$locationStore[0], $locationStore[1]],
     );
     // Use our server endpoint for reverse geocoding (with caching)
     fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
@@ -182,7 +157,7 @@
         attributionControl: false,
       }).setView([advert.lat, advert.lon], 13);
       L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(
-        map
+        map,
       );
       L.marker([advert.lat, advert.lon])
         .addTo(map)
@@ -225,7 +200,6 @@
           enctype="multipart/form-data"
           class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden space-y-6"
         >
-          <!-- Edit form content remains unchanged -->
           <div class="md:flex">
             <div class="md:w-1/2 p-4 space-y-6">
               <div class="relative">
@@ -454,11 +428,28 @@
             </div>
             <div class="md:w-1/2 p-6 space-y-6">
               <div class="flex justify-between items-start">
-                <h1
-                  class="text-3xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap"
-                >
-                  {advert.title}
-                </h1>
+                <div class="flex flex-col">
+                  <h1
+                    class="text-3xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap"
+                  >
+                    {advert.title}
+                  </h1>
+                  {#if !advert.available}
+                    <div
+                      class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit"
+                    >
+                      <CheckCircle class="w-4 h-4 mr-1" />
+                      Sold
+                    </div>
+                  {:else}
+                    <div
+                      class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit"
+                    >
+                      <Tag class="w-4 h-4 mr-1" />
+                      Available
+                    </div>
+                  {/if}
+                </div>
                 <div class="flex space-x-4">
                   {#if $user.id == advert.user.id}
                     <button
@@ -478,6 +469,7 @@
                   {/if}
                 </div>
               </div>
+
               <p
                 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
               >
@@ -567,16 +559,40 @@
                   <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Member since {formatDate(advert.user.createdAt.toString())}
                   </p>
-                  <div class="flex space-x-4">
+                  <div class={`grid ${gridCols} gap-4`}>
+                    {#if $user.isLoggedIn}
+                      <form
+                        method="POST"
+                        action="?/chat"
+                        use:enhance
+                        class="flex items-center justify-center"
+                      >
+                        <input
+                          type="hidden"
+                          name="advertId"
+                          value={advert.id}
+                        />
+                        <button
+                          type="submit"
+                          class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                        >
+                          <MessageSquare class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                          <span>Chat</span>
+                        </button>
+                      </form>
+                    {/if}
+
                     <button
-                      class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
+                      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
-                      <Mail class="w-5 h-5 inline-block mr-2" /> Message
+                      <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                      <span>Message</span>
                     </button>
                     <button
-                      class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
+                      class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
-                      <Phone class="w-5 h-5 inline-block mr-2" /> Call
+                      <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                      <span>Call</span>
                     </button>
                   </div>
                 </div>
@@ -584,18 +600,68 @@
             </div>
           </div>
         </div>
-        <!-- Leaflet Map -->
         {#if advert?.lat && advert?.lon}
           <div class="mt-8">
             <div id="map" class="w-full h-96 rounded-lg"></div>
           </div>
         {/if}
 
-        {#if $similarAdvertsQuery.data?.similarAdverts && $similarAdvertsQuery.data.similarAdverts.length > 0}
+        {#if advert.soldTo === $user.id}
+          <form
+            method="POST"
+            action="?/review"
+            use:enhance
+            class="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6"
+          >
+            <h2
+              class="text-2xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap mb-4"
+            >
+              Leave a review
+            </h2>
+
+            <div class="flex items-center mb-8">
+              {#each Array(5) as _, i}
+                <button
+                  type="button"
+                  on:click={() => (rating = i + 1)}
+                  class="mx-1 focus:outline-none"
+                >
+                  <Star
+                    class={i < rating
+                      ? "text-yellow-400 fill-current"
+                      : "text-gray-300"}
+                    size="24"
+                  />
+                </button>
+              {/each}
+              <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                {rating} / 5
+              </span>
+            </div>
+
+            <input type="hidden" name="rating" value={rating} />
+
+            <TextField
+              id="reviewText"
+              name="text"
+              placeholder="Review"
+              bind:value={reviewText}
+            />
+
+            <button
+              type="submit"
+              class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Submit Review
+            </button>
+          </form>
+        {/if}
+
+        {#if similarAdvertsQuery && similarAdvertsQuery.data && similarAdvertsQuery.data.similarAdverts.length > 0}
           <div class="mt-8">
             <h2 class="text-2xl font-bold mb-4">Similar Adverts</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {#each $similarAdvertsQuery.data.similarAdverts as similar}
+              {#each similarAdvertsQuery.data.similarAdverts as similar}
                 <Advert advert={similar} userPage={false} />
               {/each}
             </div>

@@ -132,7 +132,7 @@ export const actions = {
         price: parseFloat(baseData.price),
         title: baseData.title,
       },
-      { event }
+      { event },
     );
 
     if (!res.errors && res.data) {

@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model advert {
+  id                        Int              @id @default(autoincrement())
+  created_at                DateTime         @default(now()) @db.Timestamp(6)
+  updated_at                DateTime         @default(now()) @db.Timestamp(6)
+  available                 Boolean
+  price                     Float            @db.Real
+  photo_url                 String           @db.VarChar
+  lat                       Float            @db.Real
+  lon                       Float            @db.Real
+  additional_photos         String[]         @db.VarChar
+  title                     String           @db.VarChar
+  category                  String           @db.VarChar
+  description               String           @db.VarChar
+  user_id                   Int
+  sold_to                   Int?
+  old_price                 Float            @db.Real
+  user_advert_sold_toTouser user?            @relation("advert_sold_toTouser", fields: [sold_to], references: [id], onUpdate: NoAction, map: "fk-advert-sold_to")
+  user_advert_user_idTouser user             @relation("advert_user_idTouser", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-advert-user_id")
+  chat                      chat[]
+  favorites                 favorites[]
+  reviews                   reviews?
+  specifications            specifications[]
+}
+
+model chat {
+  id             Int       @id @default(autoincrement())
+  advert_id      Int
+  participant_id Int
+  created_at     DateTime  @default(now()) @db.Timestamp(6)
+  archived       Boolean   @default(false)
+  updated_at     DateTime  @default(now()) @db.Timestamp(6)
+  deal_state     String    @db.VarChar
+  advert         advert    @relation(fields: [advert_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-chat-advert_id")
+  user           user      @relation(fields: [participant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-chat-participant_id")
+  deal           deal?
+  message        message[]
+}
+
+model deal {
+  id         Int      @id @default(autoincrement())
+  chat_id    Int      @unique
+  price      Float    @db.Real
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  chat       chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-deal-chat_id")
+}
+
+model favorites {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  user_id    Int
+  advert_id  Int
+  advert     advert   @relation(fields: [advert_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-favorites-advert_id")
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-favorites-user_id")
+}
+
+model message {
+  id         Int      @id @default(autoincrement())
+  chat_id    Int
+  user_id    Int
+  content    String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  chat       chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-message-chat_id")
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-message-user_id")
+}
+
+model payment {
+  id       Int    @id @default(autoincrement())
+  order_id String @db.VarChar
+  user_id  Int
+  amount   Float  @db.Real
+  status   status
+  user     user   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-payment-user_id")
+}
+
+model reviews {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  user_id    Int
+  advert_id  Int      @unique
+  rating     Int
+  message    String   @db.VarChar
+  advert     advert   @relation(fields: [advert_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-reviews-advert_id")
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-reviews-user_id")
+}
+
+model seaql_migrations {
+  version    String @id @db.VarChar
+  applied_at BigInt
+}
+
+model specifications {
+  id        Int    @id @default(autoincrement())
+  key       String @db.VarChar
+  value     String @db.VarChar
+  advert_id Int
+  advert    advert @relation(fields: [advert_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-specification-advert_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user {
+  id                          Int         @id @default(autoincrement())
+  created_at                  DateTime    @default(now()) @db.Timestamp(6)
+  updated_at                  DateTime    @default(now()) @db.Timestamp(6)
+  avatar_url                  String?     @db.VarChar
+  name                        String?     @db.VarChar
+  surname                     String?     @db.VarChar
+  company_name                String?     @db.VarChar
+  email                       String?     @unique @db.VarChar
+  phone                       String?     @db.VarChar
+  telegram_id                 String?     @unique @db.VarChar
+  telegram_username           String?     @db.VarChar
+  balance                     Float       @db.Real
+  password_hash               String?     @db.VarChar
+  email_verified              Boolean     @default(false)
+  role                        role        @default(U)
+  advert_advert_sold_toTouser advert[]    @relation("advert_sold_toTouser")
+  advert_advert_user_idTouser advert[]    @relation("advert_user_idTouser")
+  chat                        chat[]
+  favorites                   favorites[]
+  message                     message[]
+  payment                     payment[]
+  reviews                     reviews[]
+}
+
+enum role {
+  A
+  U
+  M
+}
+
+enum status {
+  P
+  C
+  F
+}

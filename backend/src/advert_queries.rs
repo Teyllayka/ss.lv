@@ -1143,6 +1143,12 @@ impl AdvertMutation {
             ));
         }
 
+        if new_advert.sold_to != Some(user_id) {
+            return Err(async_graphql::Error::new(
+                "You can't review this advert as it has not been sold to you".to_string(),
+            ));
+        }
+
         let review = reviews::ActiveModel {
             advert_id: Set(advert_id),
             user_id: Set(user_id),

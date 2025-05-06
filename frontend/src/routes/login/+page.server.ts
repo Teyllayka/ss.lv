@@ -32,8 +32,10 @@ export const actions = {
 
     let res = await login.mutate(
       { email: data.email, password: data.password },
-      { event }
+      { event },
     );
+
+    console.log(res);
 
     if (!res.errors && res.data) {
       event.cookies.set("accessToken", res.data.login.accessToken, {
@@ -55,9 +57,9 @@ export const actions = {
         (Date.now() + 60 * 100 * 1000).toString(),
         {
           path: "/",
-        }
+        },
       );
-      redirect(302, "/");
+      redirect(302, "/?refetch=true");
     } else {
       return fail(400, {
         data,

@@ -12,6 +12,7 @@ pub struct Model {
     pub participant_id: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub archived: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

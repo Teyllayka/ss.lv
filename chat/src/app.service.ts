@@ -1,0 +1,579 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { KyselyService } from './kysely.service';
+import { Kysely } from 'kysely';
+import { Database, Advert, Chat } from 'types';
+import { VoteService } from './vote.service';
+
+@Injectable()
+export class AppService {
+  private readonly db: Kysely<Database>;
+  constructor(
+    private jwtService: JwtService,
+    private readonly dbService: KyselyService,
+    private readonly voteService: VoteService,
+  ) {
+    this.db = this.dbService.getDb();
+  }
+
+  async getLastMessage(s, chatId: number) {
+    let chat: Chat | undefined;
+
+    chat = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+
+    if (!chat) {
+      throw new UnauthorizedException('No chat found');
+    }
+
+    const advert = await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', chat.advert_id)
+      .executeTakeFirst();
+    if (!advert) {
+      throw new UnauthorizedException('Advert not found');
+    }
+
+    if (
+      advert.user_id !== parseInt(s.user.id) &&
+      chat.participant_id !== parseInt(s.user.id)
+    ) {
+      throw new UnauthorizedException(
+        'Not authorized to view messages in this chat',
+      );
+    }
+
+    const lastMessage = await this.db
+      .selectFrom('message')
+      .selectAll()
+      .where('message.chat_id', '=', chatId)
+      .orderBy('message.created_at', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+    return lastMessage;
+  }
+
+  async sendMessage(s, b) {
+    const { content, chatId } = b;
+
+    let chat: Chat | undefined;
+
+    chat = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+
+    if (!chat) {
+      throw new UnauthorizedException('No chat found');
+    }
+
+    let advert = (await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', chat.advert_id)
+      .executeTakeFirst()) as unknown as Advert;
+
+    if (advert.archived || !advert || !advert.available) {
+      throw new UnauthorizedException('Post archived');
+    }
+
+    if (
+      chat.participant_id !== parseInt(s.user.id) &&
+      advert.user_id !== parseInt(s.user.id)
+    ) {
+      throw new UnauthorizedException(
+        'Not authorized to send messages in this chat',
+      );
+    }
+
+    let message = await this.db
+      .insertInto('message')
+      .values({
+        chat_id: chat!.id as unknown as number,
+        user_id: s.user.id,
+        content,
+      })
+      .returningAll()
+      .executeTakeFirst();
+
+    return message;
+  }
+
+  async getMessages(s, b) {
+    const { chatId } = b;
+    if (!chatId) {
+      throw new UnauthorizedException('No chat ID provided');
+    }
+
+    const chat = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    const advert = await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', chat.advert_id)
+      .executeTakeFirst();
+    if (!advert) {
+      throw new UnauthorizedException('Advert not found');
+    }
+
+    if (
+      advert.user_id !== parseInt(s.user.id) &&
+      chat.participant_id !== parseInt(s.user.id)
+    ) {
+      throw new UnauthorizedException(
+        'Not authorized to view messages in this chat',
+      );
+    }
+
+    const messages = await this.db
+      .selectFrom('message')
+      .selectAll()
+      .where('message.chat_id', '=', chatId)
+      .orderBy('message.created_at', 'asc')
+      .execute();
+
+    const partnerId =
+      advert.user_id === s.user.id ? chat.participant_id : advert.user_id;
+
+    const partner = await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', partnerId)
+      .executeTakeFirst();
+
+    const deal = await this.db
+      .selectFrom('deal')
+      .selectAll()
+      .where('deal.chat_id', '=', chatId)
+      .executeTakeFirst();
+
+    const chatInfo = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+
+    let voteCount = 0;
+    if (deal) {
+      const votes = await this.voteService.getVotes(deal.id);
+      voteCount = Object.keys(votes).length;
+    }
+
+    return {
+      messages,
+      partner,
+      deal: deal
+        ? {
+            ...deal,
+            voteCount,
+          }
+        : null,
+      advert,
+      chat: chatInfo,
+    };
+  }
+
+  async getChats(s) {
+    const userId = s.id;
+
+    const results = await this.db
+      .selectFrom('chat')
+      .leftJoin('advert', 'advert.id', 'chat.advert_id')
+      .leftJoin('user as owner', 'owner.id', 'advert.user_id')
+      .leftJoin('user as participant', 'participant.id', 'chat.participant_id')
+      .leftJoin('deal', 'deal.chat_id', 'chat.id')
+      .select([
+        'chat.id as chat_id',
+        'chat.advert_id',
+        'chat.participant_id',
+        'chat.archived',
+        'chat.created_at as chat_created_at',
+        'chat.updated_at as chat_updated_at',
+
+        'advert.id as advert_id',
+        'advert.user_id as advert_owner_id',
+        'advert.created_at as advert_created_at',
+        'advert.updated_at as advert_updated_at',
+        'advert.available',
+        'advert.price',
+        'advert.photo_url',
+        'advert.lat',
+        'advert.lon',
+        'advert.additional_photos',
+        'advert.title',
+        'advert.category',
+        'advert.description',
+        'advert.sold_to',
+        'advert.old_price',
+
+        'owner.id as owner_id',
+        'owner.created_at as owner_created_at',
+        'owner.updated_at as owner_updated_at',
+        'owner.avatar_url as owner_avatar_url',
+        'owner.name as owner_name',
+        'owner.surname as owner_surname',
+        'owner.company_name as owner_company_name',
+        'owner.email as owner_email',
+        'owner.phone as owner_phone',
+        'owner.telegram_id as owner_telegram_id',
+        'owner.telegram_username as owner_telegram_username',
+        'owner.balance as owner_balance',
+        'owner.email_verified as owner_email_verified',
+        'owner.role as owner_role',
+
+        'participant.id as participant_id',
+        'participant.created_at as participant_created_at',
+        'participant.updated_at as participant_updated_at',
+        'participant.avatar_url as participant_avatar_url',
+        'participant.name as participant_name',
+        'participant.surname as participant_surname',
+        'participant.company_name as participant_company_name',
+        'participant.email as participant_email',
+        'participant.phone as participant_phone',
+        'participant.telegram_id as participant_telegram_id',
+        'participant.telegram_username as participant_telegram_username',
+        'participant.balance as participant_balance',
+        'participant.email_verified as participant_email_verified',
+        'participant.role as participant_role',
+
+        'deal.id as deal_id',
+        'deal.chat_id as deal_chat_id',
+        'deal.price as deal_price',
+        'deal.created_at as deal_created_at',
+        'deal.requester_id as deal_requester_id',
+      ])
+      .where((eb) =>
+        eb.or([
+          eb('chat.participant_id', '=', userId),
+          eb('advert.user_id', '=', userId),
+        ]),
+      )
+      .execute();
+    const chats = results.map((row: any) => ({
+      ...row,
+      owner_id: row['advert.user_id'] ?? null,
+    }));
+    return chats;
+  }
+
+  async requestDeal(s, b) {
+    const { price, chatId, state } = b;
+
+    const user = await this.getUser(s.user.id);
+    if (!user) throw new UnauthorizedException('No user found');
+
+    const chat = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+
+    if (!chat) throw new UnauthorizedException('No chat found');
+
+    let deal = await this.db
+      .selectFrom('deal')
+      .selectAll()
+      .where('deal.chat_id', '=', chatId)
+
+      .executeTakeFirst();
+
+    const advert = (await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', chat.advert_id)
+      .executeTakeFirst()) as unknown as Advert;
+
+    if (
+      chat.participant_id !== parseInt(s.user.id) &&
+      advert.user_id !== parseInt(s.user.id)
+    ) {
+      throw new UnauthorizedException('Not authorized to request a deal');
+    }
+
+    let newDeal = null;
+
+    switch (state) {
+      case 'start':
+        newDeal = await this.startDeal(deal, chatId, price, user.id);
+        break;
+      case 'stop':
+        newDeal = await this.stopDeal(deal, chat.advert_id);
+        break;
+      case 'accept':
+        newDeal = await this.acceptDeal(deal, chatId, chat.advert_id, user.id);
+        break;
+      case 'decline':
+        newDeal = await this.declineDeal(deal, user.id);
+        break;
+      case 'complete':
+        newDeal = await this.completeDeal(deal, chatId, chat.advert_id, user);
+        break;
+      default:
+        throw new UnauthorizedException('Invalid deal state');
+    }
+    return newDeal;
+  }
+
+  async startDeal(
+    deal: any,
+    chatId: number,
+    price: string,
+    requesterId: number,
+  ) {
+    if (deal) throw new UnauthorizedException('Deal already active');
+    const newDeal = await this.db
+      .insertInto('deal')
+      .values({
+        chat_id: chatId,
+        price: parseFloat(price),
+        requester_id: requesterId,
+        status: 'pending',
+      })
+      .returningAll()
+      .executeTakeFirst();
+
+    return newDeal;
+  }
+
+  async stopDeal(deal: any, postId: number) {
+    if (!deal) throw new UnauthorizedException('No deal to stop');
+
+    await this.db.deleteFrom('deal').where('deal.id', '=', deal.id).execute();
+
+    await this.db
+      .updateTable('advert')
+      .set({ available: true })
+      .where('advert.id', '=', postId)
+      .execute();
+
+    return null;
+  }
+
+  async declineDeal(deal: any, userId: number) {
+    if (!deal) throw new UnauthorizedException('No deal found');
+    if (deal.requester_id === userId) {
+      await this.db.deleteFrom('deal').where('deal.id', '=', deal.id).execute();
+
+      return null;
+    }
+  }
+
+  async acceptDeal(deal: any, chatId: number, postId: number, userId: number) {
+    if (!deal) throw new UnauthorizedException('No deal found');
+    if (deal.requester_id !== userId) {
+      let newDeal = await this.db
+        .updateTable('deal')
+        .set({ status: 'accepted' })
+        .where('deal.id', '=', deal.id)
+        .returningAll()
+        .executeTakeFirst();
+
+      await this.db
+        .deleteFrom('deal')
+        .where('chat_id', 'in', (subQuery) =>
+          subQuery
+            .selectFrom('chat')
+            .select('id')
+            .where('advert_id', '=', postId)
+            .where('id', '!=', chatId),
+        )
+        .execute();
+
+      await this.db
+        .updateTable('chat')
+        .set({ archived: true })
+        .where('chat.advert_id', '=', postId)
+        .where('chat.id', '!=', chatId)
+        .execute();
+
+      await this.db
+        .updateTable('advert')
+        .set({ available: false })
+        .where('advert.id', '=', postId)
+        .execute();
+
+      return newDeal;
+    }
+  }
+
+  async completeDeal(deal: any, chatId: number, postId: number, user: any) {
+    if (!deal) throw new UnauthorizedException('No deal found');
+
+    const chat = await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst();
+    if (!chat) throw new UnauthorizedException('Chat not found');
+
+    const post = await this.getPostById(postId);
+    if (!post) throw new UnauthorizedException('Post not found');
+
+    const votes = await this.voteService.getVotes(deal.id);
+    console.log('Votes:', votes);
+
+    if (votes[user.id] !== undefined) {
+      throw new UnauthorizedException('User already voted');
+    }
+
+    await this.voteService.storeVote(deal.id, user.id, true);
+
+    const updatedVotes = await this.voteService.getVotes(deal.id);
+
+    console.log('Updated Votes:', updatedVotes);
+
+    const expectedVotesCount = 2;
+    if (Object.keys(updatedVotes).length === expectedVotesCount) {
+      console.log('Both users have voted. Completing the deal...');
+      const updatedDeal = await this.db
+        .updateTable('deal')
+        .set({ status: 'completed' })
+        .where('deal.id', '=', deal.id)
+        .returningAll()
+        .executeTakeFirst();
+
+      await this.db
+        .updateTable('advert')
+        .set({ available: false, sold_to: chat.participant_id })
+        .where('advert.id', '=', postId)
+        .execute();
+
+      return updatedDeal;
+    } else {
+    }
+
+    return deal;
+  }
+
+  async updateMessage(s, b) {
+    const { messageId, content } = b;
+    const message = await this.db
+      .selectFrom('message')
+      .selectAll()
+      .where('message.id', '=', messageId)
+      .where('message.user_id', '=', s.user.id)
+      .executeTakeFirst();
+    if (!message) {
+      throw new UnauthorizedException('Not authorized to update this message');
+    }
+    return await this.db
+      .updateTable('message')
+      .set({ content })
+      .where('message.id', '=', messageId)
+      .where('message.user_id', '=', s.user.id)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
+  async deleteMessage(s, b) {
+    const { messageId } = b;
+    const message = await this.db
+      .selectFrom('message')
+      .selectAll()
+      .where('message.id', '=', messageId)
+      .where('message.user_id', '=', s.user.id)
+      .executeTakeFirst();
+    if (!message) {
+      throw new UnauthorizedException('Not authorized to delete this message');
+    }
+    return await this.db
+      .deleteFrom('message')
+      .where('message.id', '=', messageId)
+      .where('message.user_id', '=', s.user.id)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
+  async getUser(userId: number) {
+    return await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', userId)
+      .executeTakeFirst();
+  }
+
+  async getPostById(postId: number) {
+    return await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', postId)
+      .executeTakeFirst();
+  }
+
+  validateUserAccess(user: any, post: any, chatId: number) {
+    const isOwner = post.user_id === user.id;
+    const hasChatAccess = user.chat_info?.some((x: any) =>
+      isOwner ? x.chat_id === chatId : x.post_id === post.id,
+    );
+    if (!hasChatAccess) throw new UnauthorizedException('No chat');
+  }
+
+  async getUserWithChatInfo(userId: number) {
+    const user = await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', userId)
+      .executeTakeFirst();
+    return user;
+  }
+
+  async createChatWithoutMessage(
+    userId: number,
+    postId: number,
+  ): Promise<Chat> {
+    const advert = await this.db
+      .selectFrom('advert')
+      .selectAll()
+      .where('advert.id', '=', postId)
+      .executeTakeFirst();
+
+    if (!advert) {
+      throw new UnauthorizedException('Advert not found');
+    }
+
+    if (advert.archived) {
+      throw new UnauthorizedException('Advert is archived');
+    }
+
+    let existingChat = await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.advert_id', '=', postId)
+      .where('chat.participant_id', '=', userId)
+      .executeTakeFirst();
+
+    if (existingChat) {
+      return existingChat as unknown as Chat;
+    }
+
+    await this.db
+      .insertInto('chat')
+      .values({
+        advert_id: postId,
+        participant_id: userId,
+        archived: false,
+      })
+      .execute();
+
+    const newChat = await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.advert_id', '=', postId)
+      .where('chat.participant_id', '=', userId)
+      .executeTakeFirst();
+
+    return newChat as unknown as Chat;
+  }
+}

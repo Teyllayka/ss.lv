@@ -286,9 +286,6 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // --- New Tables for Chat System ---
-
-        // Create Chat Table.
         manager
             .create_table(
                 Table::create()
@@ -308,6 +305,12 @@ impl MigrationTrait for Migration {
                             .date_time()
                             .not_null()
                             .default(Expr::cust("CURRENT_TIMESTAMP")),
+                    )
+                    .col(
+                        ColumnDef::new(Chat::Archived)
+                            .boolean()
+                            .not_null()
+                            .default("false"),
                     )
                     .col(
                         ColumnDef::new(Chat::UpdatedAt)
@@ -353,6 +356,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::cust("CURRENT_TIMESTAMP")),
                     )
+                    .col(ColumnDef::new(Message::ReadAt).date_time().null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-message-chat_id")
@@ -384,7 +388,6 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    // Each chat may have at most one deal.
                     .col(
                         ColumnDef::new(Deal::ChatId)
                             .integer()
@@ -398,6 +401,8 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::cust("CURRENT_TIMESTAMP")),
                     )
+                    .col(ColumnDef::new(Deal::RequesterId).integer().not_null())
+                    .col(ColumnDef::new(Deal::Status).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-deal-chat_id")
@@ -613,7 +618,6 @@ enum Payment {
     Status,
 }
 
-// New Chat system tables:
 #[derive(DeriveIden)]
 enum Chat {
     Table,
@@ -622,6 +626,7 @@ enum Chat {
     ParticipantId,
     CreatedAt,
     UpdatedAt,
+    Archived,
 }
 
 #[derive(DeriveIden)]
@@ -632,6 +637,7 @@ enum Message {
     UserId,
     Content,
     CreatedAt,
+    ReadAt,
 }
 
 #[derive(DeriveIden)]
@@ -641,9 +647,9 @@ enum Deal {
     ChatId,
     Price,
     CreatedAt,
+    RequesterId,
+    Status,
 }
-
-// --- ENUM Types --- //
 
 #[derive(EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "status")]

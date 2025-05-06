@@ -5,33 +5,18 @@
   import type { LayoutData } from "./$houdini";
   import { user } from "$lib/userStore";
   import Footer from "$lib/components/Footer.svelte";
-  import { onMount, setContext } from "svelte";
   import Header from "$lib/components/Header.svelte";
+  import { onMount, onDestroy, setContext } from "svelte";
   import { writable } from "svelte/store";
-  export let data: LayoutData;
+  import { page } from "$app/stores";
+  import { invalidateAll, replaceState } from "$app/navigation";
 
+  export let data: LayoutData;
   $: HeaderMe = data.HeaderMe;
 
   const region = writable("Select Region");
-
   const location = writable([0, 0]);
-
-  onMount(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          location.set([pos.coords.latitude, pos.coords.longitude]);
-          console.log("Location set to: ", pos.coords);
-        },
-        () => {
-          location.set([0, 0]);
-        }
-      );
-    }
-  });
-
-  setContext("region", region);
-  setContext("location", location);
+  let isInvalidating = false;
 
   $: if (HeaderMe && $HeaderMe.data && $HeaderMe.data.me) {
     user.set({
@@ -43,23 +28,52 @@
     });
   }
 
-  let isDarkMode = false;
-
   onMount(() => {
-    const storedRegion = localStorage.getItem("region");
-    region.set(storedRegion || "Select Region");
+    const unsubscribe = page.subscribe(async ($page) => {
+      const refetchParam = $page.url.searchParams.get("refetch");
+      if (refetchParam === "true" && !isInvalidating) {
+        isInvalidating = true;
 
-    region.subscribe((value) => {
-      localStorage.setItem("region", value);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("refetch");
+        replaceState(url, {});
+
+        await invalidateAll();
+        console.log("Invalidating all data...");
+
+        isInvalidating = false;
+      }
     });
 
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          location.set([pos.coords.latitude, pos.coords.longitude]);
+          console.log("Location set to: ", pos.coords);
+        },
+        () => location.set([0, 0]),
+      );
+    }
+
+    const storedRegion = localStorage.getItem("region");
+    region.set(storedRegion || "Select Region");
+    region.subscribe((value) => localStorage.setItem("region", value));
+
     const storedTheme = localStorage.getItem("theme");
+    let isDarkMode = false;
     if (storedTheme === "dark") {
       isDarkMode = true;
       document.documentElement.classList.add("dark");
     }
+
+    return unsubscribe;
   });
 
+  setContext("region", region);
+  setContext("location", location);
+
+  // Theme toggling function.
+  let isDarkMode = false;
   function toggleTheme() {
     isDarkMode = !isDarkMode;
     if (isDarkMode) {

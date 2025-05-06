@@ -11,6 +11,8 @@ query Advert($id: Int!) {
     isFavorited
     photoUrl
     additionalPhotos
+    soldTo
+    available
 
     specs {
       id

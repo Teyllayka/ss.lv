@@ -187,7 +187,7 @@ export const actions = {
 
     const res = await editProfile.mutate(
       { ...updateFields, password: data.password },
-      { event }
+      { event },
     );
 
     console.log(res);
