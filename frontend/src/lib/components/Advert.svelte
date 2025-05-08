@@ -32,7 +32,6 @@
 
   let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
 
-  // Replace direct fetch to Nominatim with a call to our cached server endpoint.
   let location = $state("");
 
   fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
@@ -68,7 +67,7 @@
   $effect(() => {
     distance = calculateDistance(
       [advert.lat, advert.lon],
-      [$locationStore[0], $locationStore[1]]
+      [$locationStore[0], $locationStore[1]],
     );
   });
 </script>

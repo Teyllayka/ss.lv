@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { KyselyService } from './kysely.service';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { Database, Advert, Chat } from 'types';
 import { VoteService } from './vote.service';
 
@@ -9,7 +8,6 @@ import { VoteService } from './vote.service';
 export class AppService {
   private readonly db: Kysely<Database>;
   constructor(
-    private jwtService: JwtService,
     private readonly dbService: KyselyService,
     private readonly voteService: VoteService,
   ) {
@@ -137,12 +135,23 @@ export class AppService {
       );
     }
 
+    await this.db
+      .updateTable('message')
+      .set({ read_at: sql`now()` })
+      .where('message.chat_id', '=', chatId)
+      .where('message.user_id', '!=', parseInt(s.user.id))
+      .where('message.read_at', 'is', null)
+      .execute();
+
     const messages = await this.db
       .selectFrom('message')
       .selectAll()
       .where('message.chat_id', '=', chatId)
       .orderBy('message.created_at', 'asc')
       .execute();
+
+
+    
 
     const partnerId =
       advert.user_id === s.user.id ? chat.participant_id : advert.user_id;
@@ -187,7 +196,8 @@ export class AppService {
 
   async getChats(s) {
     const userId = s.id;
-
+  
+    // First, get all the chats with their related data
     const results = await this.db
       .selectFrom('chat')
       .leftJoin('advert', 'advert.id', 'chat.advert_id')
@@ -201,7 +211,7 @@ export class AppService {
         'chat.archived',
         'chat.created_at as chat_created_at',
         'chat.updated_at as chat_updated_at',
-
+  
         'advert.id as advert_id',
         'advert.user_id as advert_owner_id',
         'advert.created_at as advert_created_at',
@@ -217,7 +227,7 @@ export class AppService {
         'advert.description',
         'advert.sold_to',
         'advert.old_price',
-
+  
         'owner.id as owner_id',
         'owner.created_at as owner_created_at',
         'owner.updated_at as owner_updated_at',
@@ -232,7 +242,7 @@ export class AppService {
         'owner.balance as owner_balance',
         'owner.email_verified as owner_email_verified',
         'owner.role as owner_role',
-
+  
         'participant.id as participant_id',
         'participant.created_at as participant_created_at',
         'participant.updated_at as participant_updated_at',
@@ -247,7 +257,7 @@ export class AppService {
         'participant.balance as participant_balance',
         'participant.email_verified as participant_email_verified',
         'participant.role as participant_role',
-
+  
         'deal.id as deal_id',
         'deal.chat_id as deal_chat_id',
         'deal.price as deal_price',
@@ -261,11 +271,111 @@ export class AppService {
         ]),
       )
       .execute();
-    const chats = results.map((row: any) => ({
-      ...row,
-      owner_id: row['advert.user_id'] ?? null,
-    }));
-    return chats;
+  
+    const chatIds = results.map(row => row.chat_id);
+    
+    const lastMessages = await this.db
+      .selectFrom('message')
+      .select([
+        'message.id as id',
+        'message.chat_id',
+        'message.user_id',
+        'message.content',
+        'message.created_at',
+        'message.read_at'
+      ])
+      .where('message.chat_id', 'in', chatIds)
+      .distinctOn('message.chat_id')
+      .orderBy('message.chat_id')
+      .orderBy('message.created_at', 'desc')
+      .execute();
+  
+    const lastMessageMap = {};
+    lastMessages.forEach(message => {
+      lastMessageMap[message.chat_id] = message;
+    });
+  
+    const structuredChats = results.map(row => {
+      const owner = {
+        id: row.owner_id,
+        created_at: row.owner_created_at,
+        updated_at: row.owner_updated_at,
+        avatar_url: row.owner_avatar_url,
+        name: row.owner_name,
+        surname: row.owner_surname,
+        company_name: row.owner_company_name,
+        email: row.owner_email,
+        phone: row.owner_phone,
+        telegram_id: row.owner_telegram_id,
+        telegram_username: row.owner_telegram_username,
+        balance: row.owner_balance,
+        email_verified: row.owner_email_verified,
+        role: row.owner_role
+      };
+  
+      const participant = {
+        id: row.participant_id,
+        created_at: row.participant_created_at,
+        updated_at: row.participant_updated_at,
+        avatar_url: row.participant_avatar_url,
+        name: row.participant_name,
+        surname: row.participant_surname,
+        company_name: row.participant_company_name,
+        email: row.participant_email,
+        phone: row.participant_phone,
+        telegram_id: row.participant_telegram_id,
+        telegram_username: row.participant_telegram_username,
+        balance: row.participant_balance,
+        email_verified: row.participant_email_verified,
+        role: row.participant_role
+      };
+  
+      const advert = {
+        id: row.advert_id,
+        created_at: row.advert_created_at,
+        updated_at: row.advert_updated_at,
+        available: row.available,
+        price: row.price,
+        photo_url: row.photo_url,
+        lat: row.lat,
+        lon: row.lon,
+        additional_photos: row.additional_photos,
+        title: row.title,
+        category: row.category,
+        description: row.description,
+        user_id: row.advert_owner_id,
+        sold_to: row.sold_to,
+        old_price: row.old_price,
+        owner 
+      };
+  
+      const deal = row.deal_id ? {
+        id: row.deal_id,
+        chat_id: row.deal_chat_id,
+        price: row.deal_price,
+        created_at: row.deal_created_at,
+        requester_id: row.deal_requester_id
+      } : null;
+  
+      const chat = {
+        id: row.chat_id,
+        advert_id: row.advert_id,
+        participant_id: row.participant_id,
+        archived: row.archived,
+        created_at: row.chat_created_at,
+        updated_at: row.chat_updated_at,
+        last_message: lastMessageMap[row.chat_id] || null
+      };
+  
+      return {
+        chat,
+        advert,
+        participant,
+        deal
+      };
+    });
+  
+    return structuredChats;
   }
 
   async requestDeal(s, b) {
@@ -448,6 +558,13 @@ export class AppService {
         .updateTable('advert')
         .set({ available: false, sold_to: chat.participant_id })
         .where('advert.id', '=', postId)
+        .execute();
+
+
+      await this.db
+        .updateTable('chat')
+        .set({ archived: true })
+        .where('chat.id', '=', chatId)
         .execute();
 
       return updatedDeal;

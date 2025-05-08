@@ -15,7 +15,7 @@ export async function load({ cookies }: any) {
   });
 
   let data = await chats.json();
-  console.log("chats", data);
+  console.log("chats", data, data[0].chat, data[0].advert, data[0].participant);
 
   return {
     chats: data,

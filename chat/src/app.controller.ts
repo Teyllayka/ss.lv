@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   Req,
   UseGuards,
@@ -75,12 +74,6 @@ export class AppController {
   @UseGuards(AuthGuard)
   async getChats(@Req() req) {
     return await this.appservice.getChats(req.user);
-  }
-
-  @Get('get-last-message/:chatId')
-  @UseGuards(AuthGuard)
-  async getLastMessage(@Req() s, @Param('chatId') chatId: number) {
-    return await this.appservice.getLastMessage(s, chatId);
   }
 
   @Post('create-chat')

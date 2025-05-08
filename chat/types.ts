@@ -82,6 +82,7 @@ export interface Message {
   user_id: number;
   content: string;
   created_at: Date;
+  read_at?: Date | null;
 }
 
 export interface Payment {

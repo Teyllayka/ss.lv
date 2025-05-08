@@ -6,6 +6,7 @@
   export let advert;
   export let userName = "";
   export let written = false;
+  console.log("advert", advert);
 </script>
 
 <div
@@ -58,7 +59,8 @@
         <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-2 w-full md:w-48">
           <img
             alt={advert.title}
-            class="w-full h-24 object-cover mb-2 rounded"
+            src={advert.photoUrl}
+            class="w-full h-24 object-contain mb-2 rounded"
           />
           <h4 class="text-sm font-semibold truncate">
             {advert.title}

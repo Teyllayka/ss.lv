@@ -278,7 +278,9 @@
                         transition:slide={{ duration: 200 }}
                         class="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-md text-sm"
                     >
-                        <p class="text-gray-800 dark:text-gray-200 mb-2">
+                        <p
+                            class="text-gray-800 dark:text-gray-200 mb-2 break-words"
+                        >
                             {advert.description}
                         </p>
                         <div class="flex justify-between">

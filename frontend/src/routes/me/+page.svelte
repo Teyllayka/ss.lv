@@ -33,7 +33,7 @@
           await update({ reset: false });
 
           const passwordField = formElement.querySelector(
-            'input[name="password"]'
+            'input[name="password"]',
           ) as HTMLInputElement;
           if (passwordField) passwordField.value = "";
         } else {
@@ -73,8 +73,6 @@
         }
       });
   }
-
-  function linkTelegramAccount() {}
 
   function logout() {
     fetch("/api/logout", {
@@ -240,7 +238,7 @@
                     {/if}
                   </div>
                 {/if}
-                {#if userData.telegramUsername}
+                <!-- {#if userData.telegramUsername}
                   <div class="flex items-center">
                     <AtSign
                       class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
@@ -254,7 +252,7 @@
                       @{userData.telegramUsername}
                     </a>
                   </div>
-                {/if}
+                {/if} -->
               </div>
 
               {#if !userData.emailVerified}
@@ -284,7 +282,7 @@
                 </div>
               {/if}
 
-              {#if !userData.telegramUsername}
+              <!-- {#if !userData.telegramUsername}
                 <div
                   class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4"
                   role="alert"
@@ -301,7 +299,7 @@
                     Link Telegram Account
                   </button>
                 </div>
-              {/if}
+              {/if} -->
 
               <div class="mb-6 mt-6 flex justify-center">
                 <div

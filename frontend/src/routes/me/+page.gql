@@ -17,6 +17,7 @@ query me {
       lon
       price
       createdAt
+      photoUrl
       review {
         message
         rating
@@ -30,6 +31,7 @@ query me {
       lat
       lon
       available
+      photoUrl
       review {
         rating
         message

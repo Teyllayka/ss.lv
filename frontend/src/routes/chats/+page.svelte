@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import {
         MessageCircle,
@@ -7,93 +6,84 @@
         User,
         Calendar,
         ChevronRight,
+        Check,
+        CheckCheck,
     } from "lucide-svelte";
     import { user } from "$lib/userStore";
 
     export let data;
-    console.log("data", data);
 
-    type Chat = {
-        chat_id: number;
-        advert_id: number;
-        participant_id: number;
-        deal_state: string;
-        archived: boolean;
-        chat_created_at: string;
-        chat_updated_at: string;
-        advert_owner_id: number;
-        advert_created_at: string;
-        advert_updated_at: string;
-        available: boolean;
-        price: number;
-        photo_url: string; // Advert photo URL
-        lat: number;
-        lon: number;
-        additional_photos: string[] | null;
-        title: string; // Advert title/name
-        category: string;
-        description: string;
-        sold_to: number | null;
-        old_price: number | null;
-        owner_id: number | null;
-        owner_created_at: string;
-        owner_updated_at: string;
-        owner_avatar_url: string | null;
-        owner_name: string;
-        owner_surname: string;
-        owner_company_name: string | null;
-        owner_email: string;
-        owner_phone: string | null;
-        owner_telegram_id: string | null;
-        owner_telegram_username: string | null;
-        owner_balance: number;
-        owner_email_verified: boolean;
-        owner_role: string;
-        participant_created_at: string;
-        participant_updated_at: string;
-        participant_avatar_url: string | null;
-        participant_name: string;
-        participant_surname: string;
-        participant_company_name: string | null;
-        participant_email: string;
-        participant_phone: string | null;
-        participant_telegram_id: string | null;
-        participant_telegram_username: string | null;
-        participant_balance: number;
-        participant_email_verified: boolean;
-        participant_role: string;
-        deal_id: number | null;
-        deal_chat_id: number | null;
-        deal_price: number | null;
-        deal_created_at: string | null;
-        last_message?: string;
-        last_message_time?: string;
-        unread_count?: number;
+    type StructuredChat = {
+        chat: {
+            id: number;
+            advert_id: number;
+            participant_id: number;
+            archived: boolean;
+            created_at: string;
+            updated_at: string;
+            last_message?: {
+                id: number;
+                content: string;
+                chat_id: number;
+                user_id: number;
+                created_at: string;
+                read_at: string | null;
+            };
+        };
+        advert: {
+            id: number;
+            title: string;
+            photo_url: string | null;
+            owner: {
+                id: number;
+                name: string;
+                surname: string;
+                avatar_url: string | null;
+            };
+        };
+        participant: {
+            id: number;
+            name: string;
+            surname: string;
+            avatar_url: string | null;
+        };
+        deal: any;
     };
 
-    let chats: Chat[] = data.chats || [];
+    let chats: StructuredChat[] = data.chats || [];
     let loading = false;
     let error: string | null = null;
     let searchQuery = "";
 
-    $: filteredChats = chats.filter(
-        (chat) =>
-            chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            chat.participant_name
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            chat.participant_surname
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()),
-    );
+    $: filteredChats = chats.filter((item) => {
+        const title = item.advert.title.toLowerCase();
+        const partName = item.participant.name.toLowerCase();
+        const partSurname = item.participant.surname.toLowerCase();
+        const q = searchQuery.toLowerCase();
+        return (
+            title.includes(q) || partName.includes(q) || partSurname.includes(q)
+        );
+    });
 
     $: groupedChats = Object.values(
         filteredChats.reduce(
-            (acc: Record<number, { advert: Chat; chats: Chat[] }>, chat) => {
-                if (!acc[chat.advert_id]) {
-                    acc[chat.advert_id] = { advert: chat, chats: [chat] };
+            (
+                acc: Record<
+                    number,
+                    {
+                        advert: StructuredChat["advert"];
+                        chats: StructuredChat[];
+                    }
+                >,
+                item,
+            ) => {
+                if (!acc[item.advert.id]) {
+                    acc[item.advert.id] = {
+                        advert: item.advert,
+                        chats: [item],
+                    };
                 } else {
-                    acc[chat.advert_id].chats.push(chat);
+                    acc[item.advert.id].chats.push(item);
                 }
                 return acc;
             },
@@ -130,24 +120,51 @@
         goto(`/chats/${chatId}`);
     }
 
-    function isCurrentUserOwner(chat: Chat): boolean {
-        return $user && $user.id === chat.advert_owner_id;
+    function isCurrentUserOwner(item: StructuredChat): boolean {
+        return $user?.id === item.advert.owner.id;
     }
 
-    function getOtherUserInfo(chat: Chat) {
-        if (isCurrentUserOwner(chat)) {
-            return {
-                name: chat.participant_name,
-                surname: chat.participant_surname,
-                avatar: chat.participant_avatar_url,
-            };
+    function getOtherUserInfo(item: StructuredChat) {
+        if (isCurrentUserOwner(item)) {
+            return item.participant;
         } else {
             return {
-                name: chat.owner_name,
-                surname: chat.owner_surname,
-                avatar: chat.owner_avatar_url,
+                id: item.advert.owner.id,
+                name: item.advert.owner.name,
+                surname: item.advert.owner.surname,
+                avatar_url: item.advert.owner.avatar_url,
             };
         }
+    }
+
+    // New function to determine if the last message was sent by the current user
+    function isLastMessageFromCurrentUser(item: StructuredChat): boolean {
+        if (!item.chat.last_message) return false;
+        return item.chat.last_message.user_id === $user?.id;
+    }
+
+    // New function to get the sender's name for the last message
+    function getLastMessageSenderName(item: StructuredChat): string {
+        if (!item.chat.last_message) return "";
+
+        const isFromCurrentUser = isLastMessageFromCurrentUser(item);
+        if (isFromCurrentUser) {
+            return "You";
+        } else {
+            const other = getOtherUserInfo(item);
+            return other.name;
+        }
+    }
+
+    // New function to check if the last message is unread
+    function isLastMessageUnread(item: StructuredChat): boolean {
+        if (!item.chat.last_message) return false;
+
+        // If the message is from the current user, it's considered read
+        if (isLastMessageFromCurrentUser(item)) return false;
+
+        // If read_at is null and the message is not from the current user, it's unread
+        return item.chat.last_message.read_at === null;
     }
 </script>
 
@@ -211,10 +228,11 @@
                         </p>
                     </div>
                 {:else}
-                    {#each groupedChats as group (group.advert.advert_id)}
+                    {#each groupedChats as group (group.advert.id)}
                         {@const groupClosed = group.chats.some(
-                            (chat) =>
-                                chat.deal_state === "accepted" || chat.archived,
+                            (item) =>
+                                item.deal?.status === "accepted" ||
+                                item.chat.archived,
                         )}
                         <div
                             class="mb-8 block border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
@@ -223,11 +241,10 @@
                                 class="flex items-center p-4 bg-gray-50 dark:bg-gray-800"
                             >
                                 {#if group.advert.photo_url}
-                                    <a
-                                        href={`/advert/${group.advert.advert_id}`}
-                                    >
+                                    <a href={`/advert/${group.advert.id}`}>
                                         <img
-                                            src={group.advert.photo_url}
+                                            src={group.advert.photo_url ||
+                                                "/placeholder.svg"}
                                             alt={group.advert.title}
                                             class="h-16 w-16 rounded object-cover mr-4"
                                         />
@@ -249,30 +266,33 @@
                                         {#if groupClosed}
                                             <span
                                                 class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded"
+                                                >Closed</span
                                             >
-                                                Closed
-                                            </span>
                                         {/if}
                                     </h2>
                                 </div>
                             </div>
-                            <!-- Chats list for this advert -->
                             <ul
                                 class="divide-y divide-gray-200 dark:divide-gray-700"
                             >
-                                {#each group.chats as chat (chat.chat_id)}
-                                    {@const otherUser = getOtherUserInfo(chat)}
+                                {#each group.chats as item (item.chat.id)}
+                                    {@const other = getOtherUserInfo(item)}
+                                    {@const isUnread =
+                                        isLastMessageUnread(item)}
                                     <li
                                         class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition duration-150 ease-in-out"
+                                        class:bg-blue-50={isUnread}
+                                        class:dark:bg-blue-900={isUnread}
+                                        class:dark:bg-opacity-20={isUnread}
                                         on:click={() =>
-                                            navigateToChat(chat.chat_id)}
+                                            navigateToChat(item.chat.id)}
                                     >
                                         <div class="flex items-center">
-                                            {#if otherUser.avatar}
+                                            {#if other.avatar_url}
                                                 <img
-                                                    src={otherUser.avatar ||
+                                                    src={other.avatar_url ||
                                                         "/placeholder.svg"}
-                                                    alt={`${otherUser.name} ${otherUser.surname}`}
+                                                    alt={`${other.name} ${other.surname}`}
                                                     class="h-12 w-12 rounded-full object-cover mr-4"
                                                 />
                                             {:else}
@@ -288,35 +308,94 @@
                                                 <p
                                                     class="text-sm font-medium text-gray-900 dark:text-white"
                                                 >
-                                                    {otherUser.name}
-                                                    {otherUser.surname}
+                                                    {other.name}
+                                                    {other.surname}
                                                 </p>
-                                                {#if chat.last_message}
+                                                {#if item.chat.last_message}
                                                     <p
-                                                        class="text-xs text-gray-500 dark:text-gray-400"
+                                                        class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
                                                     >
-                                                        {chat.last_message}
+                                                        <span
+                                                            class="font-medium mr-1"
+                                                        >
+                                                            {getLastMessageSenderName(
+                                                                item,
+                                                            )}:
+                                                        </span>
+                                                        <span
+                                                            class:font-semibold={isUnread}
+                                                            class:text-gray-800={isUnread}
+                                                            class:dark:text-gray-200={isUnread}
+                                                        >
+                                                            {item.chat
+                                                                .last_message
+                                                                .content
+                                                                .length > 30
+                                                                ? item.chat.last_message.content.substring(
+                                                                      0,
+                                                                      30,
+                                                                  ) + "..."
+                                                                : item.chat
+                                                                      .last_message
+                                                                      .content}
+                                                        </span>
                                                     </p>
                                                 {/if}
                                             </div>
                                         </div>
                                         <div class="flex flex-col items-end">
-                                            <p
-                                                class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
-                                            >
-                                                <Calendar
-                                                    class="h-3 w-3 mr-1"
-                                                />
-                                                {formatDate(
-                                                    chat.chat_updated_at,
-                                                )}
-                                            </p>
-                                            {#if chat.unread_count && chat.unread_count > 0}
-                                                <span
-                                                    class="mt-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-500 rounded-full"
+                                            {#if item.chat.last_message}
+                                                <p
+                                                    class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
                                                 >
-                                                    {chat.unread_count}
-                                                </span>
+                                                    <Calendar
+                                                        class="h-3 w-3 mr-1"
+                                                    />
+                                                    {formatDate(
+                                                        item.chat.last_message
+                                                            .created_at,
+                                                    )}
+                                                </p>
+                                                {#if isLastMessageFromCurrentUser(item)}
+                                                    <div
+                                                        class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center"
+                                                    >
+                                                        {#if item.chat.last_message.read_at}
+                                                            <CheckCheck
+                                                                class="h-4 w-4 text-blue-500"
+                                                            />
+                                                            <span
+                                                                class="ml-1 text-xs"
+                                                                >Read</span
+                                                            >
+                                                        {:else}
+                                                            <Check
+                                                                class="h-4 w-4"
+                                                            />
+                                                            <span
+                                                                class="ml-1 text-xs"
+                                                                >Sent</span
+                                                            >
+                                                        {/if}
+                                                    </div>
+                                                {:else if isUnread}
+                                                    <div
+                                                        class="mt-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full"
+                                                    >
+                                                        New
+                                                    </div>
+                                                {/if}
+                                            {:else}
+                                                <p
+                                                    class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
+                                                >
+                                                    <Calendar
+                                                        class="h-3 w-3 mr-1"
+                                                    />
+                                                    {formatDate(
+                                                        item.chat.updated_at,
+                                                    )}
+                                                </p>
                                             {/if}
                                             <ChevronRight
                                                 class="h-5 w-5 text-gray-400 mt-1"
