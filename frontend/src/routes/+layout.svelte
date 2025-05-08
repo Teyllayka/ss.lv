@@ -91,5 +91,7 @@
 
   <slot />
 
-  <Footer />
+  {#if !$page.url.pathname.includes("/chats/")}
+    <Footer />
+  {/if}
 </ParaglideJS>

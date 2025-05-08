@@ -2,25 +2,28 @@
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { user } from "$lib/userStore";
-    import { get } from "svelte/store";
     import { fade, slide } from "svelte/transition";
     import {
         Send,
         ArrowLeft,
         User,
-        Image,
+        Image as ImageIcon,
         MessageCircle,
         DollarSign,
         X,
         Check,
         ChevronDown,
         MoreVertical,
+        ZoomIn,
     } from "lucide-svelte";
     import { enhance } from "$app/forms";
     import { socket } from "$lib/socket";
     import { page } from "$app/stores";
+    import InputField from "$lib/components/InputField.svelte";
+    import { get } from "svelte/store";
 
     export let data;
+    console.log("Chat data:", data);
 
     let advert = data.advert;
     let partner = data.partner;
@@ -34,9 +37,15 @@
     let dealPrice: number | null = null;
     let showAdditionalInfo = false;
     let showActionsMenu = false;
+    let photos: string[] = [];
+    let photoFiles: File[] = [];
+    let photoInput: HTMLInputElement;
+    let imageViewerOpen = false;
+    let currentViewedImage = "";
 
     let chat = data.chat || {};
     const chatClosed = (deal && deal.state === "accepted") || chat.archived;
+    let windowHeight: number;
 
     function scrollToBottom() {
         setTimeout(() => {
@@ -49,11 +58,11 @@
         if (!advert || !messages.length) return;
         const unreadMessages = messages.filter(
             (msg: { read: any; sender_id: number }) =>
-                !msg.read && msg.sender_id !== $user.id,
+                !msg.read && msg.sender_id !== get(user).id,
         );
         if (unreadMessages.length === 0) return;
         messages = messages.map((msg: { sender_id: number }) => {
-            if (msg.sender_id !== $user.id) {
+            if (msg.sender_id !== get(user).id) {
                 return { ...msg, read: true };
             }
             return msg;
@@ -115,21 +124,40 @@
             maximumFractionDigits: 0,
         }).format(amount);
     }
+
+    function openImageViewer(url: string) {
+        currentViewedImage = url;
+        imageViewerOpen = true;
+    }
+
+    function closeImageViewer() {
+        imageViewerOpen = false;
+        currentViewedImage = "";
+    }
+
     onMount(() => {
         markMessagesAsRead();
         scrollToBottom();
+
+        windowHeight = window.innerHeight;
+        const handleResize = () => {
+            windowHeight = window.innerHeight;
+        };
+
+        window.addEventListener("resize", handleResize);
+
         if (advert) {
-            socket.on("chat-" + $page.params.id, (newMessage) => {
+            socket.on("chat-" + get(page).params.id, (newMessage) => {
                 messages = [...messages, newMessage];
                 console.log(
                     "New message received:",
                     newMessage,
-                    $user.id,
+                    get(user).id,
                     messages,
                 );
                 scrollToBottom();
             });
-            socket.on("deal-" + $page.params.id, (data) => {
+            socket.on("deal-" + get(page).params.id, (data) => {
                 console.log("Deal data received:", data);
                 deal = data;
                 if (data) {
@@ -137,12 +165,38 @@
                 }
             });
         }
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
     });
+
+    function handlePhotosChange(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const files = input.files;
+        if (!files) return;
+
+        const newFiles = Array.from(files);
+
+        photoFiles = [...photoFiles, ...newFiles];
+        photos = [...photos, ...newFiles.map((f) => URL.createObjectURL(f))];
+    }
+
+    function removePhoto(index: number) {
+        photoFiles.splice(index, 1);
+        photos.splice(index, 1);
+    }
+
+    $: console.log(messageInput, "messageInput");
 </script>
 
-<div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col">
+<svelte:window bind:innerHeight={windowHeight} />
+
+<div
+    class="bg-gray-100 dark:bg-gray-900 h-[calc(100vh-74px)] flex flex-col overflow-hidden"
+>
     <div
-        class="max-w-4xl mx-auto w-full h-screen flex flex-col bg-white dark:bg-gray-800 shadow-lg"
+        class="max-w-4xl mx-auto w-full h-full flex flex-col bg-white dark:bg-gray-800 shadow-lg"
     >
         {#if loading}
             <div class="flex-1 flex justify-center items-center">
@@ -162,40 +216,41 @@
             </div>
         {:else if advert}
             {@const otherUser = getOtherUserInfo()}
-            <div class="bg-white dark:bg-gray-800 shadow-md p-4 flex flex-col">
+
+            <div class="bg-white dark:bg-gray-800 shadow-md p-3 flex flex-col">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <button
                             on:click={goBack}
-                            class="mr-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                            class="mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                         >
-                            <ArrowLeft class="h-6 w-6" />
+                            <ArrowLeft class="h-5 w-5" />
                         </button>
-                        <div class="flex-shrink-0 mr-4">
+                        <div class="flex-shrink-0 mr-3">
                             {#if otherUser.avatar}
                                 <img
                                     src={otherUser.avatar || "/placeholder.svg"}
                                     alt={`${otherUser.name} ${otherUser.surname}`}
-                                    class="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                                    class="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
                                 />
                             {:else}
                                 <div
-                                    class="h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center"
+                                    class="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center"
                                 >
                                     <User
-                                        class="h-6 w-6 text-gray-600 dark:text-gray-300"
+                                        class="h-5 w-5 text-gray-600 dark:text-gray-300"
                                     />
                                 </div>
                             {/if}
                         </div>
                         <div class="flex-1">
                             <h2
-                                class="font-medium text-gray-900 dark:text-white text-lg"
+                                class="font-medium text-gray-900 dark:text-white"
                             >
                                 {otherUser.name}
                                 {otherUser.surname}
                             </h2>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
                                 Last active: {formatTime(partner.updated_at)}
                             </p>
                         </div>
@@ -230,33 +285,34 @@
                         {/if}
                     </div>
                 </div>
+
                 <div
-                    class="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4"
+                    class="mt-2 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-2"
                 >
                     <div class="flex items-center">
                         <img
                             src={advert.photo_url || "/placeholder.svg"}
                             alt={advert.title}
-                            class="h-16 w-16 object-cover rounded-md mr-3 border border-gray-200 dark:border-gray-700"
+                            class="h-12 w-12 object-cover rounded-md mr-2 border border-gray-200 dark:border-gray-700"
                         />
                         <div>
                             <h3
-                                class="font-medium text-gray-900 dark:text-white"
+                                class="font-medium text-sm text-gray-900 dark:text-white truncate max-w-[180px]"
                             >
                                 {advert.title}
                             </h3>
-                            <div class="flex items-center mt-1">
+                            <div class="flex items-center">
                                 <span
-                                    class="text-lg font-bold text-green-600 dark:text-green-400"
-                                    >{formatCurrency(advert.price)}</span
+                                    class="text-sm font-bold text-green-600 dark:text-green-400"
                                 >
+                                    {formatCurrency(advert.price)}
+                                </span>
                                 {#if advert.old_price}
                                     <span
-                                        class="ml-2 text-sm line-through text-gray-500 dark:text-gray-400"
-                                        >{formatCurrency(
-                                            advert.old_price,
-                                        )}</span
+                                        class="ml-2 text-xs line-through text-gray-500 dark:text-gray-400"
                                     >
+                                        {formatCurrency(advert.old_price)}
+                                    </span>
                                 {/if}
                             </div>
                         </div>
@@ -264,26 +320,27 @@
                     <div class="flex items-center">
                         <button
                             on:click={toggleAdditionalInfo}
-                            class="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                            class="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:underline"
                         >
                             Details
                             <ChevronDown
-                                class={`h-4 w-4 ml-1 transition-transform ${showAdditionalInfo ? "transform rotate-180" : ""}`}
+                                class={`h-3 w-3 ml-1 transition-transform ${showAdditionalInfo ? "transform rotate-180" : ""}`}
                             />
                         </button>
                     </div>
                 </div>
+
                 {#if showAdditionalInfo}
                     <div
                         transition:slide={{ duration: 200 }}
-                        class="mt-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-md text-sm"
+                        class="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-xs"
                     >
                         <p
-                            class="text-gray-800 dark:text-gray-200 mb-2 break-words"
+                            class="text-gray-800 dark:text-gray-200 mb-1 break-words line-clamp-2"
                         >
                             {advert.description}
                         </p>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
                                 Category: {advert.category}
                             </span>
@@ -295,15 +352,16 @@
                         </div>
                     </div>
                 {/if}
+
                 {#if deal}
-                    {#if deal.status === "pending" && deal.requester_id !== $user.id}
+                    {#if deal.status === "pending" && deal.requester_id !== get(user).id}
                         <div
-                            class="mt-3 bg-yellow-50 border rounded p-4 text-center"
+                            class="mt-2 bg-yellow-50 border rounded p-2 text-center text-sm"
                         >
                             <p class="font-medium">
                                 Deal Offer: {formatCurrency(deal.price)}
                             </p>
-                            <div class="mt-3 flex justify-center space-x-3">
+                            <div class="mt-2 flex justify-center space-x-3">
                                 <form
                                     method="post"
                                     action="?/sendDeal"
@@ -312,7 +370,7 @@
                                     <input
                                         type="hidden"
                                         name="chat_id"
-                                        value={$page.params.id}
+                                        value={get(page).params.id}
                                     />
                                     <input
                                         type="hidden"
@@ -326,9 +384,9 @@
                                     />
                                     <button
                                         type="submit"
-                                        class="flex items-center px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+                                        class="flex items-center px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs"
                                     >
-                                        <Check class="h-4 w-4 mr-1" /> Accept
+                                        <Check class="h-3 w-3 mr-1" /> Accept
                                     </button>
                                 </form>
                                 <form
@@ -339,7 +397,7 @@
                                     <input
                                         type="hidden"
                                         name="chat_id"
-                                        value={$page.params.id}
+                                        value={get(page).params.id}
                                     />
                                     <input
                                         type="hidden"
@@ -353,35 +411,33 @@
                                     />
                                     <button
                                         type="submit"
-                                        class="flex items-center px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        class="flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
-                                        <X class="h-4 w-4 mr-1" /> Decline
+                                        <X class="h-3 w-3 mr-1" /> Decline
                                     </button>
                                 </form>
                             </div>
                         </div>
-                    {:else if deal.status === "pending" && deal.requester_id === $user.id}
+                    {:else if deal.status === "pending" && deal.requester_id === get(user).id}
                         <div
-                            class="mt-3 bg-gray-50 border rounded p-4 text-center"
+                            class="mt-2 bg-gray-50 border rounded p-2 text-center text-xs"
                         >
-                            <p class="text-sm text-gray-600">
-                                Waiting for response...
-                            </p>
+                            <p class="text-gray-600">Waiting for response...</p>
                         </div>
                     {:else if deal.status === "accepted"}
                         <div
-                            class="mt-3 bg-green-100 p-3 rounded flex items-center justify-between"
+                            class="mt-2 bg-green-100 p-2 rounded flex items-center justify-between text-sm"
                         >
                             <div>
                                 <p class="font-medium text-green-800">
                                     Deal accepted!
                                 </p>
-                                <p class="text-green-700">
+                                <p class="text-green-700 text-xs">
                                     {formatCurrency(deal.price)}
                                 </p>
                             </div>
-                            Votes: {deal.voteCount}
-                            <div class="flex space-x-2">
+                            <div class="text-xs">Votes: {deal.voteCount}</div>
+                            <div class="flex space-x-1">
                                 <form
                                     method="post"
                                     action="?/sendDeal"
@@ -390,7 +446,7 @@
                                     <input
                                         type="hidden"
                                         name="chat_id"
-                                        value={$page.params.id}
+                                        value={get(page).params.id}
                                     />
                                     <input
                                         type="hidden"
@@ -399,9 +455,9 @@
                                     />
                                     <button
                                         type="submit"
-                                        class="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+                                        class="flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs"
                                     >
-                                        Complete Deal
+                                        Complete
                                     </button>
                                 </form>
                                 <form
@@ -412,7 +468,7 @@
                                     <input
                                         type="hidden"
                                         name="chat_id"
-                                        value={$page.params.id}
+                                        value={get(page).params.id}
                                     />
                                     <input
                                         type="hidden"
@@ -421,15 +477,17 @@
                                     />
                                     <button
                                         type="submit"
-                                        class="flex items-center px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+                                        class="flex items-center px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs"
                                     >
-                                        Stop Deal
+                                        Stop
                                     </button>
                                 </form>
                             </div>
                         </div>
                     {:else if deal.status === "rejected"}
-                        <div class="mt-3 bg-red-100 p-3 rounded text-center">
+                        <div
+                            class="mt-2 bg-red-100 p-2 rounded text-center text-xs"
+                        >
                             <p class="text-red-600 font-medium">
                                 Deal declined
                             </p>
@@ -438,9 +496,8 @@
                 {/if}
             </div>
 
-            <!-- Chat messages area -->
             <div
-                class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900"
+                class="flex-1 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900"
                 bind:this={messageContainer}
             >
                 {#if messages.length === 0}
@@ -459,29 +516,71 @@
                         </p>
                     </div>
                 {:else}
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         {#each messages as message, index}
                             {#if shouldShowDate(index)}
-                                <div class="flex justify-center my-4">
+                                <div class="flex justify-center my-2">
                                     <div
-                                        class="bg-gray-200 dark:bg-gray-700 rounded-full px-4 py-1 text-xs text-gray-600 dark:text-gray-300"
+                                        class="bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-xs text-gray-600 dark:text-gray-300"
                                     >
                                         {formatDate(message.created_at)}
                                     </div>
                                 </div>
                             {/if}
                             <div
-                                class={`flex ${message.user_id === $user.id ? "justify-end" : "justify-start"}`}
+                                class={`flex ${message.user_id === get(user).id ? "justify-end" : "justify-start"}`}
                             >
                                 <div
-                                    class={`max-w-[70%] ${message.user_id === $user.id ? "bg-blue-500 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-lg rounded-tr-lg rounded-br-lg"} px-4 py-3 shadow`}
+                                    class={`max-w-[70%] ${message.user_id === get(user).id ? "bg-blue-500 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-lg rounded-tr-lg rounded-br-lg"} px-3 py-2 shadow`}
                                 >
-                                    <p>{message.content}</p>
+                                    {#if message.content}
+                                        <p class="text-sm">{message.content}</p>
+                                    {/if}
+
+                                    {#if message.urls && message.urls.length > 0}
+                                        <div
+                                            class={`mt-2 ${message.urls.length > 1 ? "grid grid-cols-2 gap-1" : ""}`}
+                                        >
+                                            {#each message.urls as url, i}
+                                                {#if url !== null}
+                                                    <div class="relative group">
+                                                        <img
+                                                            src={url ||
+                                                                "/placeholder.svg"}
+                                                            alt="Message attachment"
+                                                            class="rounded-md w-full h-auto object-cover cursor-pointer"
+                                                            style="max-height: 150px;"
+                                                            on:click={() =>
+                                                                openImageViewer(
+                                                                    url,
+                                                                )}
+                                                        />
+                                                        <div
+                                                            class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <button
+                                                                class="bg-black bg-opacity-50 text-white p-1 rounded-full"
+                                                                on:click|stopPropagation={() =>
+                                                                    openImageViewer(
+                                                                        url,
+                                                                    )}
+                                                            >
+                                                                <ZoomIn
+                                                                    class="h-4 w-4"
+                                                                />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                {/if}
+                                            {/each}
+                                        </div>
+                                    {/if}
+
                                     <div
-                                        class={`text-xs mt-1 flex items-center ${message.user_id === $user.id ? "text-blue-200 justify-end" : "text-gray-500 dark:text-gray-400"}`}
+                                        class={`text-xs mt-1 flex items-center ${message.user_id === get(user).id ? "text-blue-200 justify-end" : "text-gray-500 dark:text-gray-400"}`}
                                     >
                                         {formatTime(message.created_at)}
-                                        {#if message.user_id === $user.id}
+                                        {#if message.user_id === get(user).id}
                                             <span class="ml-1"
                                                 >{message.read
                                                     ? "✓✓"
@@ -496,45 +595,79 @@
                 {/if}
             </div>
 
-            <!-- Message sending area -->
             {#if !chatClosed}
                 <div
-                    class="bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700"
+                    class="bg-white dark:bg-gray-800 p-3 border-t border-gray-200 dark:border-gray-700"
                 >
                     <div class="flex justify-between mb-2">
                         <button
                             on:click={openDealModal}
-                            class="flex items-center text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700"
+                            class="flex items-center text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700"
                         >
                             <DollarSign class="h-4 w-4 mr-1" /> Make a deal
                         </button>
                     </div>
+
+                    {#if photos.length}
+                        <div class="flex space-x-2 mb-3 overflow-x-auto">
+                            {#each photos as src, i}
+                                <div class="relative">
+                                    <img
+                                        {src}
+                                        class="h-16 w-16 object-cover rounded-lg border"
+                                        alt="preview"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                        on:click={() => removePhoto(i)}
+                                    >
+                                        <X class="h-3 w-3" />
+                                    </button>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+
                     <form
                         method="post"
                         action="?/sendMessage"
                         class="flex items-center space-x-2"
+                        enctype="multipart/form-data"
                         use:enhance
                     >
-                        <button
-                            type="button"
-                            class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            <Image class="h-5 w-5" />
-                        </button>
-
-                        <!-- Updated input: flex‑1 for full width, dark:bg‑gray for dark mode -->
                         <input
-                            type="text"
-                            name="content"
-                            bind:value={messageInput}
-                            placeholder="Type a message..."
-                            class="flex-1 bg-gray-100 dark:bg-gray-700 dark:text-white text-gray-900 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            name="photos"
+                            bind:this={photoInput}
+                            on:change={handlePhotosChange}
+                            class="hidden"
                         />
 
                         <button
+                            type="button"
+                            class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            on:click={() => photoInput.click()}
+                        >
+                            <ImageIcon class="h-5 w-5" />
+                        </button>
+
+                        <div class="flex-1">
+                            <InputField
+                                type="text"
+                                name="content"
+                                bind:value={messageInput}
+                                placeholder="Type a message..."
+                            />
+                        </div>
+
+                        <button
                             type="submit"
-                            disabled={!messageInput.trim()}
-                            class="ml-2 p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!messageInput.trim() &&
+                                photos.length === 0}
+                            class="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Send class="h-5 w-5" />
                         </button>
@@ -542,7 +675,7 @@
                 </div>
             {:else}
                 <div
-                    class="bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 text-center text-gray-500"
+                    class="bg-white dark:bg-gray-800 p-3 border-t border-gray-200 dark:border-gray-700 text-center text-gray-500 text-sm"
                 >
                     This chat is closed. You cannot send new messages.
                 </div>
@@ -557,7 +690,7 @@
         transition:fade={{ duration: 200 }}
     >
         <div
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-5 w-full max-w-md mx-4"
             transition:slide={{ duration: 200 }}
         >
             <div class="flex justify-between items-center mb-4">
@@ -572,8 +705,12 @@
                 </button>
             </div>
             <form method="post" action="?/sendDeal" use:enhance>
-                <input type="hidden" name="chat_id" value={$page.params.id} />
-                <div class="mb-6">
+                <input
+                    type="hidden"
+                    name="chat_id"
+                    value={get(page).params.id}
+                />
+                <div class="mb-4">
                     <label
                         class="block text-gray-700 dark:text-gray-300 mb-2"
                         for="price">Enter your offer price</label
@@ -611,6 +748,28 @@
                     >
                 </div>
             </form>
+        </div>
+    </div>
+{/if}
+
+{#if imageViewerOpen}
+    <div
+        class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+        transition:fade={{ duration: 200 }}
+        on:click={closeImageViewer}
+    >
+        <div class="relative max-w-4xl max-h-[90vh]">
+            <img
+                src={currentViewedImage || "/placeholder.svg"}
+                alt="Full size image"
+                class="max-h-[90vh] max-w-full object-contain"
+            />
+            <button
+                class="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                on:click={closeImageViewer}
+            >
+                <X class="h-6 w-6" />
+            </button>
         </div>
     </div>
 {/if}

@@ -351,6 +351,11 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Message::UserId).integer().not_null())
                     .col(ColumnDef::new(Message::Content).string().not_null())
                     .col(
+                        ColumnDef::new(Message::Urls)
+                            .array(ColumnType::String(StringLen::None))
+                            .null(),
+                    )
+                    .col(
                         ColumnDef::new(Message::CreatedAt)
                             .date_time()
                             .not_null()
@@ -375,7 +380,6 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // Create Deal Table.
         manager
             .create_table(
                 Table::create()
@@ -636,6 +640,7 @@ enum Message {
     ChatId,
     UserId,
     Content,
+    Urls,
     CreatedAt,
     ReadAt,
 }

@@ -1,45 +1,47 @@
 <script lang="ts">
-import { run } from "svelte/legacy";
+  import { run } from "svelte/legacy";
 
-import { fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { capitalizeFirstLetter } from "$lib/helpers";
-interface Props {
-	name: any;
-	type: any;
-	placeholder: any;
-	errors?: any | any[];
-	value?: string | undefined | null;
-	disableAutoFill?: boolean;
-	disabled?: boolean;
-}
+  import { fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { capitalizeFirstLetter } from "$lib/helpers";
+  interface Props {
+    name: any;
+    type: any;
+    placeholder: any;
+    errors?: any | any[];
+    value?: string | undefined | null;
+    disableAutoFill?: boolean;
+    disabled?: boolean;
+    id?: string;
+  }
 
-let {
-	name,
-	type,
-	placeholder,
-	errors = [],
-	value = $bindable(),
-	disableAutoFill = false,
-	disabled = false,
-}: Props = $props();
+  let {
+    name,
+    type,
+    placeholder,
+    errors = [],
+    value = $bindable(),
+    disableAutoFill = false,
+    disabled = false,
+    id,
+  }: Props = $props();
 
-let e: any = $state(null);
-run(() => {
-	e = errors.find((x: any) => x.field === name);
-});
+  let e: any = $state(null);
+  run(() => {
+    e = errors.find((x: any) => x.field === name);
+  });
 </script>
 
 <div class="field relative">
   <input
     {type}
     {name}
-    id={name}
+    id={name || id}
     class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2
     {e
       ? 'border-red-500 ring-red-500'
       : 'border-gray-300 dark:border-gray-600'}"
-    value={value || null}
+    bind:value
     {placeholder}
     autocomplete={disableAutoFill ? "off" : undefined}
     {disabled}

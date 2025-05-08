@@ -25,6 +25,8 @@ export const actions: Actions = {
   sendMessage: async ({ request, locals, params, cookies }) => {
     const formData = await request.formData();
 
+    console.log("formData", formData);
+
     const { id } = params;
     const content = formData.get("content");
 
@@ -36,13 +38,31 @@ export const actions: Actions = {
       return fail(400, { error: "Message content cannot be empty." });
     }
 
+    let urls = [];
+    const additionalPhotos = formData.getAll("photos");
+
+    for (const file of additionalPhotos) {
+      if (file instanceof File) {
+        const formGachi = new FormData();
+        formGachi.append("file", file);
+        const response = await fetch("https://gachi.gay/api/upload", {
+          method: "POST",
+          body: formGachi,
+        });
+        const dataGachi = await response.json();
+        urls.push(dataGachi.link);
+      }
+    }
+
+    console.log("urls", urls, additionalPhotos);
+
     let response = await fetch("http://localhost:4000/send-message", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + cookies.get("accessToken"),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ chatId: id, content }),
+      body: JSON.stringify({ chatId: id, content, urls }),
     });
 
     let data = await response.json();

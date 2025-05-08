@@ -56,7 +56,7 @@ export class AppService {
   }
 
   async sendMessage(s, b) {
-    const { content, chatId } = b;
+    const { content, chatId, urls } = b;
 
     let chat: Chat | undefined;
 
@@ -89,12 +89,15 @@ export class AppService {
       );
     }
 
+    console.log('Sending message:', content, chatId, urls);
+
     let message = await this.db
       .insertInto('message')
       .values({
         chat_id: chat!.id as unknown as number,
         user_id: s.user.id,
         content,
+        urls: urls,
       })
       .returningAll()
       .executeTakeFirst();
@@ -150,9 +153,6 @@ export class AppService {
       .orderBy('message.created_at', 'asc')
       .execute();
 
-
-    
-
     const partnerId =
       advert.user_id === s.user.id ? chat.participant_id : advert.user_id;
 
@@ -196,7 +196,7 @@ export class AppService {
 
   async getChats(s) {
     const userId = s.id;
-  
+
     // First, get all the chats with their related data
     const results = await this.db
       .selectFrom('chat')
@@ -211,7 +211,7 @@ export class AppService {
         'chat.archived',
         'chat.created_at as chat_created_at',
         'chat.updated_at as chat_updated_at',
-  
+
         'advert.id as advert_id',
         'advert.user_id as advert_owner_id',
         'advert.created_at as advert_created_at',
@@ -227,7 +227,7 @@ export class AppService {
         'advert.description',
         'advert.sold_to',
         'advert.old_price',
-  
+
         'owner.id as owner_id',
         'owner.created_at as owner_created_at',
         'owner.updated_at as owner_updated_at',
@@ -242,7 +242,7 @@ export class AppService {
         'owner.balance as owner_balance',
         'owner.email_verified as owner_email_verified',
         'owner.role as owner_role',
-  
+
         'participant.id as participant_id',
         'participant.created_at as participant_created_at',
         'participant.updated_at as participant_updated_at',
@@ -257,7 +257,7 @@ export class AppService {
         'participant.balance as participant_balance',
         'participant.email_verified as participant_email_verified',
         'participant.role as participant_role',
-  
+
         'deal.id as deal_id',
         'deal.chat_id as deal_chat_id',
         'deal.price as deal_price',
@@ -271,9 +271,9 @@ export class AppService {
         ]),
       )
       .execute();
-  
-    const chatIds = results.map(row => row.chat_id);
-    
+
+    const chatIds = results.map((row) => row.chat_id);
+
     const lastMessages = await this.db
       .selectFrom('message')
       .select([
@@ -282,20 +282,20 @@ export class AppService {
         'message.user_id',
         'message.content',
         'message.created_at',
-        'message.read_at'
+        'message.read_at',
       ])
       .where('message.chat_id', 'in', chatIds)
       .distinctOn('message.chat_id')
       .orderBy('message.chat_id')
       .orderBy('message.created_at', 'desc')
       .execute();
-  
+
     const lastMessageMap = {};
-    lastMessages.forEach(message => {
+    lastMessages.forEach((message) => {
       lastMessageMap[message.chat_id] = message;
     });
-  
-    const structuredChats = results.map(row => {
+
+    const structuredChats = results.map((row) => {
       const owner = {
         id: row.owner_id,
         created_at: row.owner_created_at,
@@ -310,9 +310,9 @@ export class AppService {
         telegram_username: row.owner_telegram_username,
         balance: row.owner_balance,
         email_verified: row.owner_email_verified,
-        role: row.owner_role
+        role: row.owner_role,
       };
-  
+
       const participant = {
         id: row.participant_id,
         created_at: row.participant_created_at,
@@ -327,9 +327,9 @@ export class AppService {
         telegram_username: row.participant_telegram_username,
         balance: row.participant_balance,
         email_verified: row.participant_email_verified,
-        role: row.participant_role
+        role: row.participant_role,
       };
-  
+
       const advert = {
         id: row.advert_id,
         created_at: row.advert_created_at,
@@ -346,17 +346,19 @@ export class AppService {
         user_id: row.advert_owner_id,
         sold_to: row.sold_to,
         old_price: row.old_price,
-        owner 
+        owner,
       };
-  
-      const deal = row.deal_id ? {
-        id: row.deal_id,
-        chat_id: row.deal_chat_id,
-        price: row.deal_price,
-        created_at: row.deal_created_at,
-        requester_id: row.deal_requester_id
-      } : null;
-  
+
+      const deal = row.deal_id
+        ? {
+            id: row.deal_id,
+            chat_id: row.deal_chat_id,
+            price: row.deal_price,
+            created_at: row.deal_created_at,
+            requester_id: row.deal_requester_id,
+          }
+        : null;
+
       const chat = {
         id: row.chat_id,
         advert_id: row.advert_id,
@@ -364,17 +366,17 @@ export class AppService {
         archived: row.archived,
         created_at: row.chat_created_at,
         updated_at: row.chat_updated_at,
-        last_message: lastMessageMap[row.chat_id] || null
+        last_message: lastMessageMap[row.chat_id] || null,
       };
-  
+
       return {
         chat,
         advert,
         participant,
-        deal
+        deal,
       };
     });
-  
+
     return structuredChats;
   }
 
@@ -559,7 +561,6 @@ export class AppService {
         .set({ available: false, sold_to: chat.participant_id })
         .where('advert.id', '=', postId)
         .execute();
-
 
       await this.db
         .updateTable('chat')

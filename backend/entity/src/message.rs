@@ -12,6 +12,8 @@ pub struct Model {
     pub user_id: i32,
     pub content: String,
     pub created_at: NaiveDateTime,
+    pub read_at: Option<NaiveDateTime>,
+    pub urls: Option<Vec<String>>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

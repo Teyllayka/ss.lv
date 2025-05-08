@@ -149,7 +149,6 @@
     }
   }
 
-  // Initialize Leaflet map only on the client-side
   $: if (advert?.lat && advert?.lon && typeof window !== "undefined") {
     (async () => {
       const L = (await import("leaflet")).default;
@@ -166,9 +165,9 @@
     })();
   }
 
-  // Device detection for route button
   let isIOS = false;
   onMount(() => {
+    // @ts-ignore
     isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   });
 </script>
@@ -217,8 +216,7 @@
                     {#if editMainPhoto}
                       <img
                         src={editMainPhoto}
-                        alt="Main Photo"
-                        class="w-full h-full object-cover rounded-lg"
+                        class="w-full h-full object-contain rounded-lg"
                       />
                     {:else}
                       <div
@@ -288,7 +286,7 @@
                       <img
                         src={photo}
                         alt={`Photo ${index + 1}`}
-                        class="w-full h-32 object-cover rounded-lg"
+                        class="w-full h-32 object-contain rounded-lg"
                       />
                       <button
                         type="button"
@@ -304,7 +302,7 @@
                       <img
                         src={photo}
                         alt={`New Photo ${index + 1}`}
-                        class="w-full h-32 object-cover rounded-lg"
+                        class="w-full h-32 object-contain rounded-lg"
                       />
                       <button
                         type="button"
@@ -398,7 +396,7 @@
                 <img
                   src={images[currentImageIndex]}
                   alt={advert.title}
-                  class="w-full h-full object-cover rounded-lg"
+                  class="w-full h-full object-contain rounded-lg"
                 />
                 <button
                   on:click={prevImage}
@@ -418,7 +416,7 @@
                   <img
                     src={image}
                     alt={`${advert.title} - Image ${index + 1}`}
-                    class="w-20 h-20 object-cover rounded-md cursor-pointer"
+                    class="w-20 h-20 object-contain rounded-md cursor-pointer"
                     class:border-2={index === currentImageIndex}
                     class:border-blue-500={index === currentImageIndex}
                     on:click={() => (currentImageIndex = index)}
@@ -494,7 +492,7 @@
                           {spec.key.charAt(0).toUpperCase() + spec.key.slice(1)}
                         </dt>
                         <dd
-                          class="mt-1 text-sm text-gray-900 dark:text-gray-100"
+                          class="mt-1 text-sm text-gray-900 dark:text-gray-100 break-words"
                         >
                           {spec.value}
                         </dd>

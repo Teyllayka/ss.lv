@@ -41,12 +41,12 @@ export interface Advert {
   photo_url: string;
   lat: number;
   lon: number;
-  additional_photos: string[]; // array of additional photo URLs
+  additional_photos: string[];
   title: string;
   category: string;
   description: string;
   user_id: number;
-  sold_to?: number; // nullable relationship field
+  sold_to?: number;
   archived: boolean;
   old_price: number;
 }
@@ -66,7 +66,7 @@ export interface Deal {
   price: number;
   created_at: Date;
   requester_id: number;
-  status: string; // enum: start, in_progress, completed, canceled
+  status: string;
 }
 
 export interface Favorites {
@@ -81,6 +81,7 @@ export interface Message {
   chat_id: number;
   user_id: number;
   content: string;
+  urls: string[];
   created_at: Date;
   read_at?: Date | null;
 }
@@ -90,7 +91,7 @@ export interface Payment {
   order_id: string;
   user_id: number;
   amount: number;
-  status: 'P' | 'C' | 'F'; // status enum from schema: Pending, Completed, Failed
+  status: 'P' | 'C' | 'F';
 }
 
 export interface Reviews {
