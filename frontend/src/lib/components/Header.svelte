@@ -2,7 +2,6 @@
   import { preventDefault } from "svelte/legacy";
   import {
     Menu,
-    X,
     Search,
     MapPin,
     Heart,
@@ -14,17 +13,19 @@
     BarChart2,
     Sun,
     Moon,
-    MessageSquare, // <-- Imported chat icon
+    MessageSquare,
   } from "lucide-svelte";
-  import { fly } from "svelte/transition";
-  import { clickOutside } from "$lib/helpers";
   import { getContext, onMount, tick } from "svelte";
-  import type { Writable } from "svelte/store";
+  import { type Writable } from "svelte/store";
   import { user } from "$lib/userStore";
   import * as m from "$lib/paraglide/messages.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import "leaflet/dist/leaflet.css";
+  import { browser } from "$app/environment";
+  import { socket } from "$lib/socket";
+
+  let csrfToken = null;
 
   let isDark = false;
   function toggleTheme() {
@@ -38,15 +39,43 @@
     }
   }
 
+  interface UnreadMessages {
+    unreadMessages: number;
+  }
+  const areUnreadMessages: Writable<UnreadMessages> =
+    getContext("areUnreadMessages");
   const region: Writable<string> = getContext("region");
   const locationStore: Writable<[number, number]> = getContext("location");
 
   let isMenuOpen = false;
   let searchQuery = "";
-  let csrfToken = "";
 
-  onMount(async () => {
+  onMount(() => {
     csrfToken = "aa";
+
+    function handleNewMessage(data: any) {
+      areUnreadMessages.set({
+        unreadMessages: 1,
+      });
+    }
+
+    socket.on("user-" + $user.id, handleNewMessage);
+
+    fetch("/api/are-unread", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${csrfToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        areUnreadMessages.set({ unreadMessages: data });
+      });
+
+    return () => {
+      socket.off("user-" + $user.id, handleNewMessage);
+    };
   });
 
   function toggleMenu() {
@@ -60,7 +89,6 @@
     await goto(url, { keepFocus: true });
   }
 
-  // LOCATION LOGIC
   let locationName: string = "Detecting location...";
   let showLocationModal = false;
   let map: any = null;
@@ -68,6 +96,8 @@
   let mapInitialized = false;
 
   onMount(() => {
+    isDark = localStorage.getItem("theme") === "dark";
+
     const unsubscribe = locationStore.subscribe(async ([lat, lon]) => {
       if (lat !== 0 && lon !== 0) {
         try {
@@ -130,16 +160,13 @@
 <header class="bg-white dark:bg-gray-800 shadow-md">
   <div class="max-w-7xl mx-auto px-4 sm:px-6">
     <div class="relative flex items-center justify-between py-4">
-      <!-- LEFT: logo and location -->
       <div class="flex items-center space-x-4">
-        <!-- Brand / Logo -->
         <a href="/" class="flex items-center">
           <span class="text-xl font-bold text-gray-800 dark:text-white"
             >Adee</span
           >
         </a>
 
-        <!-- Location button positioned between logo and search -->
         <button
           on:click={() => (showLocationModal = true)}
           type="button"
@@ -172,7 +199,6 @@
         </div>
       {/if}
 
-      <!-- RIGHT: user controls and burger -->
       <div class="flex items-center space-x-4">
         <button
           on:click={toggleTheme}
@@ -186,7 +212,7 @@
           {/if}
         </button>
 
-        {#if $user.isLoggedIn}
+        {#if $user.isLoggedIn && browser}
           <div class="hidden md:flex items-center space-x-4">
             <a
               href="/favorites"
@@ -197,10 +223,16 @@
 
             <a
               href="/chats"
-              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white relative"
               aria-label="Chat"
             >
               <MessageSquare class="h-6 w-6" />
+              {#if $areUnreadMessages.unreadMessages > 0}
+                <span
+                  class="absolute -top-2 -right-2 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                  >!</span
+                >
+              {/if}
             </a>
 
             {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}

@@ -15,14 +15,34 @@ export class AppController {
   @Post('get-message')
   @UseGuards(AuthGuard)
   async getMessages(@Req() s, @Body() b) {
-    return await this.appservice.getMessages(s, b);
+    let messages = await this.appservice.getMessages(s, b);
+
+    for (let message of messages.readMessages) {
+      this.eventsGateway.server.emit('message-read-chat-' + message.chat_id, message.id);
+    }
+
+    return messages;
   }
+
+
+  @Get('are-unread')
+  @UseGuards(AuthGuard)
+  async areUnread(@Req() s) {
+    const unread = await this.appservice.areUnread(s);
+    console.log('unread', unread);
+    return unread;
+  }
+
 
   @Post('send-message')
   @UseGuards(AuthGuard)
   async sendMessage(@Req() s, @Body() b) {
-    const message = await this.appservice.sendMessage(s, b);
+    const { message, creator, participant } = await this.appservice.sendMessage(s, b);
     this.eventsGateway.server.emit('chat-' + message.chat_id, message);
+
+    this.eventsGateway.server.emit('user-' + (creator.toString() === s.user.id ? participant.toString() : creator.toString()), message);
+    console.log('message', message, "user-" + (creator.toString() === s.user.id ? participant.toString() : creator.toString()));
+
     return message;
   }
 
@@ -73,5 +93,15 @@ export class AppController {
   @UseGuards(AuthGuard)
   async createChat(@Req() s, @Body() b) {
     return await this.appservice.createChatWithoutMessage(s.user.id, b.postId);
+  }
+
+  @Post('message-read')
+  @UseGuards(AuthGuard)
+  async handleMessageRead(
+    @Req() s, @Body() b
+  ) {
+    console.log('message-read', b);
+    await this.appservice.markMessageRead(s, b);
+    this.eventsGateway.server.emit('message-read-chat-' + b.chatId, b.messageId);
   }
 }

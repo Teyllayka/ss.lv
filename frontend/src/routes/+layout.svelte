@@ -6,7 +6,7 @@
   import { user } from "$lib/userStore";
   import Footer from "$lib/components/Footer.svelte";
   import Header from "$lib/components/Header.svelte";
-  import { onMount, onDestroy, setContext } from "svelte";
+  import { onMount, setContext } from "svelte";
   import { writable } from "svelte/store";
   import { page } from "$app/stores";
   import { invalidateAll, replaceState } from "$app/navigation";
@@ -15,6 +15,10 @@
   $: HeaderMe = data.HeaderMe;
 
   const region = writable("Select Region");
+  const areUnreadMessages = writable({
+    unreadMessages: 0,
+  });
+
   const location = writable([0, 0]);
   let isInvalidating = false;
 
@@ -39,7 +43,6 @@
         replaceState(url, {});
 
         await invalidateAll();
-        console.log("Invalidating all data...");
 
         isInvalidating = false;
       }
@@ -49,7 +52,6 @@
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           location.set([pos.coords.latitude, pos.coords.longitude]);
-          console.log("Location set to: ", pos.coords);
         },
         () => location.set([0, 0]),
       );
@@ -71,19 +73,7 @@
 
   setContext("region", region);
   setContext("location", location);
-
-  // Theme toggling function.
-  let isDarkMode = false;
-  function toggleTheme() {
-    isDarkMode = !isDarkMode;
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }
+  setContext("areUnreadMessages", areUnreadMessages);
 </script>
 
 <ParaglideJS {i18n}>

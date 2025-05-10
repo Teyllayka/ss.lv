@@ -13,7 +13,6 @@ export function load({ cookies }: any) {
 
 export const actions = {
   verify: async (event: RequestEvent) => {
-    console.log("verify");
 
     let userValue: any;
 
@@ -21,7 +20,6 @@ export const actions = {
       userValue = value;
     });
 
-    console.log(userValue);
 
     if (userValue?.emailVerified) {
       return { success: false };
@@ -34,7 +32,6 @@ export const actions = {
     `);
 
     let res = await resendEmail.mutate(null, { event });
-    console.log(res);
 
     if (!res.errors && res.data) {
       return { sucess: true };

@@ -6,7 +6,6 @@
   export let advert;
   export let userName = "";
   export let written = false;
-  console.log("advert", advert);
 </script>
 
 <div

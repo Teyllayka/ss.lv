@@ -14,6 +14,48 @@ export class AppService {
     this.db = this.dbService.getDb();
   }
 
+
+
+  async areUnread(s) {
+    const userId = s.user.id;
+    const result = await this.db
+    .selectFrom('chat')
+    .innerJoin('advert', 'advert.id', 'chat.advert_id')
+    .innerJoin('message', 'message.chat_id', 'chat.id')
+    .where('advert.user_id', '=', userId)
+    .where('message.read_at', 'is', null)
+    .whereRef('message.user_id', '=', 'chat.participant_id')
+    .select(sql`count(distinct chat.id)`.as('count'))
+    .executeTakeFirst();
+
+  return Number(result?.count ?? 0);
+  }
+
+  async markMessageRead(s, b) {
+    const { chatId, messageId } = b;
+    console.log('Marking message as read:', chatId, messageId);
+    if (!chatId || !messageId) {
+      throw new UnauthorizedException('No chat ID or message ID provided');
+    }
+
+    const chat = (await this.db
+      .selectFrom('chat')
+      .selectAll()
+      .where('chat.id', '=', chatId)
+      .executeTakeFirst()) as unknown as Chat;
+
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    await this.db.updateTable('message')
+      .set({ read_at: sql`now()` })
+      .where('message.id', '=', messageId)
+      .where('message.read_at', 'is', null)
+      .execute();
+  } 
+    
+
   async getLastMessage(s, chatId: number) {
     let chat: Chat | undefined;
 
@@ -89,20 +131,18 @@ export class AppService {
       );
     }
 
-    console.log('Sending message:', content, chatId, urls);
-
     let message = await this.db
       .insertInto('message')
       .values({
-        chat_id: chat!.id as unknown as number,
-        user_id: s.user.id,
-        content,
-        urls: urls,
+      chat_id: chat!.id as unknown as number,
+      user_id: s.user.id,
+      content,
+      ...(urls ? { urls } : {}),
       })
       .returningAll()
       .executeTakeFirst();
 
-    return message;
+    return { message, participant: chat.participant_id, creator: advert.user_id };
   }
 
   async getMessages(s, b) {
@@ -138,12 +178,13 @@ export class AppService {
       );
     }
 
-    await this.db
+    let readMessages = await this.db
       .updateTable('message')
       .set({ read_at: sql`now()` })
       .where('message.chat_id', '=', chatId)
       .where('message.user_id', '!=', parseInt(s.user.id))
       .where('message.read_at', 'is', null)
+      .returningAll()
       .execute();
 
     const messages = await this.db
@@ -182,6 +223,7 @@ export class AppService {
 
     return {
       messages,
+      readMessages,
       partner,
       deal: deal
         ? {

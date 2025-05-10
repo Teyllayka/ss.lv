@@ -5,16 +5,14 @@
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
   import ImageGallery from "./ImageGallery.svelte";
-  import { transliterate as tr } from "transliteration";
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
+  import { user } from "$lib/userStore";
 
   const locationStore = getContext<Writable<[number, number]>>("location");
 
   const addFavorite = new AddFavoriteStore();
   const removeFavorite = new RemoveFavoriteStore();
-
-  let isLoggedIn = $state(false);
 
   interface Props {
     onFavoriteChange?: (advertId: number, isFavorited: boolean) => void;
@@ -42,10 +40,10 @@
     .catch((err) => console.error("Error with reverse geocoding:", err));
 
   async function toggleSaveAdvert() {
-    // if (!isLoggedIn) {
-    //   goto("/login");
-    //   return;
-    // }
+    if (!$user.isLoggedIn) {
+      goto("/login");
+      return;
+    }
 
     try {
       let res;
@@ -94,11 +92,6 @@
       <button
         class="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors duration-300"
         onclick={toggleSaveAdvert}
-        title={isLoggedIn
-          ? isFavorited
-            ? "Remove from saved"
-            : "Save for later"
-          : "Log in to save adverts"}
       >
         <Heart
           size={20}

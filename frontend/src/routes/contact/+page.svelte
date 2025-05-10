@@ -23,12 +23,11 @@
       })
       .then(
         (result) => {
-          console.log("Email successfully sent!", result.text);
           isSubmitted = true;
         },
         (error) => {
           console.error("Error sending email:", error.text);
-        }
+        },
       );
   }
 </script>

@@ -1,4 +1,3 @@
-// src/routes/api/reverse-geocode/+server.ts
 import type { RequestHandler } from "@sveltejs/kit";
 
 const cache = new Map<string, string>();
@@ -16,7 +15,6 @@ export const GET: RequestHandler = async ({ url }) => {
 
   const key = `${lat},${lon}`;
 
-  // Return cached result if available
   if (cache.has(key)) {
     return new Response(JSON.stringify({ location: cache.get(key) }), {
       status: 200,
@@ -30,13 +28,11 @@ export const GET: RequestHandler = async ({ url }) => {
     );
     const data = await response.json();
 
-    // Create a location string (adjust as needed)
     const location =
       data.address?.road && data.address?.city
         ? `${data.address.road}, ${data.address.city}`
         : "Unknown location";
 
-    // Cache the result
     cache.set(key, location);
 
     return new Response(JSON.stringify({ location }), {

@@ -10,6 +10,9 @@
         CheckCheck,
     } from "lucide-svelte";
     import { user } from "$lib/userStore";
+    import { getContext, onMount } from "svelte";
+    import { socket } from "$lib/socket.js";
+    import type { Writable } from "$houdini";
 
     export let data;
 
@@ -55,11 +58,61 @@
     let error: string | null = null;
     let searchQuery = "";
 
+    interface UnreadMessages {
+        unreadMessages: number;
+    }
+    const areUnreadMessages: Writable<UnreadMessages> =
+        getContext("areUnreadMessages");
+
+    onMount(() => {
+        function handleNewMessage(data: any) {
+            const chat = chats.find((chat) => chat.chat.id === data.chat_id);
+
+            if (chat) {
+                chat.chat.last_message = data;
+                chat.chat.updated_at = data.created_at;
+            }
+
+            chats = chats.map((chat) => {
+                if (chat.chat.id === data.chat_id) {
+                    return {
+                        ...chat,
+                        chat: {
+                            ...chat.chat,
+                            last_message: data,
+                            updated_at: data.created_at,
+                        },
+                    };
+                }
+                return chat;
+            });
+
+            areUnreadMessages.update((prev) => ({
+                unreadMessages: prev.unreadMessages + 1,
+            }));
+        }
+
+        socket.on("user-" + $user.id, handleNewMessage);
+
+        return () => {
+            socket.off("user-" + $user.id, handleNewMessage);
+        };
+    });
+
     $: filteredChats = chats.filter((item) => {
         const title = item.advert.title.toLowerCase();
         const partName = item.participant.name.toLowerCase();
         const partSurname = item.participant.surname.toLowerCase();
         const q = searchQuery.toLowerCase();
+
+        areUnreadMessages.set({
+            unreadMessages: chats.filter(
+                (chat) =>
+                    chat.chat.last_message &&
+                    chat.chat.last_message.read_at === null &&
+                    chat.chat.last_message.user_id !== $user?.id,
+            ).length,
+        });
         return (
             title.includes(q) || partName.includes(q) || partSurname.includes(q)
         );
@@ -137,13 +190,11 @@
         }
     }
 
-    // New function to determine if the last message was sent by the current user
     function isLastMessageFromCurrentUser(item: StructuredChat): boolean {
         if (!item.chat.last_message) return false;
         return item.chat.last_message.user_id === $user?.id;
     }
 
-    // New function to get the sender's name for the last message
     function getLastMessageSenderName(item: StructuredChat): string {
         if (!item.chat.last_message) return "";
 
@@ -156,14 +207,11 @@
         }
     }
 
-    // New function to check if the last message is unread
     function isLastMessageUnread(item: StructuredChat): boolean {
         if (!item.chat.last_message) return false;
 
-        // If the message is from the current user, it's considered read
         if (isLastMessageFromCurrentUser(item)) return false;
 
-        // If read_at is null and the message is not from the current user, it's unread
         return item.chat.last_message.read_at === null;
     }
 </script>

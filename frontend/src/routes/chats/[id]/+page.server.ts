@@ -1,13 +1,15 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 
-export async function load({ cookies, params }: any) {
-  const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");
 
-  if (!logedIn) {
+export async function load({ cookies, params }: any) {
+  const start = Date.now();
+
+  const loggedIn = cookies.get("accessToken") || cookies.get("refreshToken");
+  if (!loggedIn) {
     return redirect(302, "/login");
   }
 
-  let chats = await fetch("http://localhost:4000/get-message", {
+  const res = await fetch("http://localhost:4000/get-message", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + cookies.get("accessToken"),
@@ -16,9 +18,15 @@ export async function load({ cookies, params }: any) {
     body: JSON.stringify({ chatId: params.id }),
   });
 
-  let data = await chats.json();
+  const data = await res.json();
 
-  return data;
+  const duration = Date.now() - start;
+  console.log(`load() for chat ${params.id} took ${duration}ms`);
+
+  return {
+    ...data,
+    loadTimeMs: duration
+  };
 }
 
 export const actions: Actions = {

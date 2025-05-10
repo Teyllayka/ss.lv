@@ -115,11 +115,9 @@ export const actions = {
       }
     `);
 
-    console.log(data.location_json);
 
     let location_json = JSON.parse(data.location_json);
 
-    console.log(location_json);
 
     let res = await create.mutate(
       {

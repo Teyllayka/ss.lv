@@ -49,7 +49,6 @@ export const actions = {
       return { success: false };
     }
 
-    console.log("delete", id);
 
     const deleteAdvert = graphql(`
       mutation deleteAdvert($advertId: Int!) {
@@ -64,7 +63,6 @@ export const actions = {
       { event },
     );
 
-    console.log(res);
 
     if (!res.errors && res.data) {
       redirect(302, "/");
@@ -80,7 +78,6 @@ export const actions = {
       return { success: false };
     }
 
-    console.log("edit", event);
 
     const formData = await event.request.formData();
 

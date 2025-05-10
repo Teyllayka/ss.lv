@@ -27,7 +27,7 @@
     }
   `);
 
-  let allAdverts = [];
+  let allAdverts: any[] = [];
   let isLoadingMore = false;
   let isMore = true;
 
@@ -55,9 +55,9 @@
     }
   };
 
-  const throttle = (fn, delay) => {
+  const throttle = (fn: (...args: any[]) => any, delay: number) => {
     let lastCall = 0;
-    return function (...args) {
+    return function (...args: any[]) {
       const now = Date.now();
       if (now - lastCall < delay) return;
       lastCall = now;
@@ -82,11 +82,17 @@
 
   const throttledScroll = throttle(handleScroll, 200);
 
-  onMount(async () => {
-    await adverts.fetch({ variables: { offset: 0 } });
-    if ($adverts.data?.getAdverts) {
-      allAdverts = $adverts.data.getAdverts;
-    }
+  onMount(() => {
+    (async () => {
+      try {
+        await adverts.fetch({ variables: { offset: 0 } });
+        if ($adverts.data?.getAdverts) {
+          allAdverts = $adverts.data.getAdverts;
+        }
+      } catch (err) {
+        console.error("Error fetching adverts on mount:", err);
+      }
+    })();
 
     if (browser) {
       window.addEventListener("scroll", throttledScroll);

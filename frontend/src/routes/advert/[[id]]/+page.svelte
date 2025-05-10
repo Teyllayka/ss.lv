@@ -23,20 +23,18 @@
   import InputField from "$lib/components/InputField.svelte";
   import TextField from "$lib/components/TextField.svelte";
   import { enhance } from "$app/forms";
-  import { graphql } from "$houdini";
-  import { page } from "$app/stores";
   import Advert from "$lib/components/Advert.svelte";
 
   export let data: PageData;
   $: ({ Advert: AdvertData } = data);
   $: advert = $AdvertData.data?.advert;
-  console.log(advert);
   $: gridCols = $user.isLoggedIn ? "grid-cols-3" : "grid-cols-2";
   $: ({ similarAdverts: similarAdvertsQuery } = data);
 
+  $: console.log("AdvertData", $AdvertData);
+
   let rating = 0;
   let reviewText = "";
-  let message = "";
 
   let isEditMode = false;
   let editForm = { title: "", description: "", price: 0 };
@@ -125,12 +123,10 @@
       [advert.lat, advert.lon],
       [$locationStore[0], $locationStore[1]],
     );
-    // Use our server endpoint for reverse geocoding (with caching)
     fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
       .then((response) => response.json())
       .then((data) => {
         location = data.location;
-        console.log("Location set to: ", data);
       })
       .catch((err) => console.error("Error with reverse geocoding:", err));
   }

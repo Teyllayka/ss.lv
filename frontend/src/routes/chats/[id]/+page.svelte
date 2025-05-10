@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { getContext, onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { user } from "$lib/userStore";
     import { fade, slide } from "svelte/transition";
@@ -20,10 +20,9 @@
     import { socket } from "$lib/socket";
     import { page } from "$app/stores";
     import InputField from "$lib/components/InputField.svelte";
-    import { get } from "svelte/store";
+    import { get, type Writable } from "svelte/store";
 
     export let data;
-    console.log("Chat data:", data);
 
     let advert = data.advert;
     let partner = data.partner;
@@ -41,7 +40,21 @@
     let photoFiles: File[] = [];
     let photoInput: HTMLInputElement;
     let imageViewerOpen = false;
+
+    interface UnreadMessages {
+        unreadMessages: number;
+    }
+    const areUnreadMessages: Writable<UnreadMessages> =
+        getContext("areUnreadMessages");
+
     let currentViewedImage = "";
+
+    if (data.readMessages && data.readMessages.length > 0) {
+        areUnreadMessages.update((prev) => ({
+            ...prev,
+            unreadMessages: prev.unreadMessages - 1,
+        }));
+    }
 
     let chat = data.chat || {};
     const chatClosed = (deal && deal.state === "accepted") || chat.archived;
@@ -53,20 +66,6 @@
                 messageContainer.scrollTop = messageContainer.scrollHeight;
             }
         }, 0);
-    }
-    async function markMessagesAsRead() {
-        if (!advert || !messages.length) return;
-        const unreadMessages = messages.filter(
-            (msg: { read: any; sender_id: number }) =>
-                !msg.read && msg.sender_id !== get(user).id,
-        );
-        if (unreadMessages.length === 0) return;
-        messages = messages.map((msg: { sender_id: number }) => {
-            if (msg.sender_id !== get(user).id) {
-                return { ...msg, read: true };
-            }
-            return msg;
-        });
     }
     function openDealModal() {
         dealPrice = advert ? advert.price : null;
@@ -135,8 +134,22 @@
         currentViewedImage = "";
     }
 
+    async function markMessageAsRead(messageId: number, chatId: number) {
+        try {
+            await fetch("/api/update-message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messageId: messageId, chatId: chatId }),
+            });
+            messages = messages.map((msg: { id: number }) =>
+                msg.id === messageId ? { ...msg, read: true } : msg,
+            );
+        } catch (err) {
+            console.error("could not mark message read", err);
+        }
+    }
+
     onMount(() => {
-        markMessagesAsRead();
         scrollToBottom();
 
         windowHeight = window.innerHeight;
@@ -146,27 +159,39 @@
 
         window.addEventListener("resize", handleResize);
 
+        function handleNewMessage(newMessage: any) {
+            messages = [...messages, newMessage];
+            scrollToBottom();
+            if (newMessage.user_id !== get(user).id) {
+                markMessageAsRead(newMessage.id, chat.id);
+            }
+        }
+
+        function handleDealUpdate(data: any) {
+            deal = data;
+            if (data) {
+                showDealModal = false;
+            }
+        }
+
+        function handleReadReceipt(messageId: any) {
+            messages = messages.map((msg: any) =>
+                msg.id === messageId ? { ...msg, read: true } : msg,
+            );
+        }
+
+        const chatId = get(page).params.id;
+
         if (advert) {
-            socket.on("chat-" + get(page).params.id, (newMessage) => {
-                messages = [...messages, newMessage];
-                console.log(
-                    "New message received:",
-                    newMessage,
-                    get(user).id,
-                    messages,
-                );
-                scrollToBottom();
-            });
-            socket.on("deal-" + get(page).params.id, (data) => {
-                console.log("Deal data received:", data);
-                deal = data;
-                if (data) {
-                    showDealModal = false;
-                }
-            });
+            socket.on(`chat-${chatId}`, handleNewMessage);
+            socket.on(`deal-${chatId}`, handleDealUpdate);
+            socket.on(`message-read-chat-${chatId}`, handleReadReceipt);
         }
 
         return () => {
+            socket.off(`chat-${chatId}`, handleNewMessage);
+            socket.off(`deal-${chatId}`, handleDealUpdate);
+            socket.off(`message-read-chat-${chatId}`, handleReadReceipt);
             window.removeEventListener("resize", handleResize);
         };
     });
@@ -186,8 +211,6 @@
         photoFiles.splice(index, 1);
         photos.splice(index, 1);
     }
-
-    $: console.log(messageInput, "messageInput");
 </script>
 
 <svelte:window bind:innerHeight={windowHeight} />
@@ -250,9 +273,6 @@
                                 {otherUser.name}
                                 {otherUser.surname}
                             </h2>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                Last active: {formatTime(partner.updated_at)}
-                            </p>
                         </div>
                     </div>
                     <div class="relative">
@@ -599,7 +619,7 @@
                 <div
                     class="bg-white dark:bg-gray-800 p-3 border-t border-gray-200 dark:border-gray-700"
                 >
-                    <div class="flex justify-between mb-2">
+                    <div class="flex justify-between mb-6">
                         <button
                             on:click={openDealModal}
                             class="flex items-center text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700"
@@ -634,7 +654,17 @@
                         action="?/sendMessage"
                         class="flex items-center space-x-2"
                         enctype="multipart/form-data"
-                        use:enhance
+                        use:enhance={() => {
+                            return async ({ result, update }) => {
+                                if (result) {
+                                    messageInput = "";
+                                    photos = [];
+                                    photoFiles = [];
+                                    photoInput.value = "";
+                                }
+                                update();
+                            };
+                        }}
                     >
                         <input
                             type="file"

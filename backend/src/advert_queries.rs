@@ -103,6 +103,13 @@ impl AdvertQuery {
         updated_advert.user = user.clone();
         updated_advert.user.rating = user_rating;
 
+        let review = Reviews::find()
+            .filter(reviews::Column::AdvertId.eq(id))
+            .one(&my_ctx.db)
+            .await?;
+
+        updated_advert.review = review;
+
         Ok(updated_advert)
     }
 

@@ -10,7 +10,6 @@
     User,
     ShoppingBag,
     AlertCircle,
-    AtSign,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
@@ -21,6 +20,7 @@
   import ProfileReview from "$lib/components/ProfileReview.svelte";
   import { activeTabClass, inactiveTabClass } from "$lib/consts";
   import { user } from "$lib/userStore";
+  import { goto } from "$app/navigation";
 
   export let form;
 
@@ -74,21 +74,14 @@
       });
   }
 
-  function logout() {
-    fetch("/api/logout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status == 200) {
-          window.location.href = "/";
-          user.logout();
-        }
-      });
+  export async function logout() {
+    const res = await fetch("/api/logout", { method: "POST" });
+    if (res.ok) {
+      user.logout();
+      goto("/");
+    } else {
+      console.error("Logout failed", await res.text());
+    }
   }
 
   let showSuccessMessage = false;

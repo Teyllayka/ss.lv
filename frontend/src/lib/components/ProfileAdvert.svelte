@@ -6,6 +6,15 @@
   import { formatDate, renderStars } from "$lib/helpers";
 
   export let advert;
+
+  let location = "";
+
+  fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
+    .then((response) => response.json())
+    .then((data) => {
+      location = data.location;
+    })
+    .catch((err) => console.error("Error with reverse geocoding:", err));
 </script>
 
 <div
@@ -45,7 +54,7 @@
     <div class="flex items-center mb-2">
       <MapPin class="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1" />
       <span class="text-sm text-gray-600 dark:text-gray-300">
-        {advert.location}
+        {location}
       </span>
     </div>
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
