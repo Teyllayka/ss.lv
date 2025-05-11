@@ -14,12 +14,17 @@ query Advert($id: Int!) {
     soldTo
     available
 
-
     review {
       id
       rating
       message
       createdAt
+
+      user {
+        id
+        name
+        surname
+      }
     }
 
     specs {

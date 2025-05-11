@@ -9,7 +9,7 @@
     type: any;
     placeholder: any;
     errors?: any | any[];
-    value?: string | undefined | null;
+    value?: string | number | undefined | null;
     disableAutoFill?: boolean;
     disabled?: boolean;
     id?: string;

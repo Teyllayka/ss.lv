@@ -10,6 +10,7 @@
     User,
     ShoppingBag,
     AlertCircle,
+    Camera,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
@@ -44,6 +45,7 @@
   }
 
   $: ({ me } = data);
+  $: console.log("me", $me);
   $: userData = { ...$me.data?.me, ...form?.data } as UserData;
 
   let activeTab: TabType = "profile";
@@ -95,6 +97,22 @@
   $: filteredActiveAdverts =
     userData?.adverts?.filter((a) => a.available) || [];
   $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
+
+  let newAvatarFile: File | null = null;
+  let avatarPreview = userData?.avatarUrl || "";
+
+  function handleAvatarChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      newAvatarFile = file;
+      avatarPreview = URL.createObjectURL(file);
+    }
+  }
+
+  function removeAvatar() {
+    newAvatarFile = null;
+    avatarPreview = "";
+  }
 </script>
 
 <div
@@ -118,6 +136,7 @@
           <div class="flex flex-col md:flex-row items-center mb-6">
             <img
               alt="{userData.name} {userData.surname}"
+              src={userData?.avatarUrl}
               class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
             />
             <div class="text-center md:text-left">
@@ -330,8 +349,9 @@
                   {#if advert.review}
                     <ProfileReview
                       {advert}
-                      written={activeReviewTab == "written"}
-                      userName={userData.name || ""}
+                      reviewer={activeReviewTab == "written"
+                        ? userData
+                        : advert.review.user}
                     />
                   {/if}
                 {/each}
@@ -413,7 +433,68 @@
                 method="POST"
                 action="?/updateProfile"
                 class="space-y-6"
+                enctype="multipart/form-data"
               >
+                <div class="space-y-4">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Profile Picture
+                  </label>
+
+                  <div class="flex items-center justify-center">
+                    <label
+                      for="newAvatar"
+                      class="flex flex-col items-center justify-center w-32 h-32 border-2 border-gray-300 border-dashed rounded-full cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      {#if avatarPreview}
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar Preview"
+                          class="w-full h-full object-cover rounded-full"
+                        />
+                      {:else}
+                        <div class="flex flex-col items-center justify-center">
+                          <Camera class="w-8 h-8 text-gray-400 mb-1" />
+                          <span
+                            class="text-xs text-gray-500 dark:text-gray-400 text-center"
+                          >
+                            Click or drop <br />to upload
+                          </span>
+                        </div>
+                      {/if}
+                      <input
+                        id="newAvatar"
+                        name="newAvatar"
+                        type="file"
+                        accept="image/*"
+                        on:change={handleAvatarChange}
+                        class="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {#if avatarPreview}
+                    <div class="flex justify-center">
+                      <button
+                        type="button"
+                        on:click={removeAvatar}
+                        class="inline-flex items-center px-2 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                      >
+                        <X class="w-4 h-4 mr-1" />
+                        Remove
+                      </button>
+                    </div>
+                  {/if}
+
+                  <!-- carry old URL so backend can know if unchanged -->
+                  <input
+                    type="hidden"
+                    name="existingAvatar"
+                    value={userData.avatarUrl}
+                  />
+                </div>
+
                 {#if !userData.companyName}
                   <InputField
                     name="name"

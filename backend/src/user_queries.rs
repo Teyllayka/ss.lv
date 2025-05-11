@@ -502,10 +502,12 @@ impl UserMutation {
         surname: Option<String>,
         company_name: Option<String>,
         phone: Option<String>,
-        _avatar_url: Option<String>,
+        avatar_url: Option<String>,
         password: String,
     ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
+
+        println!("avatar url: {:?}", avatar_url);
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
@@ -572,6 +574,9 @@ impl UserMutation {
         }
         if let Some(phone) = phone {
             active_user.phone = Set(Some(phone));
+        }
+        if let Some(avatar_url) = avatar_url {
+            active_user.avatar_url = Set(Some(avatar_url));
         }
 
         let updated_user: user::Model = active_user.update(&my_ctx.db).await?;

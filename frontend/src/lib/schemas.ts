@@ -127,6 +127,18 @@ export let editProfileSchema = object({
   password: string().required("Password is required"),
 });
 
+export let editAdvertSchema = object({
+  title: string().required("Title is required"),
+  description: string()
+    .required("Description is required")
+    .min(100, "Description must be at least 100 characters long"),
+  price: string().required("Price is required"),
+  // location: string().required("Location is required"),
+  // condition: string()
+  //   .oneOf(["New", "Used"], "Invalid condition")
+  //   .required("Condition is required"),
+});
+
 export async function validateSchema(schema: ObjectSchema<any>, fields: any) {
   const errors: { field: string; message: string }[] = [];
   try {

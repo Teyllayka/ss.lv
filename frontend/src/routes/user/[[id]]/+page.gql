@@ -35,10 +35,16 @@ query User($id: Int!) {
       lon
       price
       createdAt
+      photoUrl
       review {
         message
         rating
         createdAt
+        user {
+          name
+          avatarUrl
+          id
+        }
       }
     }
 
@@ -48,12 +54,15 @@ query User($id: Int!) {
       lat
       lon
       available
+      photoUrl
       review {
         rating
         message
         createdAt
         user {
           name
+          avatarUrl
+          id
         }
       }
     }

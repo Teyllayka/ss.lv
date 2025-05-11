@@ -17,7 +17,7 @@
   import { calculateDistance, renderStars } from "$lib/helpers";
   import { user } from "$lib/userStore";
   import { goto } from "$app/navigation";
-  import { getContext, onMount } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import AddressField from "$lib/components/AddressField.svelte";
   import InputField from "$lib/components/InputField.svelte";
@@ -26,12 +26,11 @@
   import Advert from "$lib/components/Advert.svelte";
 
   export let data: PageData;
-  $: ({ Advert: AdvertData } = data);
-  $: advert = $AdvertData.data?.advert;
+  export let form;
+
+  $: advert = data.advert.data.advert;
   $: gridCols = $user.isLoggedIn ? "grid-cols-3" : "grid-cols-2";
   $: ({ similarAdverts: similarAdvertsQuery } = data);
-
-  $: console.log("AdvertData", $AdvertData);
 
   let rating = 0;
   let reviewText = "";
@@ -77,7 +76,7 @@
           ...newAdditionalPhotos,
           URL.createObjectURL(file),
         ];
-        newAdditionalPhotoFiles.push(file);
+        newAdditionalPhotoFiles = [...newAdditionalPhotoFiles, file];
       }
     }
   }
@@ -92,7 +91,9 @@
 
   function removeNewAdditionalPhoto(index: number) {
     newAdditionalPhotos = newAdditionalPhotos.filter((_, i) => i !== index);
-    newAdditionalPhotoFiles.splice(index, 1);
+    newAdditionalPhotoFiles = newAdditionalPhotoFiles.filter(
+      (_, i) => i !== index,
+    );
   }
 
   let images: string[] = [];
@@ -145,21 +146,28 @@
     }
   }
 
-  $: if (advert?.lat && advert?.lon && typeof window !== "undefined") {
-    (async () => {
-      const L = (await import("leaflet")).default;
-      const map = L.map("map", {
-        attributionControl: false,
-      }).setView([advert.lat, advert.lon], 13);
-      L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(
-        map,
-      );
-      L.marker([advert.lat, advert.lon])
-        .addTo(map)
-        .bindPopup(advert.title)
-        .openPopup();
-    })();
-  }
+  let map: any;
+
+  onMount(async () => {
+    if (!advert?.lat || !advert?.lon) return;
+    const L = (await import("leaflet")).default;
+
+    map = L.map("map", {
+      attributionControl: false,
+    }).setView([advert.lat, advert.lon], 13);
+
+    L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(map);
+    L.marker([advert.lat, advert.lon])
+      .addTo(map)
+      .bindPopup(advert.title)
+      .openPopup();
+  });
+
+  onDestroy(() => {
+    if (map) {
+      map.remove();
+    }
+  });
 
   let isIOS = false;
   onMount(() => {
@@ -168,21 +176,7 @@
   });
 </script>
 
-<svelte:head>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-</svelte:head>
-
-{#if $AdvertData.fetching}
-  <div class="flex justify-center items-center h-screen">
-    <p class="text-xl text-gray-600 dark:text-gray-400">Loading...</p>
-  </div>
-{:else if $AdvertData.errors}
-  <div class="flex justify-center items-center h-screen">
-    <p class="text-xl text-red-600 dark:text-red-400">
-      Error: {JSON.stringify($AdvertData.errors)}
-    </p>
-  </div>
-{:else if advert}
+{#if advert}
   {#if isEditMode}
     <div
       class="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8"
@@ -191,7 +185,57 @@
         <form
           method="post"
           action="?/edit"
-          use:enhance
+          use:enhance={() => {
+            return async ({ result, update }) => {
+              console.log("Edit advert success", result);
+
+              if (result.type == "failure") {
+                update();
+              }
+
+              // @ts-ignore
+              if (result && result.data && result.type === "success") {
+                isEditMode = false;
+
+                if (!result?.data.advert) {
+                  return;
+                }
+
+                if (!advert) {
+                  return;
+                }
+
+                const updated = result.data.advert;
+
+                advert = {
+                  ...advert,
+                  // @ts-ignore
+                  title: updated.title,
+                  // @ts-ignore
+                  description: updated.description,
+                  // @ts-ignore
+                  price: updated.price,
+                  // @ts-ignore
+                  photoUrl: updated.photoUrl,
+                  // @ts-ignore
+                  additionalPhotos: updated.additionalPhotos,
+                  // @ts-ignore
+                  available: updated.available,
+                  // @ts-ignore
+                  lat: updated.lat,
+                  // @ts-ignore
+                  lon: updated.lon,
+                };
+
+                images = [advert.photoUrl, ...(advert.additionalPhotos || [])];
+                editForm.title = advert.title;
+                editForm.description = advert.description;
+                editForm.price = advert.price;
+                editMainPhoto = advert.photoUrl;
+                currentAdditionalPhotos = [...(advert.additionalPhotos || [])];
+              }
+            };
+          }}
           enctype="multipart/form-data"
           class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden space-y-6"
         >
@@ -199,14 +243,14 @@
             <div class="md:w-1/2 p-4 space-y-6">
               <div class="relative">
                 <label
-                  for="editMainPhoto"
+                  for="newMainPhoto"
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Main Photo
                 </label>
                 <div class="flex items-center justify-center w-full">
                   <label
-                    for="editMainPhoto"
+                    for="newMainPhoto"
                     class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
                   >
                     {#if editMainPhoto}
@@ -231,8 +275,8 @@
                       </div>
                     {/if}
                     <input
-                      id="editMainPhoto"
-                      name="mainPhoto"
+                      id="newMainPhoto"
+                      name="newMainPhoto"
                       type="file"
                       accept="image/*"
                       on:change={handleEditMainPhotoChange}
@@ -240,17 +284,23 @@
                     />
                   </label>
                 </div>
+                <input
+                  type="hidden"
+                  name="existingMainPhoto"
+                  value={advert.photoUrl}
+                />
               </div>
+
               <div class="relative">
                 <label
-                  for="editAdditionalPhotos"
+                  for="newPhotos"
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Additional Photos
                 </label>
                 <div class="flex items-center justify-center w-full">
                   <label
-                    for="editAdditionalPhotos"
+                    for="newPhotos"
                     class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
                   >
                     <div
@@ -266,8 +316,8 @@
                       </p>
                     </div>
                     <input
-                      id="editAdditionalPhotos"
-                      name="additionalPhotos"
+                      id="newPhotos"
+                      name="newPhotos"
                       type="file"
                       accept="image/*"
                       multiple
@@ -310,54 +360,46 @@
                     </div>
                   {/each}
                 </div>
+                {#each currentAdditionalPhotos as url}
+                  <input type="hidden" name="existingPhotos" value={url} />
+                {/each}
+                {#each removedPhotos as url}
+                  <input type="hidden" name="removedPhotos" value={url} />
+                {/each}
               </div>
             </div>
+
             <div class="md:w-1/2 p-6 space-y-6">
-              <div class="relative">
-                <InputField
-                  id="editTitle"
-                  name="title"
-                  type="text"
-                  placeholder="Title"
-                  bind:value={editForm.title}
-                />
-              </div>
-              <div class="relative">
-                <InputField
-                  name="price"
-                  type="number"
-                  bind:value={editForm.price}
-                  placeholder="Price"
-                />
-              </div>
-              <div class="relative">
-                <AddressField
-                  id="editAddress"
-                  name="location"
-                  placeholder="Location"
-                  bind:value={location}
-                />
-              </div>
-              <div class="relative">
-                <TextField
-                  id="editDescription"
-                  name="description"
-                  placeholder="Description"
-                  bind:value={editForm.description}
-                />
-              </div>
-              <input
-                type="hidden"
-                name="existingAdditionalPhotos"
-                value={editMainPhoto}
+              <InputField
+                id="editTitle"
+                name="title"
+                type="text"
+                placeholder="Title"
+                bind:value={editForm.title}
+                errors={form?.errors || []}
               />
-              {#each currentAdditionalPhotos as photo}
-                <input
-                  type="hidden"
-                  name="existingAdditionalPhotos"
-                  value={photo}
-                />
-              {/each}
+              <InputField
+                name="price"
+                type="number"
+                bind:value={editForm.price}
+                placeholder="Price"
+                errors={form?.errors || []}
+              />
+              <AddressField
+                id="editAddress"
+                name="location"
+                placeholder="Location"
+                bind:value={location}
+                errors={form?.errors || []}
+              />
+              <TextField
+                id="description"
+                name="description"
+                placeholder="Description"
+                bind:value={editForm.description}
+                errors={form?.errors || []}
+              />
+
               <div class="flex justify-end space-x-4">
                 <button
                   type="button"
@@ -396,13 +438,13 @@
                 />
                 <button
                   on:click={prevImage}
-                  class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md"
+                  class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full p-2 shadow-md"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button
                   on:click={nextImage}
-                  class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md"
+                  class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full p-2 shadow-md"
                 >
                   <ChevronRight size={24} />
                 </button>
@@ -594,13 +636,69 @@
             </div>
           </div>
         </div>
+
+        {#if advert.review}
+          <div
+            class="mt-8 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden"
+          >
+            <div class="p-6">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Review
+              </h2>
+
+              <div
+                class={`p-4 rounded-lg ${advert.soldTo === $user.id ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800" : "bg-gray-50 dark:bg-gray-700"}`}
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex items-center">
+                    <a
+                      href={`/user/${advert.review.user.id}`}
+                      class="font-medium text-gray-900 dark:text-white hover:underline"
+                    >
+                      {advert.review.user.name}
+                    </a>
+                    {#if advert.soldTo === $user.id}
+                      <span
+                        class="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full"
+                      >
+                        Your review
+                      </span>
+                    {/if}
+                  </div>
+                  <div class="flex items-center">
+                    {#each renderStars(advert.review.rating) as star}
+                      <Star
+                        class={star.isFilled
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300"}
+                        size="16"
+                      />
+                    {/each}
+                    <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">
+                      ({advert.review.rating.toFixed(1)})
+                    </span>
+                  </div>
+                </div>
+
+                <p class="text-gray-700 dark:text-gray-300">
+                  {advert.review.message}
+                </p>
+
+                <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {formatDate(advert.review.createdAt.toString())}
+                </div>
+              </div>
+            </div>
+          </div>
+        {/if}
+
         {#if advert?.lat && advert?.lon}
           <div class="mt-8">
             <div id="map" class="w-full h-96 rounded-lg"></div>
           </div>
         {/if}
 
-        {#if advert.soldTo === $user.id}
+        {#if advert.soldTo === $user.id && !advert.review}
           <form
             method="POST"
             action="?/review"
@@ -653,7 +751,9 @@
 
         {#if similarAdvertsQuery && similarAdvertsQuery.data && similarAdvertsQuery.data.similarAdverts.length > 0}
           <div class="mt-8">
-            <h2 class="text-2xl font-bold mb-4">Similar Adverts</h2>
+            <h2 class="text-2xl font-bold mb-4 dark:text-gray-200">
+              Similar Adverts
+            </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {#each similarAdvertsQuery.data.similarAdverts as similar}
                 <Advert advert={similar} userPage={false} />

@@ -23,12 +23,11 @@ function createUserStore() {
     update: (fn: any) => {
       update((currentValue) => {
         const newValue = { ...currentValue, ...fn(currentValue) };
-      
+
         return newValue;
       });
     },
     logout: () => {
-   
       set({ ...defaultUser });
     },
   };

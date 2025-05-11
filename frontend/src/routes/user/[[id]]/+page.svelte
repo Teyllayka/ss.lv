@@ -201,8 +201,9 @@
                     {#if advert.review}
                       <ProfileReview
                         {advert}
-                        written={activeReviewTab == "written"}
-                        userName={userData.name || ""}
+                        reviewer={activeReviewTab == "written"
+                          ? userData
+                          : advert.review.user}
                       />
                     {/if}
                   {/each}

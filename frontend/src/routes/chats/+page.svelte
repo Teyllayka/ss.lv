@@ -291,8 +291,7 @@
                                 {#if group.advert.photo_url}
                                     <a href={`/advert/${group.advert.id}`}>
                                         <img
-                                            src={group.advert.photo_url ||
-                                                "/placeholder.svg"}
+                                            src={group.advert.photo_url}
                                             alt={group.advert.title}
                                             class="h-16 w-16 rounded object-cover mr-4"
                                         />
@@ -338,8 +337,7 @@
                                         <div class="flex items-center">
                                             {#if other.avatar_url}
                                                 <img
-                                                    src={other.avatar_url ||
-                                                        "/placeholder.svg"}
+                                                    src={other.avatar_url}
                                                     alt={`${other.name} ${other.surname}`}
                                                     class="h-12 w-12 rounded-full object-cover mr-4"
                                                 />

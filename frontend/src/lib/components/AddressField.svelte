@@ -2,11 +2,11 @@
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { capitalizeFirstLetter } from "$lib/helpers";
-  import { getContext } from "svelte";
 
   const API_URL = "https://nominatim.openstreetmap.org/search?format=json&q=";
 
   interface Props {
+    id?: string;
     name: string;
     placeholder: string;
     errors?: any[];
@@ -17,6 +17,7 @@
   }
 
   const {
+    id,
     name,
     placeholder,
     errors = [],
@@ -24,7 +25,7 @@
     disableAutoFill = false,
     disabled = false,
     onLocationSelect = () => {},
-  } = $props<Props>();
+  } = $props();
 
   let query = $state(value);
   let suggestions = $state<any[]>([]);
@@ -55,7 +56,6 @@
     }
   }
 
-  // Debounced function to fetch suggestions after the user stops typing
   function debounceFetchSuggestions() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -75,7 +75,6 @@
   }
 
   function handleInputBlur() {
-    // Delay hiding suggestions to allow for click events
     setTimeout(() => {
       isFocused = false;
     }, 200);
@@ -86,7 +85,7 @@
   <input
     type="text"
     {name}
-    id={name}
+    id={id || name}
     bind:value={query}
     on:input={debounceFetchSuggestions}
     on:focus={handleInputFocus}
@@ -121,7 +120,7 @@
         {#each suggestions as suggestion (suggestion.place_id)}
           <button
             type="button"
-            class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+            class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out dark:text-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             on:click={() => handleSuggestionClick(suggestion)}
           >
             {suggestion.display_name}

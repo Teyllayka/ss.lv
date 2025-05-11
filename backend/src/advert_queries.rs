@@ -108,7 +108,18 @@ impl AdvertQuery {
             .one(&my_ctx.db)
             .await?;
 
-        updated_advert.review = review;
+        if let Some(mut review) = review {
+            let review_user = User::find_by_id(review.user_id)
+                .one(&my_ctx.db)
+                .await?
+                .ok_or_else(|| async_graphql::Error::new("User not found"))?;
+
+            review.user = review_user;
+
+            updated_advert.review = Some(review.clone());
+        } else {
+            updated_advert.review = None;
+        }
 
         Ok(updated_advert)
     }
@@ -120,7 +131,6 @@ impl AdvertQuery {
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        // Get the main advert and its specifications.
         let advert = Advert::find_by_id(id)
             .one(&my_ctx.db)
             .await?
@@ -135,15 +145,14 @@ impl AdvertQuery {
             .map(|spec| (spec.key.clone(), spec.value.clone()))
             .collect();
 
-        // Find adverts in the same category (excluding the current advert) along with their specifications.
         let adverts_with_specs = Advert::find()
             .filter(advert::Column::Category.eq(advert.category.clone()))
             .filter(advert::Column::Id.ne(id))
+            .filter(advert::Column::Available.eq(true))
             .find_with_related(specifications::Entity)
             .all(&my_ctx.db)
             .await?;
 
-        // First, try to find adverts that have exactly the same specs.
         let mut matching_adverts = Vec::new();
         for (other_advert, specs) in &adverts_with_specs {
             let other_specs_set: HashSet<(String, String)> = specs
@@ -158,7 +167,6 @@ impl AdvertQuery {
             }
         }
 
-        // If fewer than 4 exact matches, sort the remaining adverts by the count of matching specs.
         if matching_adverts.len() < 4 {
             let mut adverts_by_matching_specs: Vec<(advert::Model, usize)> = adverts_with_specs
                 .iter()
@@ -183,19 +191,16 @@ impl AdvertQuery {
             }
         }
 
-        // Fallback if no similar adverts were found.
         if matching_adverts.is_empty() {
             matching_adverts = Advert::find()
                 .filter(advert::Column::Category.eq(advert.category.clone()))
                 .filter(advert::Column::Id.ne(id))
+                .filter(advert::Column::Available.eq(true))
                 .limit(4)
                 .all(&my_ctx.db)
                 .await?;
         }
 
-        // ---- Enrich similar adverts with specs, user info, and review-based user rating ----
-
-        // Collect advert IDs to fetch their specifications.
         let advert_ids: Vec<i32> = matching_adverts.iter().map(|adv| adv.id).collect();
         let specs = Specifications::find()
             .filter(specifications::Column::AdvertId.is_in(advert_ids.clone()))
@@ -206,7 +211,6 @@ impl AdvertQuery {
             specs_map.entry(spec.advert_id).or_default().push(spec);
         }
 
-        // Collect user IDs from the similar adverts.
         let user_ids: HashSet<i32> = matching_adverts.iter().map(|adv| adv.user_id).collect();
         let users = User::find()
             .filter(user::Column::Id.is_in(user_ids.clone()))
@@ -238,7 +242,6 @@ impl AdvertQuery {
             }
         }
 
-        // Optionally, check for favorited adverts if a token is provided.
         let mut favorite_advert_ids = HashSet::new();
         if let Some(token) = ctx.data_opt::<Token>() {
             if let Ok(claims) = verify_access_token(token.0.clone(), &my_ctx.access_key) {
@@ -263,7 +266,6 @@ impl AdvertQuery {
             }
         }
 
-        // Finally, update each advert with its specifications, user, user rating, and favorite flag.
         let enriched_adverts: Vec<advert::Model> = matching_adverts
             .into_iter()
             .map(|mut advert| {
@@ -716,6 +718,8 @@ impl AdvertMutation {
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
+        println!("updating advert.....");
+
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             Some(token) => token,
             None => {
@@ -725,25 +729,26 @@ impl AdvertMutation {
             }
         };
 
-        let claims: BTreeMap<String, String> =
-            match access_token.verify_with_key(&my_ctx.access_key) {
-                Ok(res) => res,
-                Err(err) => return Err(async_graphql::Error::new(err.to_string())),
-            };
+        println!("parsing token.....");
 
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as usize;
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
 
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+        println!("claims: {:?}", claims);
+
+        let user_id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
+            id_str.parse().map_err(|_| {
+                async_graphql::Error::new("Invalid user ID in token: failed to parse string")
+            })?
+        } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
+            id_num as i32
+        } else {
             return Err(async_graphql::Error::new(
-                "you are not logged in".to_string(),
+                "Invalid user ID in token: missing id",
             ));
-        }
-
-        let user_id: i32 = claims["id"].parse().unwrap();
-        println!("user_id: {}", user_id);
+        };
 
         let advert: Option<advert::Model> = Advert::find_by_id(id).one(&my_ctx.db).await?;
         println!("advert: {:?}", advert);

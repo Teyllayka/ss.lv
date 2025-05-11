@@ -6,7 +6,6 @@ import {
 } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 import { graphql } from "$houdini";
-import { user } from "$lib/userStore";
 
 export const actions = {
   default: async (event: RequestEvent) => {
@@ -115,9 +114,7 @@ export const actions = {
       }
     `);
 
-
     let location_json = JSON.parse(data.location_json);
-
 
     let res = await create.mutate(
       {
@@ -149,16 +146,6 @@ export function load({ cookies }: any) {
   if (!logedIn) {
     return redirect(302, "/login");
   }
-
-  // let userValue: any;
-
-  // user.subscribe((value) => {
-  //   userValue = value;
-  // });
-
-  // if (!userValue || !userValue.emailVerified) {
-  //   return redirect(302, "/me");
-  // }
 }
 
 function getCategorySchema(category: string) {

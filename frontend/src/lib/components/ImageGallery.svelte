@@ -4,7 +4,7 @@
 
 <div class="thumbnail relative h-[200px]">
   {#each images as image, index}
-    <div class="li" style="background-color: white;">
+    <div class="bg-white dark:bg-gray-800 li">
       <img class="h-full w-full" src={image} alt={`Image ${index + 1}`} />
     </div>
   {/each}
@@ -24,91 +24,100 @@
 
 <style lang="scss">
   .thumbnail {
-    .li {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
 
-      img {
-        object-fit: contain;
-      }
-    }
+  .thumbnail .li {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
 
-    .h {
-      display: flex;
-      opacity: 0;
+  .thumbnail:not(:has(.hovers:hover)) .li:first-of-type {
+    opacity: 1;
+  }
 
-      &:has(.hovers:nth-of-type(2):hover) {
-        opacity: 1;
-      }
+  .thumbnail:has(.hovers:nth-of-type(1):hover) .li:nth-of-type(1) {
+    opacity: 1;
+  }
+  .thumbnail:has(.hovers:nth-of-type(2):hover) .li:nth-of-type(2) {
+    opacity: 1;
+  }
+  .thumbnail:has(.hovers:nth-of-type(3):hover) .li:nth-of-type(3) {
+    opacity: 1;
+  }
+  .thumbnail:has(.hovers:nth-of-type(4):hover) .li:nth-of-type(4) {
+    opacity: 1;
+  }
+  .thumbnail:has(.hovers:nth-of-type(5):hover) .li:nth-of-type(5) {
+    opacity: 1;
+  }
 
-      .hovers {
-        flex: 1 1;
+  .thumbnail .li:nth-of-type(n + 6) {
+    display: none;
+  }
 
-        &::after {
-          position: absolute;
-          content: "";
-          height: 2px;
-          bottom: 10px;
-          inset-inline: 10px;
-          background-color: gray;
-        }
+  .thumbnail .li img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
-        &:hover::after {
-          background-color: blue;
-        }
-      }
-    }
+  .thumbnail .h {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .thumbnail:hover .h {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
-    .li:first-child {
-      opacity: 1;
-    }
+  .thumbnail .hovers {
+    flex: 1 1 0;
+    position: relative;
+  }
 
-    .li:not(:first-child) {
-      opacity: 0;
-    }
+  .thumbnail .hovers::after {
+    content: "";
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background-color: gray;
+    transition: background-color 0.2s ease;
+  }
 
-    &:has(.hovers:nth-of-type(1):hover) .li:nth-of-type(1) {
-      opacity: 1;
-    }
+  .thumbnail .hovers:hover::after {
+    background-color: blue;
+  }
 
-    &:has(.hovers:nth-of-type(2):hover) .li:nth-of-type(2) {
-      opacity: 1;
-    }
+  .thumbnail .last-pager {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
 
-    &:has(.hovers:nth-of-type(3):hover) .li:nth-of-type(3) {
-      opacity: 1;
-    }
+  .thumbnail:has(.hovers:nth-of-type(5):hover) .last-pager {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
-    &:has(.hovers:nth-of-type(4):hover) .li:nth-of-type(4) {
-      opacity: 1;
-    }
-
-    &:has(.hovers:nth-of-type(5):hover) .li:nth-of-type(5) {
-      opacity: 1;
-    }
-
-    .last-pager {
-      display: grid;
-      place-items: center;
-      color: white;
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    &:has(.hovers:nth-of-type(5):hover) .last-pager {
-      opacity: 1;
-    }
-
-    .hovers:nth-of-type(n + 6) {
-      display: none;
-    }
-
-    .li:nth-of-type(n + 6) {
-      display: none;
-    }
+  .thumbnail .hovers:nth-of-type(n + 6) {
+    display: none;
   }
 </style>

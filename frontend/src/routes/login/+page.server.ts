@@ -35,7 +35,6 @@ export const actions = {
       { event },
     );
 
-
     if (!res.errors && res.data) {
       event.cookies.set("accessToken", res.data.login.accessToken, {
         path: "/",

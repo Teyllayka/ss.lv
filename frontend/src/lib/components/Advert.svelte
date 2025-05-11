@@ -5,7 +5,7 @@
   import { Heart, Star, MapPin } from "lucide-svelte";
   import { AddFavoriteStore, RemoveFavoriteStore } from "$houdini";
   import ImageGallery from "./ImageGallery.svelte";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { user } from "$lib/userStore";
 
@@ -32,12 +32,14 @@
 
   let location = $state("");
 
-  fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
-    .then((response) => response.json())
-    .then((data) => {
-      location = data.location;
-    })
-    .catch((err) => console.error("Error with reverse geocoding:", err));
+  onMount(() => {
+    fetch(`/api/reverse-geocode?lat=${advert.lat}&lon=${advert.lon}`)
+      .then((response) => response.json())
+      .then((data) => {
+        location = data.location;
+      })
+      .catch((err) => console.error("Error with reverse geocoding:", err));
+  });
 
   async function toggleSaveAdvert() {
     if (!$user.isLoggedIn) {

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getContext, onMount } from "svelte";
   import { graphql } from "$houdini";
-  import { browser } from "$app/environment";
   import Advert from "$lib/components/Advert.svelte";
   import type { Writable } from "svelte/store";
 
@@ -54,7 +53,6 @@
     }
   `);
 
-  // Types
   type Category = {
     id: string;
     name: string;
@@ -67,7 +65,6 @@
     type: "text" | "number" | "boolean";
   };
 
-  // Component state and filters
   let categories: Category[] = [];
   let selectedCategory: Category | null = null;
   let minPrice = 0;
@@ -83,7 +80,6 @@
 
   const locationStore = getContext<Writable<[number, number]>>("location");
 
-  // Build query variables
   function getVariables() {
     return {
       category: selectedCategory ? selectedCategory.id : null,
@@ -94,14 +90,13 @@
       minRating,
       sortField: sortOption,
       sortOrder,
-      centerLat: $locationStore[0] === 0 ? null : $locationStore[0], // Update with actual geolocation if available
-      centerLon: $locationStore[1] === 0 ? null : $locationStore[1], // Update with actual geolocation if available
+      centerLat: $locationStore[0] === 0 ? null : $locationStore[0],
+      centerLon: $locationStore[1] === 0 ? null : $locationStore[1],
       locationRange,
       customFields,
     };
   }
 
-  // Function to perform the search
   async function performSearch() {
     const result = await advertsQuery.fetch({ variables: getVariables() });
     if (result.data && result.data.searchAdverts) {
@@ -111,7 +106,6 @@
     }
   }
 
-  // Initialize categories and set search term from URL parameters on mount
   onMount(() => {
     categories = [
       {
@@ -137,20 +131,16 @@
     const q = params.get("q");
     if (q) {
       searchTerm = q;
-      // Automatically perform a search if there is a query parameter
       performSearch();
     }
   });
 
-  // Handler for changing category
   function handleCategoryChange(event: Event) {
     const categoryId = (event.target as HTMLSelectElement).value;
     selectedCategory = categories.find((c) => c.id === categoryId) || null;
-    // Reset custom fields when category changes
     customFields = {};
   }
 
-  // Handler for custom field inputs
   function handleCustomFieldChange(field: AdvertField, event: Event) {
     const value = (event.target as HTMLInputElement).value;
     customFields = {
@@ -174,7 +164,6 @@
     </h1>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <!-- Filters Sidebar -->
       <aside class="md:col-span-1">
         <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -278,7 +267,7 @@
               type="range"
               id="locationRange"
               min="0"
-              max="500"
+              max="2000"
               step="10"
               bind:value={locationRange}
               class="w-full"
@@ -322,16 +311,14 @@
         </div>
       </aside>
 
-      <!-- Adverts List -->
       <div class="md:col-span-3">
         <div class="mb-6 flex gap-2">
           <input
             type="text"
             placeholder="Search adverts..."
             bind:value={searchTerm}
-            class="w-full p-2 border border-gray-300 rounded-md"
+            class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-800 dark:text-white"
           />
-          <!-- Search Button -->
           <button
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             on:click={performSearch}
@@ -342,7 +329,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {#if adverts.length === 0}
-            <div class="col-span-full text-center py-4">
+            <div class="col-span-full text-center py-4 dark:text-gray-400">
               No adverts found matching your criteria.
             </div>
           {:else}
@@ -355,7 +342,3 @@
     </div>
   </div>
 </main>
-
-<style>
-  /* Add any additional styles here if needed */
-</style>

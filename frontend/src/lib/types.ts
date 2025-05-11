@@ -15,6 +15,7 @@ interface UserData {
   reviewedAdverts: any[];
   companyName: string;
   role: string;
+  avatarUrl: string;
 }
 
 interface UserStore {

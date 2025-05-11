@@ -1,10 +1,58 @@
 import { graphql } from "$houdini";
+import { editAdvertSchema, validateSchema } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
 import type { LoadEvent } from "@sveltejs/kit";
 
 export async function load(event: LoadEvent) {
   const advertId = parseInt(event.params.id ?? "0");
+
+  const advertQuery = graphql(`
+    query Advert($id: Int!) {
+      advert(id: $id) {
+        id
+        title
+        description
+        price
+        createdAt
+        lat
+        lon
+        oldPrice
+        isFavorited
+        photoUrl
+        additionalPhotos
+        soldTo
+        available
+
+        review {
+          id
+          rating
+          message
+          createdAt
+
+          user {
+            id
+            name
+            surname
+          }
+        }
+
+        specs {
+          id
+          key
+          value
+        }
+
+        user {
+          id
+          rating
+          name
+          surname
+          createdAt
+        }
+      }
+    }
+  `);
 
   const similarAdvertsQuery = graphql(`
     query similarAdverts($id: Int!) {
@@ -38,7 +86,12 @@ export async function load(event: LoadEvent) {
     event,
   });
 
-  return { similarAdverts };
+  const advert = await advertQuery.fetch({
+    variables: { id: advertId },
+    event,
+  });
+
+  return { similarAdverts, advert };
 }
 
 export const actions = {
@@ -48,7 +101,6 @@ export const actions = {
     if (!id) {
       return { success: false };
     }
-
 
     const deleteAdvert = graphql(`
       mutation deleteAdvert($advertId: Int!) {
@@ -62,7 +114,6 @@ export const actions = {
       { advertId: parseInt(id) },
       { event },
     );
-
 
     if (!res.errors && res.data) {
       redirect(302, "/");
@@ -78,7 +129,6 @@ export const actions = {
       return { success: false };
     }
 
-
     const formData = await event.request.formData();
 
     const data: any = {};
@@ -86,37 +136,65 @@ export const actions = {
       data[key] = value;
     });
 
-    console.log(data);
+    const errs = await validateSchema(editAdvertSchema, data);
 
-    //err check
+    if (errs.length > 0) {
+      const serializableData = { ...data };
+      delete serializableData.newMainPhoto;
+      delete serializableData.newPhotos;
+      delete serializableData.existingPhotos;
+      delete serializableData.existingMainPhoto;
 
+      return fail(400, {
+        data: serializableData,
+        errors: errs,
+      });
+    }
+
+    const newPhotos = formData.getAll("newPhotos") || [];
+    const existingPhotos =
+      (formData.getAll("existingPhotos") as string[]) || [];
+
+    if (!data.existingPhotos && data?.newMainPhoto?.size === 0) {
+      return fail(400, { error: "Invalid main photo" });
+    }
+
+    console.log(data.existingMainPhoto, data.newMainPhoto);
     let urls: string[] = [];
-    const additionalPhotos = formData.getAll("additionalPhotos");
-    const existingPhotos = formData.getAll("existingAdditionalPhotos");
+    const hasNewMain =
+      data.newMainPhoto instanceof File && data.newMainPhoto.size > 0;
 
-    // for (const entry of additionalPhotos) {
-    //   if (entry instanceof File && entry.size > 0) {
-    //     // Upload new file
-    //     const formGachi = new FormData();
-    //     formGachi.append("file", entry);
-    //     const response = await fetch("https://gachi.gay/api/upload", {
-    //       method: "POST",
-    //       body: formGachi,
-    //     });
-    //     const dataGachi = await response.json();
-    //     urls.push(dataGachi.link);
-    //   }
-    // }
+    if (!hasNewMain && data.existingMainPhoto) {
+      urls.push(data.existingMainPhoto);
+    }
 
-    urls = [
-      ...existingPhotos.filter((photo) => typeof photo === "string"),
-      ...urls,
-    ];
-    urls = urls.filter((url) => url !== undefined);
+    if (hasNewMain) {
+      const formGachi = new FormData();
+      formGachi.append("file", data.newMainPhoto);
+      const response = await fetch("https://gachi.gay/api/upload", {
+        method: "POST",
+        body: formGachi,
+      });
+      const dataGachi = await response.json();
+      urls.push(dataGachi.link);
+    }
+
+    urls.push(...existingPhotos);
+
+    for (const entry of newPhotos) {
+      if (entry instanceof File && entry.size > 0) {
+        const formGachi = new FormData();
+        formGachi.append("file", entry);
+        const response = await fetch("https://gachi.gay/api/upload", {
+          method: "POST",
+          body: formGachi,
+        });
+        const dataGachi = await response.json();
+        urls.push(dataGachi.link);
+      }
+    }
 
     console.log(urls);
-
-    //delete photos
 
     const baseFields = [
       "title",
@@ -130,18 +208,18 @@ export const actions = {
     ];
 
     const baseData: any = {};
-    const categoryData: any = {};
+    // const categoryData: any = {};
 
     for (const key in data) {
       if (baseFields.includes(key)) {
         baseData[key] = data[key];
-      } else {
-        categoryData[key] = data[key];
       }
     }
 
-    delete baseData.mainPhoto;
-    delete baseData.additionalPhotos;
+    delete baseData.newMainPhoto;
+    delete baseData.existingMainPhoto;
+    delete baseData.existingPhotos;
+    delete baseData.newPhotos;
 
     const edit = graphql(`
       mutation editAdvert(
@@ -163,17 +241,25 @@ export const actions = {
           id: $id
         ) {
           id
+          title
+          description
+          price
+          photoUrl
+          additionalPhotos
+          available
+          lat
+          lon
         }
       }
     `);
 
-    let location_json = JSON.parse(data.location_json);
+    //let location_json = JSON.parse(data.location_json);
 
     let res = await edit.mutate(
       {
         description: baseData.description,
-        lat: location_json.lat,
-        lon: location_json.lon,
+        lat: 1,
+        lon: 2,
         photos: urls,
         price: parseFloat(baseData.price),
         title: baseData.title,
@@ -183,10 +269,10 @@ export const actions = {
     );
 
     if (!res.errors && res.data) {
-      throw redirect(302, `/`);
+      return { success: true, advert: res.data.editAdvert };
     } else {
       console.log("errors", res.errors);
-      return fail(500, { error: "Failed to create advert" });
+      return fail(500, { error: "Failed to edit advert" });
     }
   },
   chat: async (event: RequestEvent) => {

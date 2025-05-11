@@ -1,6 +1,5 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 
-
 export async function load({ cookies, params }: any) {
   const start = Date.now();
 
@@ -25,7 +24,7 @@ export async function load({ cookies, params }: any) {
 
   return {
     ...data,
-    loadTimeMs: duration
+    loadTimeMs: duration,
   };
 }
 

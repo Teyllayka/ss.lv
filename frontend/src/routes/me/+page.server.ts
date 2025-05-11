@@ -13,13 +13,11 @@ export function load({ cookies }: any) {
 
 export const actions = {
   verify: async (event: RequestEvent) => {
-
     let userValue: any;
 
     user.subscribe((value) => {
       userValue = value;
     });
-
 
     if (userValue?.emailVerified) {
       return { success: false };
@@ -50,7 +48,7 @@ export const actions = {
       data[key] = value;
     });
 
-    console.log(data);
+    console.log(data, formData);
 
     const profileData = graphql(`
       query profileData {
@@ -90,6 +88,18 @@ export const actions = {
       updateFields.phone = data.phone;
     }
 
+    if (data.newAvatar && data.newAvatar.size > 0) {
+      const formGachi = new FormData();
+      formGachi.append("file", data.newAvatar);
+      const response = await fetch("https://gachi.gay/api/upload", {
+        method: "POST",
+        body: formGachi,
+      });
+      const dataGachi = await response.json();
+      console.log("dataGachi", dataGachi);
+      updateFields.avatarUrl = dataGachi.link;
+    }
+
     console.log(updateFields);
 
     if (Object.keys(updateFields).length === 0) {
@@ -112,6 +122,7 @@ export const actions = {
         $companyName: String
         $phone: String
         $password: String!
+        $avatarUrl: String
       ) {
         edit(
           name: $name
@@ -119,6 +130,7 @@ export const actions = {
           companyName: $companyName
           phone: $phone
           password: $password
+          avatarUrl: $avatarUrl
         ) {
           id
           name
@@ -129,6 +141,7 @@ export const actions = {
           rating
           telegramUsername
           phone
+          avatarUrl
 
           reviewedAdverts {
             title

@@ -790,7 +790,7 @@
     >
         <div class="relative max-w-4xl max-h-[90vh]">
             <img
-                src={currentViewedImage || "/placeholder.svg"}
+                src={currentViewedImage}
                 alt="Full size image"
                 class="max-h-[90vh] max-w-full object-contain"
             />

@@ -10,6 +10,7 @@ query me {
     telegramUsername
     phone
     role
+    avatarUrl
 
     reviewedAdverts {
       title
@@ -38,6 +39,7 @@ query me {
         createdAt
         user {
           name
+          avatarUrl
         }
       }
     }
