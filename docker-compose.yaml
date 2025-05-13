@@ -4,29 +4,54 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
+    depends_on:
+      - certbot
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./conf.d:/etc/nginx/conf.d:ro
       - ./html:/usr/share/nginx/html:ro
-      - ./certbot/conf:/etc/letsencrypt:ro       # ← mount the certbot conf here
-      - ./certbot/www:/var/www/certbot:ro
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-var:/var/www/certbot:ro
     networks:
       - app-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     restart: always
-  
+
   certbot:
     image: certbot/certbot:latest
     container_name: certbot
+    depends_on:
+      - nginx
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/www/certbot
+    environment:
+      - DOMAIN=ad-ee.tech
+      - DOMAIN=www.ad-ee.tech
+      - EMAIL=you@example.com
+    entrypoint: >
+      /bin/sh -c "
+        # 1) If no cert exists, issue it
+        if [ ! -d /etc/letsencrypt/live/${DOMAIN} ]; then
+          certbot certonly \
+            --noninteractive --agree-tos --email ${EMAIL} \
+            --webroot -w /var/www/certbot \
+            -d ${DOMAIN} -d www.${DOMAIN}
+        fi
+        # 2) Run renew loop, reload nginx on every successful renewal
+        while :; do
+          certbot renew \
+            --quiet \
+            --deploy-hook 'nginx -s reload' \
+            --webroot -w /var/www/certbot
+          sleep 12h
+        done
+      "
+    networks:
+      - app-network
+    restart: unless-stopped
 
   chat:
     build:
