@@ -679,25 +679,24 @@ impl UserMutation {
     async fn verify_email(
         &self,
         ctx: &async_graphql::Context<'_>,
-        token: String,
     ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let claims: BTreeMap<String, String> = match token.verify_with_key(&my_ctx.email_key) {
-            Ok(res) => res,
-            Err(err) => return Err(async_graphql::Error::new(err.to_string())),
+        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
+            Some(token) => token,
+            None => {
+                return Err(async_graphql::Error::new(
+                    "you are not logged in".to_string(),
+                ));
+            }
         };
 
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as usize;
+        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+            Ok(claims) => claims,
+            Err(err) => return Err(err),
+        };
 
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
-            return Err(async_graphql::Error::new("wrong token".to_string()));
-        }
-
-        let email = claims["email"].clone();
+        let email = claims["email"].clone().to_string();
 
         let user: Option<user::Model> = User::find_by_email(email).one(&my_ctx.db).await?;
 

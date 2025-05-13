@@ -714,8 +714,6 @@ impl AdvertMutation {
     ) -> Result<advert::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        println!("updating advert.....");
-
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
             Some(token) => token,
             None => {
@@ -725,14 +723,10 @@ impl AdvertMutation {
             }
         };
 
-        println!("parsing token.....");
-
         let claims = match verify_access_token(access_token, &my_ctx.access_key) {
             Ok(claims) => claims,
             Err(err) => return Err(err),
         };
-
-        println!("claims: {:?}", claims);
 
         let user_id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
             id_str.parse().map_err(|_| {
