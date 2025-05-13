@@ -8,6 +8,9 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf  
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./html:/usr/share/nginx/html:ro
+      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
     networks:
       - app-network
     logging:
@@ -49,6 +52,7 @@ services:
     depends_on:
       - backend
       - chat
+      - nginx
     networks:
       - app-network
     restart: always
