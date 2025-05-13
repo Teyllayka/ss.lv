@@ -1,6 +1,24 @@
 version: "3.8"
 
 services:
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx_proxy
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.dev.conf:/etc/nginx/nginx.conf  
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - app-network
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #   restart: always
+
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
@@ -9,8 +27,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf  
-      - ./certbot/conf:/etc/letsencrypt  # Mount certbot certificates
-      - ./certbot/www:/var/www/certbot   # For ACME challenge
+      - ./certbot/conf:/etc/letsencrypt  
+      - ./certbot/www:/var/www/certbot 
     networks:
       - app-network
     logging:
@@ -37,7 +55,6 @@ services:
     restart: always
     depends_on:
       - nginx
-
 
   chat:
     build:
@@ -66,8 +83,7 @@ services:
       - "4173:3000"
     environment:
       PUBLIC_API_URL: /backend
-      PUBLIC_CHAT_API: http://nginx/chat
-      CHAT_SSR_BASE: http://chat:4000
+      PUBLIC_CHAT_API: http://chat:4000
     depends_on:
       - backend
       - chat

@@ -336,6 +336,12 @@ impl UserMutation {
 
         let naive_date_time = Utc::now().naive_utc();
 
+        let user: Option<user::Model> = User::find_by_email(email.clone()).one(&my_ctx.db).await?;
+
+        if user.is_some() {
+            return Err(async_graphql::Error::new("User already exists".to_string()));
+        }
+
         let user = user::ActiveModel {
             name: Set(name),
             surname: Set(surname),
