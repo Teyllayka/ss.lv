@@ -3,6 +3,7 @@
   import { fade, fly } from "svelte/transition";
   import { Users, ShoppingBag, TrendingUp, Calendar } from "lucide-svelte";
   import type { PageData } from "./$houdini";
+  import * as m from "$lib/paraglide/messages.js";
 
   export let data: PageData;
 
@@ -62,10 +63,10 @@
       <h1
         class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2"
       >
-        Marketplace Statistics
+        {m.marketplace_statistics()}
       </h1>
       <p class="text-lg text-gray-600 dark:text-gray-400">
-        Overview of users and adverts
+        {m.overview_of_users_and_adverts()}
       </p>
     </div>
 
@@ -84,7 +85,7 @@
           <div class="p-6">
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Users
+                {m.users()}
               </h2>
               <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
                 <Users class="w-6 h-6 text-blue-500 dark:text-blue-400" />
@@ -94,7 +95,7 @@
             <div class="grid grid-cols-2 gap-6">
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  Today
+                  {m.today()}
                 </p>
                 <div class="flex items-end">
                   <p class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -110,7 +111,7 @@
 
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  All Time
+                  {m.all_time()}
                 </p>
                 <p class="text-3xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(dataStats.users.total)}
@@ -124,7 +125,7 @@
               class="flex items-center text-sm text-gray-500 dark:text-gray-400"
             >
               <Calendar class="w-4 h-4 mr-2" />
-              <span>Last updated: {new Date().toLocaleString()}</span>
+              <span>{m.last_updated()}: {new Date().toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -136,7 +137,7 @@
           <div class="p-6">
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Adverts
+                {m.adverts()}
               </h2>
               <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
                 <ShoppingBag
@@ -148,7 +149,7 @@
             <div class="grid grid-cols-2 gap-6">
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  Today
+                  {m.today()}
                 </p>
                 <div class="flex items-end">
                   <p class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -165,7 +166,7 @@
 
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  All Time
+                  {m.all_time()}
                 </p>
                 <p class="text-3xl font-bold text-gray-900 dark:text-white">
                   {formatNumber(dataStats.adverts.total)}
@@ -179,7 +180,7 @@
               class="flex items-center text-sm text-gray-500 dark:text-gray-400"
             >
               <Calendar class="w-4 h-4 mr-2" />
-              <span>Last updated: {new Date().toLocaleString()}</span>
+              <span>{m.last_updated()}: {new Date().toLocaleString()}</span>
             </div>
           </div>
         </div>

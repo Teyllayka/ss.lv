@@ -1,8 +1,12 @@
+import { chatUrl } from "$lib/consts";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const GET: RequestHandler = async ({ cookies }) => {
+
+
+export const GET: RequestHandler = async ({ cookies, fetch }) => {
   const accessToken = cookies.get("accessToken");
-  const response = await fetch(`http://localhost:4000/are-unread`, {
+  console.log("chatUrl ", `${chatUrl}/are-unread`)
+  const response = await fetch(`${chatUrl}/are-unread`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

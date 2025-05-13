@@ -1,12 +1,12 @@
 import { HoudiniClient } from "$houdini";
-const apiUrl = import.meta.env.VITE_API_URL;
+import { env } from "$env/dynamic/public";
 
 interface Session {
   accessToken?: string;
 }
 
 export default new HoudiniClient({
-  url: apiUrl || "http://127.0.0.1:90",
+  url: env.PUBLIC_API_URL || "http://127.0.0.1:90",
 
   fetchParams({ session }: { session?: Session | null }) {
     return {

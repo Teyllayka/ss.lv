@@ -1,18 +1,19 @@
 <script lang="ts">
-import type { PageData } from "./$houdini";
-import Advert from "$lib/components/Advert.svelte";
+  import type { PageData } from "./$houdini";
+  import Advert from "$lib/components/Advert.svelte";
+  import * as m from "$lib/paraglide/messages.js";
 
-export let data: PageData;
+  export let data: PageData;
 
-$: ({ Favorites } = data);
+  $: ({ Favorites } = data);
 
-$: favoritedAdverts = $Favorites.data?.getFavorites || [];
+  $: favoritedAdverts = $Favorites.data?.getFavorites || [];
 
-function handleFavoriteChange(advertId: number, isFavorited: boolean) {
-	if (!isFavorited) {
-		favoritedAdverts = favoritedAdverts.filter((ad) => ad.id !== advertId);
-	}
-}
+  function handleFavoriteChange(advertId: number, isFavorited: boolean) {
+    if (!isFavorited) {
+      favoritedAdverts = favoritedAdverts.filter((ad) => ad.id !== advertId);
+    }
+  }
 </script>
 
 <div
@@ -22,12 +23,12 @@ function handleFavoriteChange(advertId: number, isFavorited: boolean) {
     <h1
       class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center"
     >
-      Favorited Adverts
+      {m.favorited_adverts()}
     </h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {#if $Favorites.fetching}
-        loading...
+        {m.loading()}
       {:else if $Favorites.errors}
         err...
         {JSON.stringify($Favorites.errors)}

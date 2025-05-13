@@ -9,6 +9,7 @@
   import { user } from "$lib/userStore";
   import AddressField from "$lib/components/AddressField.svelte";
   export let form;
+  import * as m from "$lib/paraglide/messages.js";
 
   let category: keyof typeof categoryFields | "" = "";
   let isLoading = false;
@@ -113,7 +114,7 @@
       <h1
         class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center"
       >
-        Create New Advert
+        {m.create_new_advert()}
       </h1>
 
       {#if !$user.emailVerified}
@@ -121,7 +122,7 @@
           class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
           role="alert"
         >
-          <p class="font-bold">Email Not Verified</p>
+          <p class="font-bold">{m.email_not_verified()}</p>
           <p>Please verify your email address to create an advert.</p>
           <!-- <button
             on:click={toggleVerificationPopup}
@@ -146,7 +147,7 @@
           <InputField
             name="title"
             type="text"
-            placeholder="Title"
+            placeholder={m.title()}
             errors={form?.errors || []}
             value={form?.data.title}
             disabled={!$user.emailVerified}
@@ -157,16 +158,7 @@
           class="relative"
           in:fly={{ y: 20, duration: 300, delay: 200, easing: cubicOut }}
         >
-          <!-- <InputField
-            name="location"
-            type="text"
-            placeholder="Location"
-            errors={form?.errors || []}
-            value={form?.data.location}
-            disabled={!$user.emailVerified}
-          /> -->
-
-          <AddressField name="location" placeholder="location" />
+          <AddressField name="location" placeholder={m.location()} />
         </div>
 
         <div
@@ -176,7 +168,7 @@
           <InputField
             name="price"
             type="number"
-            placeholder="Price"
+            placeholder={m.price()}
             errors={form?.errors || []}
             value={form?.data.price}
             disabled={!$user.emailVerified}
@@ -189,7 +181,7 @@
         >
           <TextField
             name="description"
-            placeholder="Description"
+            placeholder={m.description()}
             errors={form?.errors || []}
             value={form?.data.description || ""}
             disabled={!$user.emailVerified}
@@ -219,7 +211,7 @@
               ? 'border-red-500'
               : 'border-gray-300 dark:border-gray-600'}"
           >
-            <option value="">Select a category</option>
+            <option value="">{m.select_category()}</option>
             {#each categories as cat}
               <option value={cat.value}>{cat.label}</option>
             {/each}
@@ -274,7 +266,7 @@
               for="mainPhoto"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Main Photo
+              {m.main_photo()}
             </label>
             <div class="flex items-center justify-center w-full">
               <label
@@ -297,7 +289,7 @@
                       and drop
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG (MAX. 800x400px)
+                      {m.png_jpg()}
                     </p>
                   </div>
                 {/if}
@@ -327,7 +319,7 @@
               for="additionalPhotos"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Additional Photos
+              {m.additional_photos()}
             </label>
             <div class="flex items-center justify-center w-full">
               <label
@@ -343,7 +335,7 @@
                     drop
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG (MAX. 800x400px)
+                    {m.png_jpg()}
                   </p>
                 </div>
                 <input
@@ -409,9 +401,9 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Creating Advert...
+            {m.creating_advert()}
           {:else}
-            Create Advert
+            {m.create_advert()}
           {/if}
         </button>
       </form>

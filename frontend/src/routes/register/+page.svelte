@@ -1,15 +1,16 @@
 <script>
-import { fade, fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { enhance } from "$app/forms";
-export let form;
-import InputField from "$lib/components/InputField.svelte";
+  import { fade, fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { enhance } from "$app/forms";
+  export let form;
+  import InputField from "$lib/components/InputField.svelte";
+  import * as m from "$lib/paraglide/messages.js";
 
-let registrationType = "user";
+  let registrationType = "user";
 
-let isLoading = false;
+  let isLoading = false;
 
-let csrfToken = "";
+  let csrfToken = "";
 </script>
 
 <div
@@ -23,7 +24,7 @@ let csrfToken = "";
       <h1
         class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center"
       >
-        Create an Account
+        {m.create_an_account()}
       </h1>
 
       <form method="POST" use:enhance class="space-y-6">
@@ -36,7 +37,7 @@ let csrfToken = "";
               : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-md transition-colors duration-200"
             on:click={() => (registrationType = "user")}
           >
-            User
+            {m.user()}
           </button>
           <button
             type="button"
@@ -45,7 +46,7 @@ let csrfToken = "";
               : 'bg-gray-200 text-gray-700'} px-4 py-2 rounded-md transition-colors duration-200"
             on:click={() => (registrationType = "company")}
           >
-            Company
+            {m.company()}
           </button>
         </div>
 
@@ -58,7 +59,7 @@ let csrfToken = "";
               <InputField
                 name="name"
                 type="text"
-                placeholder="Name"
+                placeholder={m.name()}
                 errors={form?.errors || []}
                 value={form?.data.name}
               />
@@ -71,7 +72,7 @@ let csrfToken = "";
               <InputField
                 name="surname"
                 type="text"
-                placeholder="Surname"
+                placeholder={m.surname()}
                 errors={form?.errors || []}
                 value={form?.data.surname}
               />
@@ -85,7 +86,7 @@ let csrfToken = "";
             <InputField
               name="companyName"
               type="text"
-              placeholder="Company Name"
+              placeholder={m.company_name()}
               errors={form?.errors || []}
               value={form?.data.companyName}
             />
@@ -99,7 +100,7 @@ let csrfToken = "";
           <InputField
             name="email"
             type="email"
-            placeholder="Email"
+            placeholder={m.email()}
             errors={form?.errors || []}
             value={form?.data.email}
           />
@@ -112,7 +113,7 @@ let csrfToken = "";
           <InputField
             name="password"
             type="password"
-            placeholder="Password"
+            placeholder={m.password()}
             errors={form?.errors || []}
           />
         </div>
@@ -124,7 +125,7 @@ let csrfToken = "";
           <InputField
             name="repeatPassword"
             type="password"
-            placeholder="Confirm Password"
+            placeholder={m.confirm_password()}
             errors={form?.errors || []}
           />
         </div>
@@ -156,9 +157,9 @@ let csrfToken = "";
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Registering...
+            {m.registering()}
           {:else}
-            Register
+            {m.register()}
           {/if}
         </button>
       </form>
@@ -167,12 +168,12 @@ let csrfToken = "";
         class="mt-8 text-center text-sm text-gray-600 dark:text-gray-400"
         in:fly={{ y: 20, duration: 300, delay: 900, easing: cubicOut }}
       >
-        Already have an account?
+        {m.already_have_account()}
         <a
           href="/login"
           class="font-medium text-blue-500 dark:text-blue-400 hover:underline"
         >
-          Sign in
+          {m.sign_in()}
         </a>
       </p>
     </div>

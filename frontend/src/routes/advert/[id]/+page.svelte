@@ -24,11 +24,12 @@
   import TextField from "$lib/components/TextField.svelte";
   import { enhance } from "$app/forms";
   import Advert from "$lib/components/Advert.svelte";
+  import * as m from "$lib/paraglide/messages.js";
 
   export let data: PageData;
   export let form;
 
-  $: advert = data.advert.data.advert;
+  $: advert = data?.advert?.data?.advert || null;
   $: gridCols = $user.isLoggedIn ? "grid-cols-3" : "grid-cols-2";
   $: ({ similarAdverts: similarAdvertsQuery } = data);
 
@@ -270,7 +271,7 @@
                           and drop
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                          PNG, JPG (MAX. 800x400px)
+                          {m.png_jpg()}
                         </p>
                       </div>
                     {/if}
@@ -308,11 +309,10 @@
                     >
                       <Camera class="w-8 h-8 mb-3 text-gray-400" />
                       <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span class="font-semibold">Click to upload</span> or drag
-                        and drop
+                        {@html m.click_to_upload()}
                       </p>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG (MAX. 800x400px)
+                        {m.png_jpg()}
                       </p>
                     </div>
                     <input
@@ -374,7 +374,7 @@
                 id="editTitle"
                 name="title"
                 type="text"
-                placeholder="Title"
+                placeholder={m.title()}
                 bind:value={editForm.title}
                 errors={form?.errors || []}
               />
@@ -382,20 +382,20 @@
                 name="price"
                 type="number"
                 bind:value={editForm.price}
-                placeholder="Price"
+                placeholder={m.price()}
                 errors={form?.errors || []}
               />
               <AddressField
                 id="editAddress"
                 name="location"
-                placeholder="Location"
+                placeholder={m.location()}
                 bind:value={location}
                 errors={form?.errors || []}
               />
               <TextField
                 id="description"
                 name="description"
-                placeholder="Description"
+                placeholder={m.description()}
                 bind:value={editForm.description}
                 errors={form?.errors || []}
               />
@@ -406,13 +406,13 @@
                   on:click={toggleEditMode}
                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
-                  Cancel
+                  {m.cancel()}
                 </button>
                 <button
                   type="submit"
                   class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Save Changes
+                  {m.save_changes()}
                 </button>
               </div>
             </div>
@@ -475,14 +475,14 @@
                       class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit"
                     >
                       <CheckCircle class="w-4 h-4 mr-1" />
-                      Sold
+                      {m.sold()}
                     </div>
                   {:else}
                     <div
                       class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit"
                     >
                       <Tag class="w-4 h-4 mr-1" />
-                      Available
+                      {m.available()}
                     </div>
                   {/if}
                 </div>
@@ -492,7 +492,8 @@
                       on:click={toggleEditMode}
                       class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
                     >
-                      <Edit class="w-5 h-5 inline-block" /> Edit
+                      <Edit class="w-5 h-5 inline-block" />
+                      {m.edit()}
                     </button>
                   {/if}
                   {#if $user.role == "ADMIN" || $user.role == "MODERATOR" || $user.id == advert.user.id}
@@ -500,7 +501,8 @@
                       on:click={handleDelete}
                       class="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
                     >
-                      <X class="w-5 h-5 inline-block mr-2" /> Delete
+                      <X class="w-5 h-5 inline-block mr-2" />
+                      {m.delete_()}
                     </button>
                   {/if}
                 </div>
@@ -519,7 +521,7 @@
                   <h2
                     class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2"
                   >
-                    Specifications
+                    {m.specifications()}
                   </h2>
                   <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                     {#each advert.specs as spec}
@@ -547,7 +549,7 @@
                   >
                   {#if $locationStore[0] != 0 && $locationStore[1] != 0}
                     <span class="text-gray-500 dark:text-gray-400"
-                      >{distance} km</span
+                      >{distance} {m.km()}</span
                     >
                   {/if}
                 </div>
@@ -560,10 +562,12 @@
                 rel="noopener noreferrer"
                 class="mt-2 inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
               >
-                <MapPin class="w-5 h-5 inline-block mr-2" /> Route
+                <MapPin class="w-5 h-5 inline-block mr-2" />
+                {m.route()}
               </a>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                Posted on {formatDate(advert.createdAt.toString())}
+                {m.posted_on()}
+                {formatDate(advert.createdAt.toString())}
               </p>
               {#if $user.id !== advert.user.id}
                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
@@ -593,7 +597,8 @@
                     </div>
                   </div>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Member since {formatDate(advert.user.createdAt.toString())}
+                    {m.member_since()}
+                    {formatDate(advert.user.createdAt.toString())}
                   </p>
                   <div class={`grid ${gridCols} gap-4`}>
                     {#if $user.isLoggedIn}
@@ -613,7 +618,7 @@
                           class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                         >
                           <MessageSquare class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                          <span>Chat</span>
+                          <span>{m.chat()}</span>
                         </button>
                       </form>
                     {/if}
@@ -622,13 +627,13 @@
                       class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
                       <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                      <span>Message</span>
+                      <span>{m.message()}</span>
                     </button>
                     <button
                       class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
                       <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                      <span>Call</span>
+                      <span>{m.call()}</span>
                     </button>
                   </div>
                 </div>
@@ -643,7 +648,7 @@
           >
             <div class="p-6">
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Review
+                {m.review()}
               </h2>
 
               <div
@@ -661,7 +666,7 @@
                       <span
                         class="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full"
                       >
-                        Your review
+                        {m.your_review()}
                       </span>
                     {/if}
                   </div>
@@ -708,7 +713,7 @@
             <h2
               class="text-2xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap mb-4"
             >
-              Leave a review
+              {m.leave_review()}
             </h2>
 
             <div class="flex items-center mb-8">
@@ -744,7 +749,7 @@
               type="submit"
               class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
             >
-              Submit Review
+              {m.submit_review()}
             </button>
           </form>
         {/if}
@@ -752,7 +757,7 @@
         {#if similarAdvertsQuery && similarAdvertsQuery.data && similarAdvertsQuery.data.similarAdverts.length > 0}
           <div class="mt-8">
             <h2 class="text-2xl font-bold mb-4 dark:text-gray-200">
-              Similar Adverts
+              {m.similar_adverts()}
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {#each similarAdvertsQuery.data.similarAdverts as similar}
@@ -761,7 +766,7 @@
             </div>
           </div>
         {:else}
-          <p class="mt-8 text-gray-600">No similar adverts found.</p>
+          <p class="mt-8 text-gray-600">{m.no_similar_adverts()}</p>
         {/if}
       </div>
     </div>

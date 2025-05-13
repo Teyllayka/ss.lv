@@ -1,8 +1,9 @@
 import { graphql } from "$houdini";
+import { chatUrl } from "$lib/consts";
 import { editAdvertSchema, validateSchema } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
-import type { LoadEvent } from "@sveltejs/kit";
+import type { Actions, LoadEvent } from "@sveltejs/kit";
 
 export async function load(event: LoadEvent) {
   const advertId = parseInt(event.params.id ?? "0");
@@ -94,7 +95,7 @@ export async function load(event: LoadEvent) {
   return { similarAdverts, advert };
 }
 
-export const actions = {
+export const actions: Actions = {
   delete: async (event: RequestEvent) => {
     const { id } = event.params;
 
@@ -275,19 +276,19 @@ export const actions = {
       return fail(500, { error: "Failed to edit advert" });
     }
   },
-  chat: async (event: RequestEvent) => {
-    const formData = await event.request.formData();
+  chat: async ({request, fetch, cookies }) => {
+    const formData = await request.formData();
     const advertId = formData.get("advertId");
 
     if (!advertId) {
       return fail(400, { error: "Invalid advert or user ID" });
     }
 
-    const response = await fetch("http://localhost:4000/create-chat", {
+    const response = await fetch(`${chatUrl}/create-chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + event.cookies.get("accessToken"),
+        Authorization: "Bearer " + cookies.get("accessToken"),
       },
       body: JSON.stringify({ postId: advertId }),
     });

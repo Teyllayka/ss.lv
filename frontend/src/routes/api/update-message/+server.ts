@@ -1,9 +1,10 @@
+import { chatUrl } from "$lib/consts";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const POST: RequestHandler = async ({ cookies, request }) => {
+export const POST: RequestHandler = async ({ cookies, request, fetch }) => {
   const { chatId, messageId } = await request.json();
   const accessToken = cookies.get("accessToken");
-  const response = await fetch(`http://localhost:4000/message-read`, {
+  const response = await fetch(`${chatUrl}/message-read`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -11,11 +12,8 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     },
     body: JSON.stringify({ chatId, messageId }),
   });
-  console.log("response", response);
-  const data = await response.json();
-  console.log("data", data);
-  if (response.status === 401) {
+  if (!response.ok) {
     return new Response(null, { status: 401 });
   }
-  return new Response(JSON.stringify(data), { status: response.status });
+  return new Response(null, { status: response.status });
 };

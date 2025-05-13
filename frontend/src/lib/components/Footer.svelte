@@ -1,5 +1,18 @@
 <script>
-import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
+  import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
+  import * as m from "$lib/paraglide/messages.js";
+
+  let footerLinks = [
+    { name: m.contact(), href: "/contact" },
+    { name: m.faq_footer(), href: "/faq" },
+    { name: m.shipping(), href: "/shipping" },
+  ];
+
+  let pages = [
+    { name: m.privacy_policy(), href: "/privacy-policy" },
+    { name: m.terms_of_service(), href: "/terms-of-service" },
+    { name: m.cookie_policy(), href: "/cookie-policy" },
+  ];
 </script>
 
 <footer class="bg-white dark:bg-gray-800 transition-colors duration-300">
@@ -10,7 +23,7 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
           Adee
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-300">
-          Your one-stop shop for everything you need.
+          {m.slogan()}
         </p>
       </div>
 
@@ -18,16 +31,16 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
         <h4
           class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
         >
-          Categories
+          {m.customer_service()}
         </h4>
         <ul class="space-y-2">
-          {#each ["Electronics", "Clothing", "Home & Garden", "Sports"] as category}
+          {#each footerLinks as link}
             <li>
               <a
-                href="#{category.toLowerCase().replace(' & ', '-')}"
+                href={link.href}
                 class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
               >
-                {category}
+                {link.name}
               </a>
             </li>
           {/each}
@@ -38,55 +51,35 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
         <h4
           class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
         >
-          Customer Service
-        </h4>
-        <ul class="space-y-2">
-          {#each ["Contact", "FAQ", "Shipping"] as item}
-            <li>
-              <a
-                href={item.toLowerCase().replace(" ", "-")}
-                class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-              >
-                {item}
-              </a>
-            </li>
-          {/each}
-        </ul>
-      </div>
-
-      <div>
-        <h4
-          class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
-        >
-          Follow Us
+          {m.follow_us()}
         </h4>
         <div class="flex space-x-4">
           <a
             href="#facebook"
             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <span class="sr-only">Facebook</span>
+            <span class="sr-only">{m.facebook()}</span>
             <Facebook class="h-6 w-6" />
           </a>
           <a
             href="#twitter"
             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <span class="sr-only">Twitter</span>
+            <span class="sr-only">{m.twitter()}</span>
             <Twitter class="h-6 w-6" />
           </a>
           <a
             href="#instagram"
             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <span class="sr-only">Instagram</span>
+            <span class="sr-only">{m.instagram()}</span>
             <Instagram class="h-6 w-6" />
           </a>
           <a
             href="https://github.com/Teyllayka/ss.lv"
             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <span class="sr-only">GitHub</span>
+            <span class="sr-only">{m.github()}</span>
             <Github class="h-6 w-6" />
           </a>
         </div>
@@ -97,16 +90,15 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-svelte";
       class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center"
     >
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} Adee. All rights reserved.
+        © {new Date().getFullYear()} Adee. {m.all_rights_reserved()}
       </p>
       <nav class="flex space-x-4 mt-4 md:mt-0">
-        {#each ["Privacy Policy", "Terms of Service", "Cookie Policy"] as item}
+        {#each pages as page}
           <a
-            href="/{item.toLowerCase().replace(/\s+/g, '-')}"
-            class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+            href={page.href}
+            class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+            >{page.name}</a
           >
-            {item}
-          </a>
         {/each}
       </nav>
     </div>

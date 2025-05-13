@@ -1,11 +1,12 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import { cubicOut } from "svelte/easing";
-import { enhance } from "$app/forms";
-export let form;
-import InputField from "$lib/components/InputField.svelte";
+  import { fade, fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
+  import { enhance } from "$app/forms";
+  export let form;
+  import InputField from "$lib/components/InputField.svelte";
+  import * as m from "$lib/paraglide/messages.js";
 
-let csrfToken = "";
+  let csrfToken = "";
 </script>
 
 <div
@@ -16,7 +17,7 @@ let csrfToken = "";
     in:fade={{ duration: 300, delay: 300 }}
   >
     <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">
-      Welcome Back
+      {m.welcome_back()}
     </h2>
 
     <form method="POST" use:enhance class="space-y-6">
@@ -28,7 +29,7 @@ let csrfToken = "";
         <InputField
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder={m.email()}
           errors={form?.errors || []}
           value={form?.data.email}
         />
@@ -41,7 +42,7 @@ let csrfToken = "";
         <InputField
           name="password"
           type="password"
-          placeholder="Password"
+          placeholder={m.password()}
           errors={form?.errors || []}
         />
       </div>
@@ -57,12 +58,12 @@ let csrfToken = "";
             type="checkbox"
             class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out border-gray-300 dark:border-gray-600 rounded"
           />
-          <span class="ml-2">Remember me</span>
+          <span class="ml-2">{m.remember_me()}</span>
         </label>
         <a
           href="/forgot-password"
           class="text-sm text-blue-500 dark:text-blue-400 hover:underline"
-          >Forgot password?</a
+          >{m.forgot_password()}</a
         >
       </div>
 
@@ -78,7 +79,7 @@ let csrfToken = "";
           </svg>
           Signing In...
         {:else} -->
-        Sign In
+        {m.sign_in()}
         <!-- {/if} -->
       </button>
     </form>
@@ -87,37 +88,16 @@ let csrfToken = "";
       class="mt-8 text-center text-sm text-gray-600 dark:text-gray-400"
       in:fly={{ y: 20, duration: 300, delay: 700, easing: cubicOut }}
     >
-      Don't have an account?
+      {m.dont_have_account()}
       <a
         href="/register"
         class="font-medium text-blue-500 dark:text-blue-400 hover:underline"
       >
-        Sign up now
+        {m.sign_up_now()}
       </a>
     </p>
   </div>
 </div>
-
-<!-- 
-
-<form method="POST" use:enhance>
-  <InputField
-    name="email"
-    type="email"
-    placeholder="email"
-    errors={form?.errors || []}
-    value={form?.data.email}
-  />
-
-  <InputField
-    name="password"
-    type="password"
-    placeholder="password"
-    errors={form?.errors || []}
-  />
-
-  <button type="submit">Login</button>
-</form> -->
 
 <style lang="postcss">
   :global(body) {

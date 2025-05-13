@@ -29,7 +29,6 @@ export class AppController {
   @UseGuards(AuthGuard)
   async areUnread(@Req() s) {
     const unread = await this.appservice.areUnread(s);
-    console.log('unread', unread);
     return unread;
   }
 
@@ -41,7 +40,6 @@ export class AppController {
     this.eventsGateway.server.emit('chat-' + message.chat_id, message);
 
     this.eventsGateway.server.emit('user-' + (creator.toString() === s.user.id ? participant.toString() : creator.toString()), message);
-    console.log('message', message, "user-" + (creator.toString() === s.user.id ? participant.toString() : creator.toString()));
 
     return message;
   }
@@ -77,7 +75,6 @@ export class AppController {
       };
     }
 
-    console.log('deal', deal);
 
     this.eventsGateway.server.emit('deal-' + b.chatId, deal);
     return deal;
@@ -100,7 +97,6 @@ export class AppController {
   async handleMessageRead(
     @Req() s, @Body() b
   ) {
-    console.log('message-read', b);
     await this.appservice.markMessageRead(s, b);
     this.eventsGateway.server.emit('message-read-chat-' + b.chatId, b.messageId);
   }

@@ -5,6 +5,7 @@
   import InputField from "$lib/components/InputField.svelte";
   import TextField from "$lib/components/TextField.svelte";
   import emailjs from "@emailjs/browser";
+  import * as m from "$lib/paraglide/messages.js";
 
   export let form;
   let csrfToken = "";
@@ -43,7 +44,7 @@
       <h1
         class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center"
       >
-        Contact Us
+        {m.contact_us()}
       </h1>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -103,7 +104,7 @@
               class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
               in:fly={{ y: 20, duration: 300, delay: 500, easing: cubicOut }}
             >
-              Send Message
+              {m.send_message()}
             </button>
           </form>
         {:else}
@@ -126,11 +127,10 @@
               ></path>
             </svg>
             <h2 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">
-              Message Sent!
+              {m.message_sent()}
             </h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Thank you for contacting us. We'll get back to you as soon as
-              possible.
+              {m.thanks_for_contacting_us()}
             </p>
           </div>
         {/if}
@@ -140,12 +140,10 @@
           in:fly={{ x: 20, duration: 300, delay: 600, easing: cubicOut }}
         >
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
-            Get in Touch
+            {m.get_in_touch()}
           </h2>
           <p class="text-gray-600 dark:text-gray-300">
-            Have questions or need assistance? We're here to help! Feel free to
-            reach out to us using the contact information below or by filling
-            out the form.
+            {m.have_questions()}
           </p>
           <div class="space-y-4">
             <div
@@ -171,12 +169,10 @@
             <h3
               class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
             >
-              Business Hours
+              {m.business_hours()}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              Monday - Friday: 9:00 AM - 5:00 PM<br />
-              Saturday: 10:00 AM - 2:00 PM<br />
-              Sunday: Closed
+              {@html m.working_hours()}
             </p>
           </div>
         </div>

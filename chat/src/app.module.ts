@@ -6,9 +6,14 @@ import { jwtConstants } from './constants';
 import { EventsGateway } from './events.gateway';
 import { KyselyService } from './kysely.service';
 import { VoteModule } from './vote.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+     ConfigModule.forRoot({
+      isGlobal: true,     
+      envFilePath: '.env', 
+    }),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,

@@ -13,7 +13,6 @@
         X,
         Check,
         ChevronDown,
-        MoreVertical,
         ZoomIn,
     } from "lucide-svelte";
     import { enhance } from "$app/forms";
@@ -21,6 +20,7 @@
     import { page } from "$app/stores";
     import InputField from "$lib/components/InputField.svelte";
     import { get, type Writable } from "svelte/store";
+    import * as m from "$lib/paraglide/messages.js";
 
     export let data;
 
@@ -57,7 +57,9 @@
     }
 
     let chat = data.chat || {};
-    const chatClosed = (deal && deal.state === "accepted") || chat.archived;
+    $: chatClosed =
+        (deal && (deal.state === "accepted" || deal.voteCount === 2)) ||
+        chat.archived;
     let windowHeight: number;
 
     function scrollToBottom() {
@@ -99,9 +101,7 @@
         ).toDateString();
         return currentDate !== prevDate;
     }
-    function goBack() {
-        goto("/chats");
-    }
+
     function getOtherUserInfo() {
         return {
             name: partner.name,
@@ -112,9 +112,7 @@
     function toggleAdditionalInfo() {
         showAdditionalInfo = !showAdditionalInfo;
     }
-    function toggleActionsMenu() {
-        showActionsMenu = !showActionsMenu;
-    }
+
     function formatCurrency(amount: number): string {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -233,7 +231,7 @@
                     class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
                     role="alert"
                 >
-                    <strong class="font-bold">Error!</strong>
+                    <strong class="font-bold">{m.error()}</strong>
                     <span class="block sm:inline"> {error}</span>
                 </div>
             </div>
@@ -243,12 +241,12 @@
             <div class="bg-white dark:bg-gray-800 shadow-md p-3 flex flex-col">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <button
-                            on:click={goBack}
+                        <a
+                            href="/chats"
                             class="mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                         >
                             <ArrowLeft class="h-5 w-5" />
-                        </button>
+                        </a>
                         <div class="flex-shrink-0 mr-3">
                             {#if otherUser.avatar}
                                 <img
@@ -274,35 +272,6 @@
                                 {otherUser.surname}
                             </h2>
                         </div>
-                    </div>
-                    <div class="relative">
-                        <button
-                            on:click={toggleActionsMenu}
-                            class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            <MoreVertical
-                                class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                            />
-                        </button>
-                        {#if showActionsMenu}
-                            <div
-                                transition:fade={{ duration: 150 }}
-                                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700"
-                            >
-                                <div class="py-1">
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        on:click={toggleActionsMenu}
-                                        >Report user</button
-                                    >
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        on:click={toggleActionsMenu}
-                                        >Block user</button
-                                    >
-                                </div>
-                            </div>
-                        {/if}
                     </div>
                 </div>
 
@@ -342,7 +311,7 @@
                             on:click={toggleAdditionalInfo}
                             class="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:underline"
                         >
-                            Details
+                            {m.details()}
                             <ChevronDown
                                 class={`h-3 w-3 ml-1 transition-transform ${showAdditionalInfo ? "transform rotate-180" : ""}`}
                             />
@@ -362,10 +331,10 @@
                         </p>
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
-                                Category: {advert.category}
+                                {m.category()}: {advert.category}
                             </span>
                             <span class="text-gray-600 dark:text-gray-400">
-                                Listed: {new Date(
+                                {m.listed()}: {new Date(
                                     advert.created_at,
                                 ).toLocaleDateString()}
                             </span>
@@ -406,7 +375,8 @@
                                         type="submit"
                                         class="flex items-center px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs"
                                     >
-                                        <Check class="h-3 w-3 mr-1" /> Accept
+                                        <Check class="h-3 w-3 mr-1" />
+                                        {m.accept()}
                                     </button>
                                 </form>
                                 <form
@@ -433,7 +403,8 @@
                                         type="submit"
                                         class="flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
-                                        <X class="h-3 w-3 mr-1" /> Decline
+                                        <X class="h-3 w-3 mr-1" />
+                                        {m.decline()}
                                     </button>
                                 </form>
                             </div>
@@ -450,7 +421,7 @@
                         >
                             <div>
                                 <p class="font-medium text-green-800">
-                                    Deal accepted!
+                                    {m.deal_accepted()}
                                 </p>
                                 <p class="text-green-700 text-xs">
                                     {formatCurrency(deal.price)}
@@ -477,7 +448,7 @@
                                         type="submit"
                                         class="flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs"
                                     >
-                                        Complete
+                                        {m.complete()}
                                     </button>
                                 </form>
                                 <form
@@ -499,7 +470,7 @@
                                         type="submit"
                                         class="flex items-center px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs"
                                     >
-                                        Stop
+                                        {m.stop()}
                                     </button>
                                 </form>
                             </div>
@@ -509,7 +480,7 @@
                             class="mt-2 bg-red-100 p-2 rounded text-center text-xs"
                         >
                             <p class="text-red-600 font-medium">
-                                Deal declined
+                                {m.deal_declined()}
                             </p>
                         </div>
                     {/if}
@@ -624,7 +595,8 @@
                             on:click={openDealModal}
                             class="flex items-center text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700"
                         >
-                            <DollarSign class="h-4 w-4 mr-1" /> Make a deal
+                            <DollarSign class="h-4 w-4 mr-1" />
+                            {m.make_a_deal()}
                         </button>
                     </div>
 
@@ -725,7 +697,7 @@
         >
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                    Make a Deal
+                    {m.make_a_deal()}
                 </h3>
                 <button
                     on:click={closeDealModal}
@@ -768,13 +740,13 @@
                         type="button"
                         on:click={closeDealModal}
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >Cancel</button
+                        >{m.cancel()}</button
                     >
                     <button
                         type="submit"
                         disabled={!dealPrice}
                         class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        >Send Offer</button
+                        >{m.send_offer()}</button
                     >
                 </div>
             </form>

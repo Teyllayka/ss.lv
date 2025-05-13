@@ -3,7 +3,6 @@
   import {
     X,
     Star,
-    Phone,
     Mail,
     CheckCircle,
     Edit,
@@ -167,8 +166,9 @@
                     />
                   {/each}
                   <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                    ({userData.rating.toFixed(1)}) (based on{" "}
-                    {userData.advertsWithReviews.length} reviews)
+                    ({userData.rating.toFixed(1)}) ({m.based_on({
+                      count: userData.advertsWithReviews.length,
+                    })})
                   </span>
                 </div>
               {/if}
@@ -180,7 +180,7 @@
                   {userData.adverts
                     ? userData.adverts.filter((a) => !a.available).length
                     : 0}{" "}
-                  Finished Adverts
+                  {m.finished_adverts()}
                 </span>
               </div>
             </div>
@@ -194,7 +194,7 @@
               on:click={() => switchTab("profile")}
             >
               <User class="w-5 h-5 mr-2" />
-              Profile
+              {m.profile()}
             </button>
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
@@ -203,7 +203,7 @@
               on:click={() => switchTab("adverts")}
             >
               <ShoppingBag class="w-5 h-5 mr-2" />
-              Adverts
+              {m.adverts()}
             </button>
             <button
               class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
@@ -212,14 +212,14 @@
               on:click={() => switchTab("edit")}
             >
               <Edit class="w-5 h-5 mr-2" />
-              Edit
+              {m.edit()}
             </button>
           </div>
 
           {#if activeTab === "profile"}
             <div in:fade>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {#if userData.phone}
+                <!-- {#if userData.phone}
                   <div class="flex items-center">
                     <Phone
                       class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
@@ -228,7 +228,7 @@
                       {userData.phone}
                     </span>
                   </div>
-                {/if}
+                {/if} -->
                 {#if userData.email}
                   <div class="flex items-center">
                     <Mail
@@ -240,12 +240,12 @@
                     {#if userData.emailVerified}
                       <span
                         class="ml-2 px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
-                        >Verified</span
+                        >{m.verified()}</span
                       >
                     {:else}
                       <span
                         class="ml-2 px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full"
-                        >Not Verified</span
+                        >{m.not_verified()}</span
                       >
                     {/if}
                   </div>
@@ -274,7 +274,7 @@
                 >
                   <div class="flex">
                     <AlertCircle class="w-6 h-6 mr-2" />
-                    <p>Your email is not verified.</p>
+                    <p>{m.email_not_verified()}</p>
                   </div>
                   <button
                     type="button"
@@ -328,7 +328,7 @@
                     }`}
                     on:click={() => switchTab("profile", "received")}
                   >
-                    Received Reviews
+                    {m.received_reviews()}
                   </button>
                   <button
                     type="button"
@@ -339,7 +339,7 @@
                     }`}
                     on:click={() => switchTab("profile", "written")}
                   >
-                    Written Reviews
+                    {m.written_reviews()}
                   </button>
                 </div>
               </div>
@@ -378,7 +378,7 @@
                     }`}
                     on:click={() => switchTab("adverts", "active")}
                   >
-                    Active Adverts
+                    {m.active_adverts()}
                   </button>
                   <button
                     type="button"
@@ -389,7 +389,7 @@
                     }`}
                     on:click={() => switchTab("adverts", "sold")}
                   >
-                    Sold Adverts
+                    {m.sold_adverts()}
                   </button>
                 </div>
               </div>
@@ -417,7 +417,7 @@
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
                       <CheckCircle class="w-5 h-5 mr-2" />
-                      <p>User information successfully updated!</p>
+                      <p>{m.user_updated()}</p>
                     </div>
                     <button
                       on:click={() => (showSuccessMessage = false)}
@@ -439,7 +439,7 @@
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Profile Picture
+                    {m.profile_picture()}
                   </label>
 
                   <div class="flex items-center justify-center">
@@ -482,7 +482,7 @@
                         class="inline-flex items-center px-2 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
                       >
                         <X class="w-4 h-4 mr-1" />
-                        Remove
+                        {m.remove()}
                       </button>
                     </div>
                   {/if}
@@ -498,14 +498,14 @@
                 {#if !userData.companyName}
                   <InputField
                     name="name"
-                    placeholder="Name"
+                    placeholder={m.name()}
                     type="text"
                     value={userData.name}
                     errors={form?.errors || []}
                   />
                   <InputField
                     name="surname"
-                    placeholder="Surname"
+                    placeholder={m.surname()}
                     type="text"
                     value={userData.surname}
                     errors={form?.errors || []}
@@ -513,23 +513,23 @@
                 {:else}
                   <InputField
                     name="companyName"
-                    placeholder="Company Name"
+                    placeholder={m.company_name()}
                     type="text"
                     errors={form?.errors || []}
                     value={userData.companyName}
                   />
                 {/if}
-                <InputField
+                <!-- <InputField
                   name="phone"
-                  placeholder="Phone"
+                  placeholder={m.phone()}
                   type="text"
                   errors={form?.errors || []}
                   value={userData.phone}
-                />
+                /> -->
 
                 <InputField
                   name="password"
-                  placeholder="Password"
+                  placeholder={m.password()}
                   type="password"
                   errors={form?.errors || []}
                   disableAutoFill={true}
@@ -541,13 +541,13 @@
                     on:click={logout}
                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
-                    Logout
+                    {m.logout()}
                   </button>
                   <button
                     type="submit"
                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    Save Changes
+                    {m.save_changes()}
                   </button>
                 </div>
               </form>
@@ -557,7 +557,7 @@
       </div>
     {:else}
       <div class="text-center text-gray-600 dark:text-gray-400">
-        No user data available.
+        {m.no_user_data_available()}
       </div>
     {/if}
   </div>

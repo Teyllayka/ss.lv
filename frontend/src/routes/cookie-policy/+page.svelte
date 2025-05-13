@@ -1,5 +1,6 @@
 <script>
-import { fade } from "svelte/transition";
+  import { fade } from "svelte/transition";
+  import * as m from "$lib/paraglide/messages.js";
 </script>
 
 <div
@@ -11,11 +12,11 @@ import { fade } from "svelte/transition";
   >
     <div class="px-4 py-5 sm:p-6">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-        Cookie Policy
+        {m.cookie_policy()}
       </h1>
 
       <div class="space-y-6 text-gray-700 dark:text-gray-300">
-        <p>Last updated: {new Date().toLocaleDateString()}</p>
+        <p>{m.last_updated()} {new Date().toLocaleDateString()}</p>
 
         <section>
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">

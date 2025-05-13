@@ -3,6 +3,7 @@
   import { graphql } from "$houdini";
   import Advert from "$lib/components/Advert.svelte";
   import { browser } from "$app/environment";
+  import * as m from "$lib/paraglide/messages.js";
 
   const adverts = graphql(`
     query Adverts($offset: Int!) @cache(policy: NoCache) {
@@ -107,8 +108,8 @@
 </script>
 
 <svelte:head>
-  <title>Recent Adverts</title>
-  <meta name="description" content="Recent Adverts" />
+  <title>{m.recent_adverts()}</title>
+  <meta name="description" content={m.recent_adverts()} />
 </svelte:head>
 
 <div
@@ -118,7 +119,7 @@
     <h1
       class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center"
     >
-      Recent Adverts
+      {m.recent_adverts()}
     </h1>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -126,7 +127,7 @@
         <div class="col-span-full text-center py-4">Loading...</div>
       {:else if $adverts.errors}
         <div class="col-span-full text-center py-4 text-red-500">
-          Error loading adverts
+          {m.error_loading_adverts()}
           <p class="text-sm">{JSON.stringify($adverts.errors)}</p>
         </div>
       {:else}
@@ -142,7 +143,7 @@
           class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"
         ></div>
         <p class="mt-2 text-gray-600 dark:text-gray-400">
-          Loading more adverts...
+          {m.loading_more_adverts()}
         </p>
       </div>
     {/if}

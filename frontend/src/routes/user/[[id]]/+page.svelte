@@ -7,7 +7,6 @@
     CheckCircle,
     User,
     ShoppingBag,
-    AtSign,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
@@ -96,7 +95,7 @@
                     class="text-sm font-semibold text-gray-900 dark:text-white"
                   >
                     {userData.adverts?.filter((a) => !a.available).length || 0} Finished
-                    Adverts
+                    {m.adverts()}
                   </span>
                 </div>
               </div>
@@ -112,7 +111,7 @@
                 on:click={() => switchTab("profile")}
               >
                 <User class="w-5 h-5 mr-2" />
-                Profile
+                {m.profile()}
               </button>
               <button
                 class={`py-2 px-4 font-medium text-sm focus:outline-none flex items-center ${
@@ -121,7 +120,7 @@
                 on:click={() => switchTab("adverts")}
               >
                 <ShoppingBag class="w-5 h-5 mr-2" />
-                Adverts
+                {m.adverts()}
               </button>
             </div>
 
@@ -148,7 +147,7 @@
                       </span>
                     </div>
                   {/if}
-                  {#if userData.telegramUsername}
+                  <!-- {#if userData.telegramUsername}
                     <div class="flex items-center">
                       <AtSign
                         class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
@@ -162,7 +161,7 @@
                         @{userData.telegramUsername}
                       </a>
                     </div>
-                  {/if}
+                  {/if} -->
                 </div>
 
                 <div class="mb-6 flex justify-center">
@@ -180,7 +179,7 @@
                       }`}
                       on:click={() => switchTab("profile", "received")}
                     >
-                      Received Reviews
+                      {m.received_reviews()}
                     </button>
                     <button
                       type="button"
@@ -191,7 +190,7 @@
                       }`}
                       on:click={() => switchTab("profile", "written")}
                     >
-                      Written Reviews
+                      {m.written_reviews()}
                     </button>
                   </div>
                 </div>
@@ -230,7 +229,7 @@
                       }`}
                       on:click={() => switchTab("adverts", "active")}
                     >
-                      Active Adverts
+                      {m.active_adverts()}
                     </button>
                     <button
                       type="button"
@@ -241,7 +240,7 @@
                       }`}
                       on:click={() => switchTab("adverts", "sold")}
                     >
-                      Sold Adverts
+                      {m.sold_adverts()}
                     </button>
                   </div>
                 </div>
@@ -266,7 +265,7 @@
       </div>
     {:else}
       <div class="text-center text-gray-600 dark:text-gray-400">
-        No user data available.
+        {m.no_user_data_available()}
       </div>
     {/if}
   </div>

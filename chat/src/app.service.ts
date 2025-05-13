@@ -33,7 +33,6 @@ export class AppService {
 
   async markMessageRead(s, b) {
     const { chatId, messageId } = b;
-    console.log('Marking message as read:', chatId, messageId);
     if (!chatId || !messageId) {
       throw new UnauthorizedException('No chat ID or message ID provided');
     }
@@ -316,6 +315,10 @@ export class AppService {
 
     const chatIds = results.map((row) => row.chat_id);
 
+    if (chatIds.length === 0) {
+      return [];
+    }
+
     const lastMessages = await this.db
       .selectFrom('message')
       .select([
@@ -576,7 +579,6 @@ export class AppService {
     if (!post) throw new UnauthorizedException('Post not found');
 
     const votes = await this.voteService.getVotes(deal.id);
-    console.log('Votes:', votes);
 
     if (votes[user.id] !== undefined) {
       throw new UnauthorizedException('User already voted');
@@ -586,11 +588,9 @@ export class AppService {
 
     const updatedVotes = await this.voteService.getVotes(deal.id);
 
-    console.log('Updated Votes:', updatedVotes);
 
     const expectedVotesCount = 2;
     if (Object.keys(updatedVotes).length === expectedVotesCount) {
-      console.log('Both users have voted. Completing the deal...');
       const updatedDeal = await this.db
         .updateTable('deal')
         .set({ status: 'completed' })

@@ -4,6 +4,7 @@
   import { fade } from "svelte/transition";
   import ImageGallery from "./ImageGallery.svelte";
   import { formatDate, renderStars } from "$lib/helpers";
+  import * as m from "$lib/paraglide/messages.js";
 
   export let advert;
 
@@ -42,12 +43,12 @@
       {#if advert.available}
         <span
           class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full"
-          >Active</span
+          >{m.active()}</span
         >
       {:else}
         <span
           class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-200 rounded-full"
-          >Sold</span
+          >{m.sold()}</span
         >
       {/if}
     </div>

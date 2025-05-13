@@ -1,9 +1,11 @@
+version: "3.8"
+
 services:
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
     ports:
-      - "80:80"  
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -18,25 +20,47 @@ services:
         max-file: "3"
     restart: always
 
+  chat:
+    build:
+      context: ./chat
+    container_name: chat
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/mydb
+      REFRESH_SECRET:  "123"
+      ACCESS_SECRET:   "123"
+    depends_on:
+      - backend
+      - db
+    networks:
+      - app-network
+    restart: always
+
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: /backend/  
+        PUBLIC_API_URL: /backend
+    container_name: frontend
     ports:
-      - "4173:4173"  
+      - "4173:3000"
     environment:
-      VITE_API_URL: /backend/ 
+      PUBLIC_API_URL: /backend
+      PUBLIC_CHAT_API: http:/nginx/chat
+      CHAT_SSR_BASE: http://chat:4000
     depends_on:
       - backend
+      - chat
     networks:
       - app-network
     restart: always
 
   backend:
     build: ./backend
+    container_name: backend
     ports:
-      - "8000:80"  
+      - "8000:80"
     depends_on:
       - db
       - redis
@@ -46,13 +70,12 @@ services:
 
   db:
     image: postgres:15
+    container_name: db
     restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydb
-    # ports:
-    #   - "5432:5432"  
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -65,8 +88,8 @@ services:
 
   redis:
     image: redis:7
-    # ports:
-    #   - "6379:6379"  
+    container_name: redis
+    restart: always
     volumes:
       - redis_data:/data
     networks:
@@ -76,18 +99,6 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    restart: always
-  
-  tgbot:
-    build: ./telegram-bot
-    env_file:
-      - ./telegram-bot/docker.env
-    networks:
-      - app-network
-    depends_on:
-      - db
-      - redis
-    restart: always
 
 volumes:
   db_data:

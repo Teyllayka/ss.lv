@@ -76,12 +76,9 @@
   class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
   in:fade={{ duration: 300 }}
 >
-  <div
-    class="relative cursor-pointer"
-    onclick={() => goto(`/advert/${advert.id}`)}
-  >
+  <a class="relative cursor-pointer" href={`/advert/${advert.id}`}>
     <ImageGallery images={allPhotos} />
-  </div>
+  </a>
 
   <div class="p-4">
     <div class="flex justify-between items-start mb-2">

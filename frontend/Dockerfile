@@ -1,17 +1,21 @@
-FROM node:22
-
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package.json yarn.lock ./
 RUN yarn install
 
+# copy & build
 COPY . .
+RUN yarn build    # emits ./build
 
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL}
+FROM node:22-alpine
+WORKDIR /app
 
-EXPOSE 4173
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-RUN yarn build
+ENV NODE_ENV=production
+EXPOSE 3000
 
-CMD ["yarn", "preview"]
+CMD ["node", "build/index.js"]

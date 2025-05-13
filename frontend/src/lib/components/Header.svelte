@@ -24,7 +24,22 @@
   import "leaflet/dist/leaflet.css";
   import { browser } from "$app/environment";
   import { socket } from "$lib/socket";
+  import { languageTag, setLanguageTag } from "$lib/paraglide/runtime";
 
+  let lang = languageTag();
+
+  function changeLanguage(e: Event) {
+    const newLang = (e.target as HTMLSelectElement).value as "en" | "ru" | "lv";
+    setLanguageTag(newLang);
+
+    const segments = $page.url.pathname.split("/").filter(Boolean);
+    if (["ru", "lv"].includes(segments[0])) segments.shift();
+    const prefix = newLang === "en" ? "" : `/${newLang}`;
+    const rest = segments.length ? `/${segments.join("/")}` : "";
+    const newPath = prefix + rest + $page.url.search;
+
+    goto(newPath, { replaceState: true });
+  }
   let csrfToken = null;
 
   let isDark = false;
@@ -54,9 +69,11 @@
     csrfToken = "aa";
 
     function handleNewMessage(data: any) {
-      areUnreadMessages.set({
-        unreadMessages: 1,
-      });
+      if (!$page.url.pathname.includes(`/chats${data.chat_id}`)) {
+        areUnreadMessages.update((prev) => ({
+          unreadMessages: prev.unreadMessages + 1,
+        }));
+      }
     }
 
     socket.on("user-" + $user.id, handleNewMessage);
@@ -186,7 +203,7 @@
             <input
               type="text"
               bind:value={searchQuery}
-              placeholder={m.header_search()}
+              placeholder={m.search()}
               class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
@@ -211,6 +228,17 @@
             <Moon class="h-6 w-6" />
           {/if}
         </button>
+
+        <select
+          bind:value={lang}
+          on:change={changeLanguage}
+          class="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded py-1 pl-2 pr-8 focus:outline-none appearance-none"
+          aria-label="Select language"
+        >
+          <option value="en">EN</option>
+          <option value="lv">LV</option>
+          <option value="ru">RU</option>
+        </select>
 
         {#if $user.isLoggedIn && browser}
           <div class="hidden md:flex items-center space-x-4">
@@ -264,7 +292,7 @@
               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
             >
               <Plus class="h-5 w-5 mr-1" />
-              {m.header_create()}
+              {m.create()}
             </a>
           </div>
 
@@ -280,7 +308,7 @@
             href="/login"
             class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
           >
-            Login
+            {m.login()}
           </a>
         {/if}
       </div>
@@ -294,14 +322,14 @@
           href="/favorites"
           class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          Favorites
+          {m.favorites()}
         </a>
 
         <a
           href="/chats"
           class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          Chat
+          {m.chat()}
         </a>
 
         {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
@@ -309,20 +337,20 @@
             href="/stats"
             class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            Stats
+            {m.stats()}
           </a>
         {/if}
         <a
           href="/me"
           class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          Profile
+          {m.profile()}
         </a>
         <a
           href="/create"
           class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
         >
-          Create
+          {m.create()}
         </a>
       </div>
     </div>
@@ -339,13 +367,13 @@
             on:click={confirmLocation}
             class="px-4 py-2 bg-indigo-600 text-white rounded"
           >
-            Confirm
+            {m.confirm()}
           </button>
           <button
             on:click={() => (showLocationModal = false)}
             class="px-4 py-2 bg-gray-300 text-black rounded"
           >
-            Cancel
+            {m.cancel()}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
+import { chatUrl } from "$lib/consts";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 
-export async function load({ cookies, params }: any) {
+export async function load({ cookies, params, fetch }: any) {
   const start = Date.now();
 
   const loggedIn = cookies.get("accessToken") || cookies.get("refreshToken");
@@ -8,7 +9,7 @@ export async function load({ cookies, params }: any) {
     return redirect(302, "/login");
   }
 
-  const res = await fetch("http://localhost:4000/get-message", {
+  const res = await fetch(`${chatUrl}/get-message`, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + cookies.get("accessToken"),
@@ -29,7 +30,7 @@ export async function load({ cookies, params }: any) {
 }
 
 export const actions: Actions = {
-  sendMessage: async ({ request, locals, params, cookies }) => {
+  sendMessage: async ({ request, locals, params, cookies, fetch }) => {
     const formData = await request.formData();
 
     console.log("formData", formData);
@@ -63,7 +64,7 @@ export const actions: Actions = {
 
     console.log("urls", urls, additionalPhotos);
 
-    let response = await fetch("http://localhost:4000/send-message", {
+    let response = await fetch(`${chatUrl}/send-message`, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + cookies.get("accessToken"),
@@ -76,7 +77,7 @@ export const actions: Actions = {
     console.log("chat response", data, JSON.stringify({ chatId: id, content }));
   },
 
-  sendDeal: async ({ request, cookies }) => {
+  sendDeal: async ({ request, cookies, fetch }) => {
     const formData = await request.formData();
     const chat_id = formData.get("chat_id");
     const price = formData.get("price");
@@ -92,7 +93,7 @@ export const actions: Actions = {
       return fail(400, { error: "Invalid offer price." });
     }
 
-    const response = await fetch("http://localhost:4000/request-deal", {
+    const response = await fetch(`${chatUrl}/request-deal`, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + cookies.get("accessToken"),
