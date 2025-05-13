@@ -9,8 +9,9 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./conf.d:/etc/nginx/conf.d:ro
       - ./html:/usr/share/nginx/html:ro
-      - certbot-etc:/etc/letsencrypt:ro
-      - certbot-var:/var/www/certbot:ro
+      # bind-mount the host dirs you initialized above:
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     networks:
       - app-network
     restart: always
@@ -21,15 +22,17 @@ services:
     depends_on:
       - nginx
     volumes:
-      - certbot-etc:/etc/letsencrypt
-      - certbot-var:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     environment:
       DOMAIN: ad-ee.tech
       DOMAINS: "-d ad-ee.tech -d www.ad-ee.tech"
       EMAIL: you@example.com
-    entrypoint: >
+    # keep the official ENTRYPOINT from the image;
+    # override only CMD via `command:`
+    command: >
       /bin/sh -c "
-        # 1) First-time issuance
+        # first-time issuance if missing
         if [ ! -d /etc/letsencrypt/live/${DOMAIN} ]; then
           certbot certonly \
             --noninteractive --agree-tos \
@@ -37,7 +40,7 @@ services:
             --webroot -w /var/www/certbot \
             ${DOMAINS}
         fi
-        # 2) Renewal loop
+        # then renew twice a day, reloading nginx on success
         while true; do
           certbot renew \
             --quiet \
@@ -51,8 +54,7 @@ services:
     restart: unless-stopped
 
   chat:
-    build:
-      context: ./chat
+    build: ./chat
     container_name: chat
     ports:
       - "4000:4000"
@@ -93,15 +95,15 @@ services:
     ports:
       - "8000:80"
     environment:
-      DATABASE_URL: "postgres://user:password@db:5432/mydb"
-      REDIS_URL: "redis://redis:6379"
-      ACCESS_SECRET: "123"
+      DATABASE_URL:   "postgres://user:password@db:5432/mydb"
+      REDIS_URL:      "redis://redis:6379"
+      ACCESS_SECRET:  "123"
       REFRESH_SECRET: "123"
-      EMAIL_SECRET: "wadahell"
+      EMAIL_SECRET:   "wadahell"
       MAILJET_USERNAME: "4e7a896d9f2e66dcb7cb37e27500ae6f"
       MAILJET_PASSWORD: "706739672e68596e1e22a48a0c61adf3"
-      BACKEND_IP: "0.0.0.0"
-      BACKEND_PORT: "80"
+      BACKEND_IP:     "0.0.0.0"
+      BACKEND_PORT:   "80"
     depends_on:
       - db
       - redis
@@ -142,8 +144,6 @@ services:
       retries: 3
 
 volumes:
-  certbot-etc:
-  certbot-var:
   db_data:
   redis_data:
 
