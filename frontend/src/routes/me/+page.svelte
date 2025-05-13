@@ -133,11 +133,13 @@
       >
         <div class="p-6">
           <div class="flex flex-col md:flex-row items-center mb-6">
-            <img
-              alt="{userData.name} {userData.surname}"
-              src={userData?.avatarUrl}
-              class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
-            />
+            {#if userData.avatarUrl}
+              <img
+                alt="{userData.name} {userData.surname}"
+                src={userData?.avatarUrl}
+                class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
+              />
+            {/if}
             <div class="text-center md:text-left">
               <h1
                 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center"

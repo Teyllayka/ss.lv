@@ -340,7 +340,7 @@ impl UserMutation {
             name: Set(name),
             surname: Set(surname),
             company_name: Set(company_name),
-            email: Set(Some(email)),
+            email: Set(Some(email.clone())),
             password_hash: Set(Some(parsed_hash.to_string())),
             created_at: Set(naive_date_time),
             updated_at: Set(naive_date_time),
@@ -382,7 +382,7 @@ impl UserMutation {
             },
             "to": [
                 {
-                    "email": "teyylayt@gmail.com",
+                    "email": email,
                 }
             ],
             "subject": "You are awesome!",
@@ -679,24 +679,25 @@ impl UserMutation {
     async fn verify_email(
         &self,
         ctx: &async_graphql::Context<'_>,
+        token: String,
     ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
-            Some(token) => token,
-            None => {
-                return Err(async_graphql::Error::new(
-                    "you are not logged in".to_string(),
-                ));
-            }
+        let claims: BTreeMap<String, String> = match token.verify_with_key(&my_ctx.email_key) {
+            Ok(res) => res,
+            Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
-        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-            Ok(claims) => claims,
-            Err(err) => return Err(err),
-        };
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
 
-        let email = claims["email"].clone().to_string();
+        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+            return Err(async_graphql::Error::new("wrong token".to_string()));
+        }
+
+        let email = claims["email"].clone();
 
         let user: Option<user::Model> = User::find_by_email(email).one(&my_ctx.db).await?;
 
@@ -791,27 +792,28 @@ impl UserMutation {
             .or(user.company_name.as_deref())
             .unwrap_or("User");
 
-        let body = json!({
-            "from": {
-               "email":"mailtrap@demomailtrap.com",
-               "name":"Mailtrap Test"
-            },
-            "to": [
-                {
-                    "email": "teyylayt@gmail.com",
-                }
-            ],
+        let payload = json!({
+            "from": { "email": "test@test-zxk54v8mwxpljy6v.mlsender.net", "name": "Mailtrap Test" },
+            "to": [{ "email": user.email }],
             "subject": "You are awesome!",
-            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", recipient, verification),
-            "category": "Integration Test"
+            "text": format!(
+                "Hi {}, here is your verification link: https://ad-ee.tech/verify_email/{}",
+                recipient, verification
+            ),
+            "html": format!(
+                "<p>Hi {},</p><p>Here is your verification link:</p><p><a href=\"https://ad-ee.tech/verify_email/{}\">Verify Email</a></p>",
+                recipient, verification
+            )
         });
 
-        let response = reqwest::Client::new()
-            .post("https://send.api.mailtrap.io/api/send")
-            .bearer_auth("d794d8c07332f65148182a29622b0b8e")
-            .json(&body)
+        let client = reqwest::Client::new();
+        let resp = client
+            .post("https://api.mailersend.com/v1/email")
+            .bearer_auth("mlsn.bc1d354f7403b8031b0087212d1eee7481576b7fc3d6d6468d7af0928c464e1f")
+            .json(&payload)
             .send()
-            .await?;
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Network error: {}", e)))?;
 
         if response.status().is_success() {
             println!("Email sent successfully!");
