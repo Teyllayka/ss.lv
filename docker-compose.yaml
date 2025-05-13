@@ -1,11 +1,7 @@
-version: "3.8"
-
 services:
   nginx:
     image: nginx:latest
     container_name: nginx_proxy
-    depends_on:
-      - certbot
     ports:
       - "80:80"
       - "443:443"
@@ -28,20 +24,21 @@ services:
       - certbot-etc:/etc/letsencrypt
       - certbot-var:/var/www/certbot
     environment:
-      - DOMAIN=ad-ee.tech
-      - DOMAIN=www.ad-ee.tech
-      - EMAIL=you@example.com
+      DOMAIN: ad-ee.tech
+      DOMAINS: "-d ad-ee.tech -d www.ad-ee.tech"
+      EMAIL: you@example.com
     entrypoint: >
       /bin/sh -c "
-        # 1) If no cert exists, issue it
+        # 1) First-time issuance
         if [ ! -d /etc/letsencrypt/live/${DOMAIN} ]; then
           certbot certonly \
-            --noninteractive --agree-tos --email ${EMAIL} \
+            --noninteractive --agree-tos \
+            --email ${EMAIL} \
             --webroot -w /var/www/certbot \
-            -d ${DOMAIN} -d www.${DOMAIN}
+            ${DOMAINS}
         fi
-        # 2) Run renew loop, reload nginx on every successful renewal
-        while :; do
+        # 2) Renewal loop
+        while true; do
           certbot renew \
             --quiet \
             --deploy-hook 'nginx -s reload' \
@@ -62,8 +59,8 @@ services:
     environment:
       DATABASE_URL: postgres://user:password@db:5432/mydb
       REDIS_URL: "redis://redis:6379"
-      REFRESH_SECRET:  "123"
-      ACCESS_SECRET:   "123"
+      REFRESH_SECRET: "123"
+      ACCESS_SECRET: "123"
     depends_on:
       - db
     networks:
@@ -96,15 +93,15 @@ services:
     ports:
       - "8000:80"
     environment:
-        DATABASE_URL:   "postgres://user:password@db:5432/mydb"
-        REDIS_URL:      "redis://redis:6379"
-        ACCESS_SECRET:  "123"
-        REFRESH_SECRET: "123"
-        EMAIL_SECRET:   "wadahell"
-        MAILJET_USERNAME: "4e7a896d9f2e66dcb7cb37e27500ae6f"
-        MAILJET_PASSWORD: "706739672e68596e1e22a48a0c61adf3"
-        BACKEND_IP:     "0.0.0.0"
-        BACKEND_PORT:   "80"
+      DATABASE_URL: "postgres://user:password@db:5432/mydb"
+      REDIS_URL: "redis://redis:6379"
+      ACCESS_SECRET: "123"
+      REFRESH_SECRET: "123"
+      EMAIL_SECRET: "wadahell"
+      MAILJET_USERNAME: "4e7a896d9f2e66dcb7cb37e27500ae6f"
+      MAILJET_PASSWORD: "706739672e68596e1e22a48a0c61adf3"
+      BACKEND_IP: "0.0.0.0"
+      BACKEND_PORT: "80"
     depends_on:
       - db
       - redis
@@ -149,7 +146,6 @@ volumes:
   certbot-var:
   db_data:
   redis_data:
-    driver: local
 
 networks:
   app-network:
