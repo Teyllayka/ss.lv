@@ -27,10 +27,10 @@ use argon2::{
     Argon2,
 };
 use serde_json::json;
-use stripe::{
-    Client, CreatePaymentLink, CreatePaymentLinkLineItems, CreatePrice, CreateProduct, Currency,
-    IdOrCreate, PaymentLink, Price, Product,
-};
+// use stripe::{
+//     Client, CreatePaymentLink, CreatePaymentLinkLineItems, CreatePrice, CreateProduct, Currency,
+//     IdOrCreate, PaymentLink, Price, Product,
+// };
 
 const ACCESS_EXPIRATION: usize = 100;
 const REFRESH_EXPIRATION: usize = 180;
@@ -823,87 +823,87 @@ impl UserMutation {
         return Ok("Email sent".to_string());
     }
 
-    async fn top_up_balance(
-        &self,
-        ctx: &async_graphql::Context<'_>,
-        amount: i32,
-    ) -> Result<String, async_graphql::Error> {
-        let my_ctx = ctx.data::<Context>().unwrap();
+    // async fn top_up_balance(
+    //     &self,
+    //     ctx: &async_graphql::Context<'_>,
+    //     amount: i32,
+    // ) -> Result<String, async_graphql::Error> {
+    //     let my_ctx = ctx.data::<Context>().unwrap();
 
-        let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
-            Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
-            None => {
-                return Err(async_graphql::Error::new(
-                    "you are not logged in".to_string(),
-                ));
-            }
-        };
+    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
+    //         Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+    //         None => {
+    //             return Err(async_graphql::Error::new(
+    //                 "you are not logged in".to_string(),
+    //             ));
+    //         }
+    //     };
 
-        let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-            Ok(claims) => claims,
-            Err(err) => return Err(err),
-        };
+    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+    //         Ok(claims) => claims,
+    //         Err(err) => return Err(err),
+    //     };
 
-        let id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
-            id_str.parse().map_err(|_| {
-                async_graphql::Error::new("Invalid user ID in token: failed to parse string")
-            })?
-        } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
-            id_num as i32
-        } else {
-            return Err(async_graphql::Error::new(
-                "Invalid user ID in token: missing id",
-            ));
-        };
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+    //     let id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
+    //         id_str.parse().map_err(|_| {
+    //             async_graphql::Error::new("Invalid user ID in token: failed to parse string")
+    //         })?
+    //     } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
+    //         id_num as i32
+    //     } else {
+    //         return Err(async_graphql::Error::new(
+    //             "Invalid user ID in token: missing id",
+    //         ));
+    //     };
+    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
-        let user = match user {
-            Some(user) => user,
-            None => return Err(async_graphql::Error::new("Wrong token".to_string())),
-        };
+    //     let user = match user {
+    //         Some(user) => user,
+    //         None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+    //     };
 
-        let client = Client::new(my_ctx.stripe_secret.clone());
+    //     let client = Client::new(my_ctx.stripe_secret.clone());
 
-        let product = {
-            let create_product = CreateProduct::new("Top up");
-            Product::create(&client, create_product).await.unwrap()
-        };
+    //     let product = {
+    //         let create_product = CreateProduct::new("Top up");
+    //         Product::create(&client, create_product).await.unwrap()
+    //     };
 
-        let price = {
-            let mut create_price = CreatePrice::new(Currency::EUR);
-            create_price.product = Some(IdOrCreate::Id(&product.id));
-            create_price.unit_amount = Some((amount * 100).into());
-            create_price.expand = &["product"];
-            create_price.metadata = Some(std::collections::HashMap::from([(
-                String::from("user_id"),
-                user.id.to_string(),
-            )]));
-            Price::create(&client, create_price).await.unwrap()
-        };
+    //     let price = {
+    //         let mut create_price = CreatePrice::new(Currency::EUR);
+    //         create_price.product = Some(IdOrCreate::Id(&product.id));
+    //         create_price.unit_amount = Some((amount * 100).into());
+    //         create_price.expand = &["product"];
+    //         create_price.metadata = Some(std::collections::HashMap::from([(
+    //             String::from("user_id"),
+    //             user.id.to_string(),
+    //         )]));
+    //         Price::create(&client, create_price).await.unwrap()
+    //     };
 
-        let payment_link = PaymentLink::create(
-            &client,
-            CreatePaymentLink::new(vec![CreatePaymentLinkLineItems {
-                quantity: 1,
-                price: price.id.to_string(),
-                ..Default::default()
-            }]),
-        )
-        .await
-        .unwrap();
+    //     let payment_link = PaymentLink::create(
+    //         &client,
+    //         CreatePaymentLink::new(vec![CreatePaymentLinkLineItems {
+    //             quantity: 1,
+    //             price: price.id.to_string(),
+    //             ..Default::default()
+    //         }]),
+    //     )
+    //     .await
+    //     .unwrap();
 
-        let payment = payment::ActiveModel {
-            order_id: Set(payment_link.id.to_string()),
-            user_id: Set(user.id),
-            amount: Set(amount as f32),
-            status: Set(payment::Status::Pending),
-            ..Default::default()
-        };
+    //     let payment = payment::ActiveModel {
+    //         order_id: Set(payment_link.id.to_string()),
+    //         user_id: Set(user.id),
+    //         amount: Set(amount as f32),
+    //         status: Set(payment::Status::Pending),
+    //         ..Default::default()
+    //     };
 
-        let _: payment::Model = payment.insert(&my_ctx.db).await?;
+    //     let _: payment::Model = payment.insert(&my_ctx.db).await?;
 
-        return Ok(payment_link.url);
-    }
+    //     return Ok(payment_link.url);
+    // }
 
     async fn connect_account(
         &self,

@@ -8,7 +8,6 @@ edition = "2021"
 members = [".", "entity", "migration"]
 
 [dependencies]
-async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper", "billing", "checkout", "webhook-events"] }
 actix-web = "4.9.0"
 async-graphql = "6.0.6"
 async-graphql-actix-web = "6.0.6"

@@ -1,8 +1,5 @@
 use crate::{verify_access_token, Context, Token};
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::collections::{HashMap, HashSet};
 
 use actix_web::Result;
 use async_graphql::{Json, Object};
@@ -14,7 +11,6 @@ use entity::{
     specifications::{self, Entity as Specifications},
     user::{self, Entity as User, Role},
 };
-use jwt::VerifyWithKey;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbErr, DeleteResult, EntityTrait, ModelTrait, Order,
     QueryFilter, QueryOrder, QuerySelect, QueryTrait, Set,
