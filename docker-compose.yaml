@@ -25,14 +25,11 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     environment:
-      DOMAIN: ad-ee.tech
-      DOMAINS: "-d ad-ee.tech -d www.ad-ee.tech"
-      EMAIL: you@example.com
-    # keep the official ENTRYPOINT from the image;
-    # override only CMD via `command:`
-    command: >
+      DOMAIN:    "ad-ee.tech"
+      DOMAINS:   "-d ad-ee.tech -d www.ad-ee.tech"
+      EMAIL:     "you@example.com"
+    command: >-
       /bin/sh -c "
-        # first-time issuance if missing
         if [ ! -d /etc/letsencrypt/live/${DOMAIN} ]; then
           certbot certonly \
             --noninteractive --agree-tos \
@@ -40,7 +37,6 @@ services:
             --webroot -w /var/www/certbot \
             ${DOMAINS}
         fi
-        # then renew twice a day, reloading nginx on success
         while true; do
           certbot renew \
             --quiet \
