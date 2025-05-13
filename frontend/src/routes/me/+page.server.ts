@@ -31,6 +31,8 @@ export const actions = {
 
     let res = await resendEmail.mutate(null, { event });
 
+    console.log(res);
+
     if (!res.errors && res.data) {
       return { sucess: true };
     } else {
