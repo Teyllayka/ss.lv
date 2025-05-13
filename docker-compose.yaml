@@ -145,6 +145,8 @@ services:
       retries: 3
 
 volumes:
+  certbot-etc:
+  certbot-var:
   db_data:
   redis_data:
     driver: local
