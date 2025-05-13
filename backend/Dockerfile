@@ -16,10 +16,8 @@ RUN apt-get update \
 COPY --from=build /usr/src/backend/target/release/backend /usr/local/bin/backend
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY docker.env .env
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 
-#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["backend"]

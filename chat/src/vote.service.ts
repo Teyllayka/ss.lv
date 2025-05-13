@@ -7,7 +7,7 @@ export class VoteService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     this.redisClient = createClient({
-      url: 'redis://default:2Hi85m2BqyGCNNLFpTjSvbW4bJsX559Q@redis-10579.c293.eu-central-1-1.ec2.redns.redis-cloud.com:10579',
+      url: process.env.REDIS_URL,
     });
 
     this.redisClient.on('error', (err) =>

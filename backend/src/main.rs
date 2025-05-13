@@ -88,7 +88,7 @@ pub struct Statistics {
 pub struct Context {
     pub db: DatabaseConnection,
     pub redis_pool: Pool,
-    pub stripe_secret: String,
+    // pub stripe_secret: String,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
     pub email_key: Hmac<Sha256>,
@@ -100,7 +100,7 @@ impl Context {
     pub fn new(
         db: DatabaseConnection,
         redis_pool: Pool,
-        stripe_secret: String,
+        // stripe_secret: String,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
         email_key: Hmac<Sha256>,
@@ -110,7 +110,7 @@ impl Context {
         Self {
             db,
             redis_pool,
-            stripe_secret,
+            // stripe_secret,
             access_key,
             refresh_key,
             email_key,
@@ -244,9 +244,9 @@ async fn index(
 //     HttpResponse::Ok().finish()
 // }
 
-fn get_header_value<'b>(req: &'b HttpRequest, key: &'b str) -> Option<&'b str> {
-    req.headers().get(key)?.to_str().ok()
-}
+// fn get_header_value<'b>(req: &'b HttpRequest, key: &'b str) -> Option<&'b str> {
+//     req.headers().get(key)?.to_str().ok()
+// }
 
 // fn handle_account_updated(account: stripe::Account) -> Result<(), WebhookError> {
 //     println!(
@@ -321,11 +321,11 @@ struct Mutation(UserMutation, AdvertMutation);
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().expect(".env file not found");
+    dotenv().ok();
     let db_url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
     let redis_url = dotenvy::var("REDIS_URL").expect("REDIS_URL environment variable not found");
-    let stripe =
-        dotenvy::var("STRIPE_SECRET").expect("STRIPE_SECRET environment variable not found");
+    // let stripe =
+    //     dotenvy::var("STRIPE_SECRET").expect("STRIPE_SECRET environment variable not found");
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
     let access_secret =
@@ -361,7 +361,7 @@ async fn main() -> std::io::Result<()> {
             .data(Context::new(
                 db.clone(),
                 pool.clone(),
-                stripe.clone(),
+                // stripe.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
                 email_key.clone(),
@@ -373,7 +373,7 @@ async fn main() -> std::io::Result<()> {
         let context_data = web::Data::new(Context::new(
             db.clone(),
             pool.clone(),
-            stripe.clone(),
+            // stripe.clone(),
             access_key.clone(),
             refresh_key.clone(),
             email_key.clone(),

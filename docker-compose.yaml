@@ -28,10 +28,10 @@ services:
       - "4000:4000"
     environment:
       DATABASE_URL: postgres://user:password@db:5432/mydb
+      REDIS_URL: "redis://redis:6379"
       REFRESH_SECRET:  "123"
       ACCESS_SECRET:   "123"
     depends_on:
-      - backend
       - db
     networks:
       - app-network
@@ -47,7 +47,7 @@ services:
       - "4173:3000"
     environment:
       PUBLIC_API_URL: /backend
-      PUBLIC_CHAT_API: http:/nginx/chat
+      PUBLIC_CHAT_API: http://nginx/chat
       CHAT_SSR_BASE: http://chat:4000
     depends_on:
       - backend
@@ -61,6 +61,16 @@ services:
     container_name: backend
     ports:
       - "8000:80"
+    environment:
+        DATABASE_URL:   "postgres://user:password@db:5432/mydb"
+        REDIS_URL:      "redis://redis:6379"
+        ACCESS_SECRET:  "123"
+        REFRESH_SECRET: "123"
+        EMAIL_SECRET:   "wadahell"
+        MAILJET_USERNAME: "4e7a896d9f2e66dcb7cb37e27500ae6f"
+        MAILJET_PASSWORD: "706739672e68596e1e22a48a0c61adf3"
+        BACKEND_IP:     "0.0.0.0"
+        BACKEND_PORT:   "80"
     depends_on:
       - db
       - redis
