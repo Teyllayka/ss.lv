@@ -375,32 +375,33 @@ impl UserMutation {
             .or(user.company_name.as_deref())
             .unwrap_or("User");
 
-        let body = json!({
-            "from": {
-            "email":"mailtrap@demomailtrap.com",
-            "name":"Mailtrap Test"
-            },
-            "to": [
-                {
-                    "email": email,
-                }
-            ],
+        let payload = json!({
+            "from": { "email": "test@test-zxk54v8mwxpljy6v.mlsender.net", "name": "Mailtrap Test" },
+            "to": [{ "email": user.email }],
             "subject": "You are awesome!",
-            "text": format!("Hi {}, here is your verification link: http://localhost:5173/verify_email/{}", recipient, verification),
-            "category": "Integration Test"
+            "text": format!(
+                "Hi {}, here is your verification link: https://ad-ee.tech/verify_email/{}",
+                recipient, verification
+            ),
+            "html": format!(
+                "<p>Hi {},</p><p>Here is your verification link:</p><p><a href=\"https://ad-ee.tech/verify_email/{}\">Verify Email</a></p>",
+                recipient, verification
+            )
         });
 
-        let response = reqwest::Client::new()
-            .post("https://send.api.mailtrap.io/api/send")
-            .bearer_auth("d794d8c07332f65148182a29622b0b8e")
-            .json(&body)
+        let client = reqwest::Client::new();
+        let resp = client
+            .post("https://api.mailersend.com/v1/email")
+            .bearer_auth("mlsn.bc1d354f7403b8031b0087212d1eee7481576b7fc3d6d6468d7af0928c464e1f")
+            .json(&payload)
             .send()
-            .await?;
+            .await
+            .map_err(|e| async_graphql::Error::new(format!("Network error: {}", e)))?;
 
-        if response.status().is_success() {
+        if resp.status().is_success() {
             println!("Email sent successfully!");
         } else {
-            println!("Failed to send email: {}", response.text().await?);
+            println!("Failed to send email: {}", resp.text().await?);
         }
         return Ok(user);
     }
@@ -815,10 +816,10 @@ impl UserMutation {
             .await
             .map_err(|e| async_graphql::Error::new(format!("Network error: {}", e)))?;
 
-        if response.status().is_success() {
+        if resp.status().is_success() {
             println!("Email sent successfully!");
         } else {
-            println!("Failed to send email: {}", response.text().await?);
+            println!("Failed to send email: {}", resp.text().await?);
         }
 
         return Ok("Email sent".to_string());
