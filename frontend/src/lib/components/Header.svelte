@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from "svelte/legacy";
   import {
     Menu,
     Search,
@@ -25,7 +24,6 @@
   import { browser } from "$app/environment";
   import { socket } from "$lib/socket";
   import { languageTag, setLanguageTag } from "$lib/paraglide/runtime";
-  import { get } from "svelte/store";
   import { page } from "$app/stores";
   import { afterNavigate } from "$app/navigation";
 
@@ -84,7 +82,7 @@
       }
     }
 
-    socket.on("user-" + get(user).id, handleNewMessage);
+    socket.on("user-" + $user.id, handleNewMessage);
 
     fetch("/api/are-unread", {
       method: "GET",
@@ -99,7 +97,7 @@
       });
 
     return () => {
-      socket.off("user-" + get(user).id, handleNewMessage);
+      socket.off("user-" + $user.id, handleNewMessage);
     };
   });
 
@@ -120,7 +118,7 @@
   async function handleSearch() {
     const url = `/search?q=${encodeURIComponent(
       searchQuery.trim(),
-    )}&region=${encodeURIComponent(get(region))}`;
+    )}&region=${encodeURIComponent($region)}`;
     await goto(url, { keepFocus: true });
     isSearchExpanded = false;
   }
@@ -220,10 +218,7 @@
         <div
           class="hidden sm:block absolute left-1/2 transform -translate-x-1/2 w-full max-w-md"
         >
-          <form
-            on:submit={preventDefault(handleSearch)}
-            class="relative w-full"
-          >
+          <form on:submit|preventDefault={handleSearch} class="relative w-full">
             <input
               type="text"
               bind:value={searchQuery}
@@ -306,7 +301,7 @@
             <option value="ru">RU</option>
           </select>
 
-          {#if get(user).isLoggedIn && browser}
+          {#if $user.isLoggedIn && browser}
             <div class="hidden sm:flex items-center space-x-2 md:space-x-4">
               <a
                 href="/favorites"
@@ -330,7 +325,7 @@
                 {/if}
               </a>
 
-              {#if get(user).role == "ADMIN" || get(user).role == "MODERATOR"}
+              {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
                 <a
                   href="/stats"
                   class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
@@ -345,11 +340,11 @@
                 class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 aria-label="Profile"
               >
-                {#if get(user).role == "ADMIN"}
+                {#if $user.role == "ADMIN"}
                   <Settings class="h-5 w-5" />
-                {:else if get(user).role == "MODERATOR"}
+                {:else if $user.role == "MODERATOR"}
                   <Shield class="h-5 w-5" />
-                {:else if get(user).isCompany}
+                {:else if $user.isCompany}
                   <Building2 class="h-5 w-5" />
                 {:else}
                   <User class="h-5 w-5" />
@@ -391,7 +386,7 @@
           <X class="h-5 w-5" />
         </button>
       </div>
-      <form on:submit={preventDefault(handleSearch)} class="relative w-full">
+      <form on:submit|preventDefault={handleSearch} class="relative w-full">
         <input
           id="search-input"
           type="text"
@@ -427,7 +422,7 @@
         </div>
 
         <div class="mt-3 space-y-1">
-          {#if get(user).isLoggedIn}
+          {#if $user.isLoggedIn}
             <a
               href="/favorites"
               class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -451,7 +446,7 @@
               {/if}
             </a>
 
-            {#if get(user).role == "ADMIN" || get(user).role == "MODERATOR"}
+            {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
               <a
                 href="/stats"
                 class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -465,11 +460,11 @@
               href="/me"
               class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              {#if get(user).role == "ADMIN"}
+              {#if $user.role == "ADMIN"}
                 <Settings class="h-5 w-5 mr-3" />
-              {:else if get(user).role == "MODERATOR"}
+              {:else if $user.role == "MODERATOR"}
                 <Shield class="h-5 w-5 mr-3" />
-              {:else if get(user).isCompany}
+              {:else if $user.isCompany}
                 <Building2 class="h-5 w-5 mr-3" />
               {:else}
                 <User class="h-5 w-5 mr-3" />
@@ -494,16 +489,17 @@
           {/if}
 
           <div class="mt-4 py-2">
-            <label
+            <p
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               {m.language()}
-            </label>
+            </p>
             <div class="grid grid-cols-3 gap-2">
               <button
                 class={`py-2 px-3 rounded text-center ${lang === "en" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
-                  const event = { target: { value: "en" } } as unknown as Event;
+                  const event = { target: { value: "en" } };
+                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >
@@ -512,7 +508,8 @@
               <button
                 class={`py-2 px-3 rounded text-center ${lang === "lv" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
-                  const event = { target: { value: "lv" } } as unknown as Event;
+                  const event = { target: { value: "lv" } };
+                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >
@@ -521,7 +518,8 @@
               <button
                 class={`py-2 px-3 rounded text-center ${lang === "ru" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
-                  const event = { target: { value: "ru" } } as unknown as Event;
+                  const event = { target: { value: "ru" } };
+                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >
