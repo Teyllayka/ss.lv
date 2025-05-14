@@ -23,6 +23,8 @@ export async function load(event: RequestEvent) {
   `);
 
   let res = await verify.mutate({ token: event.params.token }, { event });
+  console.log(res);
+
 
   if (res.data?.verifyEmail == "Email verified") {
     user.update((value: any) => {

@@ -1,12 +1,13 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { CheckCircle, XCircle } from "lucide-svelte";
+  import * as m from "$lib/paraglide/messages.js";
 
   export let data;
 </script>
 
 <div
-  class="min-h-[56vh] bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8"
+  class="min-h-[56vh] grow bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8"
 >
   <div
     class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 max-w-md w-full text-center"

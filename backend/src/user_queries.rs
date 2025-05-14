@@ -598,7 +598,7 @@ impl UserMutation {
     ) -> Result<LoginResponse, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let claims: BTreeMap<String, String> =
+        let claims: BTreeMap<String, Value> =
             match refresh_token.verify_with_key(&my_ctx.refresh_key) {
                 Ok(res) => res,
                 Err(err) => {
@@ -606,16 +606,29 @@ impl UserMutation {
                 }
             };
 
+        println!("{:?}", claims);
+
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .as_secs() as usize;
+            .as_secs() as u128;
 
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+        if claims["sub"].as_str().expect("Err as str") != "someone"
+            || claims["exp"]
+                .as_number()
+                .expect("Err as number")
+                .as_u128()
+                .expect("Err as u128")
+                < now
+        {
             return Err(async_graphql::Error::new("Wrong token".to_string()));
         }
 
-        let id = claims["id"].parse::<i32>().unwrap();
+        let id = claims["id"]
+            .as_str()
+            .expect("Wrong token")
+            .parse::<i32>()
+            .unwrap();
 
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
@@ -690,21 +703,33 @@ impl UserMutation {
     ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        let claims: BTreeMap<String, String> = match token.verify_with_key(&my_ctx.email_key) {
+        let claims: BTreeMap<String, Value> = match token.verify_with_key(&my_ctx.email_key) {
             Ok(res) => res,
             Err(err) => return Err(async_graphql::Error::new(err.to_string())),
         };
 
+        println!("{:?}", claims);
+
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .as_secs() as usize;
+            .as_secs() as u128;
 
-        if claims["sub"] != "someone" || claims["exp"].parse::<usize>().unwrap() < now {
+        if claims["sub"].as_str().expect("Err as str") != "someone"
+            || claims["exp"]
+                .as_number()
+                .expect("Err as number")
+                .as_u128()
+                .expect("Err as u128")
+                < now
+        {
             return Err(async_graphql::Error::new("wrong token".to_string()));
         }
 
-        let email = claims["email"].clone();
+        let email = claims["email"]
+            .as_str()
+            .expect("email should be a string")
+            .to_string();
 
         let user: Option<user::Model> = User::find_by_email(email).one(&my_ctx.db).await?;
 
