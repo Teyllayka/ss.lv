@@ -31,7 +31,7 @@
 
   $: advert = data?.advert?.data?.advert || null;
   $: gridCols = $user.isLoggedIn
-    ? advert.user.phone
+    ? advert?.user.phone
       ? "grid-cols-3"
       : "grid-cols-2"
     : "grid-cols-2";
@@ -628,7 +628,7 @@
 
                     <button
                       on:click={() => {
-                        window.location.href = `mailto:${advert.user.email}`;
+                        window.location.href = `mailto:${advert?.user.email}`;
                       }}
                       title={advert.user.email}
                       class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"

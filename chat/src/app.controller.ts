@@ -24,7 +24,6 @@ export class AppController {
     return messages;
   }
 
-
   @Get('are-unread')
   @UseGuards(AuthGuard)
   async areUnread(@Req() s) {
@@ -32,13 +31,12 @@ export class AppController {
     return unread;
   }
 
-
   @Post('send-message')
   @UseGuards(AuthGuard)
   async sendMessage(@Req() s, @Body() b) {
     const { message, creator, participant } = await this.appservice.sendMessage(s, b);
-    this.eventsGateway.server.emit('chat-' + message.chat_id, message);
 
+    this.eventsGateway.server.emit('chat-' + message.chat_id, message);
     this.eventsGateway.server.emit('user-' + (creator.toString() === s.user.id ? participant.toString() : creator.toString()), message);
 
     return message;
@@ -74,7 +72,6 @@ export class AppController {
         voteCount,
       };
     }
-
 
     this.eventsGateway.server.emit('deal-' + b.chatId, deal);
     return deal;

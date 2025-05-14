@@ -182,22 +182,7 @@ async fn index(
     gql_request: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut request = gql_request.into_inner();
-    // let mut access_token = String::new();
-    // let mut refresh_token  =String::new();
-    // match req.cookies() {
-    //     Ok(cookies) => {
-    //         for cookie in cookies.iter() {
-    //             if cookie.name() == "accessToken" {
-    //                 access_token = cookie.value().to_string();
 
-    //             } else if cookie.name() == "refreshToken" {
-    //                 refresh_token = cookie.value().to_string();
-    //             }
-    //         }
-    //     }
-    //     Err(_) => {}
-    // }
-    // request = request.data(Token(access_token, refresh_token));
     if let Some(token) = get_token_from_headers(req.headers()) {
         request = request.data(token);
     }
