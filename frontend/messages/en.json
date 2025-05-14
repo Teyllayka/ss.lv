@@ -140,5 +140,7 @@
   "stop": "Stop",
   "category": "Category",
   "listed": "Listed",
-  "deal_accepted": "Deal accepted!"
+  "deal_accepted": "Deal accepted!",
+  "language": "Language",
+  "select_location": "Select location"
 }

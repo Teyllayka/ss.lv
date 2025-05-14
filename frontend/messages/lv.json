@@ -133,5 +133,7 @@
   "main_photo": "Galvenā foto",
   "additional_photos": "Papildu foto",
   "create_advert": "Izveidot sludinājumu",
-  "creating_advert": "Notiek sludinājuma izveide..."
+  "creating_advert": "Notiek sludinājuma izveide...",
+  "language": "Valoda",
+  "select_location": "Izvēlieties atrašanās vietu"
 }

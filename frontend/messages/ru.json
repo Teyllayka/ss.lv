@@ -133,5 +133,7 @@
   "main_photo": "Основное фото",
   "additional_photos": "Дополнительные фото",
   "create_advert": "Создать объявление",
-  "creating_advert": "Создание объявления..."
+  "creating_advert": "Создание объявления...",
+  "language": "Язык",
+  "select_location": "Выберите местоположение"
 }

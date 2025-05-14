@@ -14,19 +14,27 @@
     Sun,
     Moon,
     MessageSquare,
+    X,
   } from "lucide-svelte";
   import { getContext, onMount, tick } from "svelte";
   import { type Writable } from "svelte/store";
   import { user } from "$lib/userStore";
   import * as m from "$lib/paraglide/messages.js";
   import { goto } from "$app/navigation";
-  import { page } from "$app/stores";
   import "leaflet/dist/leaflet.css";
   import { browser } from "$app/environment";
   import { socket } from "$lib/socket";
   import { languageTag, setLanguageTag } from "$lib/paraglide/runtime";
+  import { get } from "svelte/store";
+  import { page } from "$app/stores";
+  import { afterNavigate } from "$app/navigation";
+
+  afterNavigate(() => {
+    isMenuOpen = false;
+  });
 
   let lang = languageTag();
+  let isSearchExpanded = false;
 
   function changeLanguage(e: Event) {
     const newLang = (e.target as HTMLSelectElement).value as "en" | "ru" | "lv";
@@ -76,7 +84,7 @@
       }
     }
 
-    socket.on("user-" + $user.id, handleNewMessage);
+    socket.on("user-" + get(user).id, handleNewMessage);
 
     fetch("/api/are-unread", {
       method: "GET",
@@ -91,7 +99,7 @@
       });
 
     return () => {
-      socket.off("user-" + $user.id, handleNewMessage);
+      socket.off("user-" + get(user).id, handleNewMessage);
     };
   });
 
@@ -99,11 +107,22 @@
     isMenuOpen = !isMenuOpen;
   }
 
+  function toggleSearch() {
+    isSearchExpanded = !isSearchExpanded;
+    if (isSearchExpanded) {
+      setTimeout(() => {
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) searchInput.focus();
+      }, 100);
+    }
+  }
+
   async function handleSearch() {
     const url = `/search?q=${encodeURIComponent(
       searchQuery.trim(),
-    )}&region=${encodeURIComponent($region)}`;
+    )}&region=${encodeURIComponent(get(region))}`;
     await goto(url, { keepFocus: true });
+    isSearchExpanded = false;
   }
 
   let locationName: string = "Detecting location...";
@@ -175,27 +194,32 @@
 </script>
 
 <header class="bg-white dark:bg-gray-800 shadow-md">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="relative flex items-center justify-between py-4">
-      <div class="flex items-center space-x-4">
+  <div class="max-w-7xl mx-auto px-2 sm:px-4">
+    <div class="relative flex items-center justify-between h-16">
+      <div class="flex-shrink-0 flex items-center">
         <a href="/" class="flex items-center">
           <span class="text-xl font-bold text-gray-800 dark:text-white"
             >Adee</span
           >
         </a>
 
-        <button
-          on:click={() => (showLocationModal = true)}
-          type="button"
-          class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none"
-        >
-          <MapPin class="h-5 w-5 mr-1" />
-          <span>{locationName}</span>
-        </button>
+        <div class="hidden sm:flex sm:items-center sm:ml-6">
+          <button
+            on:click={() => (showLocationModal = true)}
+            type="button"
+            class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-sm font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none"
+          >
+            <MapPin class="h-4 w-4 mr-1" />
+            <span class="hidden md:inline">{locationName}</span>
+            <span class="md:hidden">Location</span>
+          </button>
+        </div>
       </div>
 
       {#if !$page.url.pathname.includes("/search")}
-        <div class="flex-1 max-w-md mx-8">
+        <div
+          class="hidden sm:block absolute left-1/2 transform -translate-x-1/2 w-full max-w-md"
+        >
           <form
             on:submit={preventDefault(handleSearch)}
             class="relative w-full"
@@ -204,154 +228,308 @@
               type="text"
               bind:value={searchQuery}
               placeholder={m.search()}
-              class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full py-1.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
               type="submit"
               class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
             >
-              <Search class="h-5 w-5" />
+              <Search class="h-4 w-4" />
             </button>
           </form>
         </div>
       {/if}
 
-      <div class="flex items-center space-x-4">
-        <button
-          on:click={toggleTheme}
-          class="text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
-          aria-label="Toggle Theme"
-        >
-          {#if isDark}
-            <Sun class="h-6 w-6" />
+      <div class="flex items-center sm:hidden">
+        {#if !isSearchExpanded}
+          <button
+            on:click={() => (showLocationModal = true)}
+            type="button"
+            class="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none mr-1"
+            aria-label="Set Location"
+          >
+            <MapPin class="h-5 w-5" />
+          </button>
+
+          <button
+            on:click={toggleSearch}
+            class="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+            aria-label="Search"
+          >
+            <Search class="h-5 w-5" />
+          </button>
+
+          <button
+            on:click={toggleTheme}
+            class="ml-1 p-2 text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+            aria-label="Toggle Theme"
+          >
+            {#if isDark}
+              <Sun class="h-5 w-5" />
+            {:else}
+              <Moon class="h-5 w-5" />
+            {/if}
+          </button>
+
+          <button
+            type="button"
+            class="ml-1 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            on:click={toggleMenu}
+          >
+            <Menu class="h-5 w-5" />
+          </button>
+        {/if}
+      </div>
+
+      <div class="hidden sm:flex sm:items-center">
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <button
+            on:click={toggleTheme}
+            class="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+            aria-label="Toggle Theme"
+          >
+            {#if isDark}
+              <Sun class="h-5 w-5" />
+            {:else}
+              <Moon class="h-5 w-5" />
+            {/if}
+          </button>
+
+          <select
+            bind:value={lang}
+            on:change={changeLanguage}
+            class="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded py-1 pl-2 pr-6 text-sm focus:outline-none appearance-none"
+            aria-label="Select language"
+          >
+            <option value="en">EN</option>
+            <option value="lv">LV</option>
+            <option value="ru">RU</option>
+          </select>
+
+          {#if get(user).isLoggedIn && browser}
+            <div class="hidden sm:flex items-center space-x-2 md:space-x-4">
+              <a
+                href="/favorites"
+                class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                aria-label="Favorites"
+              >
+                <Heart class="h-5 w-5" />
+              </a>
+
+              <a
+                href="/chats"
+                class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white relative"
+                aria-label="Chat"
+              >
+                <MessageSquare class="h-5 w-5" />
+                {#if $areUnreadMessages.unreadMessages > 0}
+                  <span
+                    class="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    >!</span
+                  >
+                {/if}
+              </a>
+
+              {#if get(user).role == "ADMIN" || get(user).role == "MODERATOR"}
+                <a
+                  href="/stats"
+                  class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  aria-label="Stats"
+                >
+                  <BarChart2 class="h-5 w-5" />
+                </a>
+              {/if}
+
+              <a
+                href="/me"
+                class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                aria-label="Profile"
+              >
+                {#if get(user).role == "ADMIN"}
+                  <Settings class="h-5 w-5" />
+                {:else if get(user).role == "MODERATOR"}
+                  <Shield class="h-5 w-5" />
+                {:else if get(user).isCompany}
+                  <Building2 class="h-5 w-5" />
+                {:else}
+                  <User class="h-5 w-5" />
+                {/if}
+              </a>
+
+              <a
+                href="/create"
+                class="inline-flex items-center justify-center px-3 py-1.5 text-sm border border-transparent rounded-md shadow-sm font-medium text-white bg-blue-500 hover:bg-blue-600"
+              >
+                <Plus class="h-4 w-4 mr-1 md:mr-1.5" />
+                <span class="hidden md:inline">{m.create()}</span>
+                <span class="md:hidden">New</span>
+              </a>
+            </div>
           {:else}
-            <Moon class="h-6 w-6" />
+            <a
+              href="/login"
+              class="inline-flex items-center justify-center px-3 py-1.5 text-sm border border-transparent rounded-md shadow-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              {m.login()}
+            </a>
           {/if}
-        </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <select
-          bind:value={lang}
-          on:change={changeLanguage}
-          class="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded py-1 pl-2 pr-8 focus:outline-none appearance-none"
-          aria-label="Select language"
+  {#if isSearchExpanded}
+    <div class="fixed inset-0 z-50 bg-white dark:bg-gray-800 p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+          {m.search()}
+        </h2>
+        <button
+          on:click={toggleSearch}
+          class="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
         >
-          <option value="en">EN</option>
-          <option value="lv">LV</option>
-          <option value="ru">RU</option>
-        </select>
+          <X class="h-5 w-5" />
+        </button>
+      </div>
+      <form on:submit={preventDefault(handleSearch)} class="relative w-full">
+        <input
+          id="search-input"
+          type="text"
+          bind:value={searchQuery}
+          placeholder={m.search()}
+          class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <button
+          type="submit"
+          class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+        >
+          <Search class="h-5 w-5" />
+        </button>
+      </form>
+    </div>
+  {/if}
 
-        {#if $user.isLoggedIn && browser}
-          <div class="hidden md:flex items-center space-x-4">
+  {#if isMenuOpen}
+    <div
+      class="sm:hidden fixed inset-0 z-40 bg-white dark:bg-gray-800 overflow-y-auto"
+    >
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+            Menu
+          </h2>
+          <button
+            on:click={toggleMenu}
+            class="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="mt-3 space-y-1">
+          {#if get(user).isLoggedIn}
             <a
               href="/favorites"
-              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              <Heart class="h-6 w-6" />
+              <Heart class="h-5 w-5 mr-3" />
+              {m.favorites()}
             </a>
 
             <a
               href="/chats"
-              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white relative"
-              aria-label="Chat"
+              class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              <MessageSquare class="h-6 w-6" />
+              <MessageSquare class="h-5 w-5 mr-3" />
+              {m.chat()}
               {#if $areUnreadMessages.unreadMessages > 0}
                 <span
-                  class="absolute -top-2 -right-2 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  >!</span
+                  class="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
                 >
+                  {$areUnreadMessages.unreadMessages}
+                </span>
               {/if}
             </a>
 
-            {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
+            {#if get(user).role == "ADMIN" || get(user).role == "MODERATOR"}
               <a
                 href="/stats"
-                class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <BarChart2 class="h-6 w-6" />
+                <BarChart2 class="h-5 w-5 mr-3" />
+                {m.stats()}
               </a>
             {/if}
 
             <a
               href="/me"
-              class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              class="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              {#if $user.role == "ADMIN"}
-                <Settings class="h-6 w-6" />
-              {:else if $user.role == "MODERATOR"}
-                <Shield class="h-6 w-6" />
-              {:else if $user.isCompany}
-                <Building2 class="h-6 w-6" />
+              {#if get(user).role == "ADMIN"}
+                <Settings class="h-5 w-5 mr-3" />
+              {:else if get(user).role == "MODERATOR"}
+                <Shield class="h-5 w-5 mr-3" />
+              {:else if get(user).isCompany}
+                <Building2 class="h-5 w-5 mr-3" />
               {:else}
-                <User class="h-6 w-6" />
+                <User class="h-5 w-5 mr-3" />
               {/if}
+              {m.profile()}
             </a>
 
             <a
               href="/create"
-              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
+              class="flex items-center mt-4 px-3 py-3 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
             >
-              <Plus class="h-5 w-5 mr-1" />
+              <Plus class="h-5 w-5 mr-3" />
               {m.create()}
             </a>
+          {:else}
+            <a
+              href="/login"
+              class="flex items-center mt-4 px-3 py-3 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 justify-center"
+            >
+              {m.login()}
+            </a>
+          {/if}
+
+          <div class="mt-4 py-2">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              {m.language()}
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                class={`py-2 px-3 rounded text-center ${lang === "en" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                on:click={() => {
+                  const event = { target: { value: "en" } } as unknown as Event;
+                  changeLanguage(event);
+                }}
+              >
+                EN
+              </button>
+              <button
+                class={`py-2 px-3 rounded text-center ${lang === "lv" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                on:click={() => {
+                  const event = { target: { value: "lv" } } as unknown as Event;
+                  changeLanguage(event);
+                }}
+              >
+                LV
+              </button>
+              <button
+                class={`py-2 px-3 rounded text-center ${lang === "ru" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                on:click={() => {
+                  const event = { target: { value: "ru" } } as unknown as Event;
+                  changeLanguage(event);
+                }}
+              >
+                RU
+              </button>
+            </div>
           </div>
-
-          <button
-            type="button"
-            class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
-            on:click={toggleMenu}
-          >
-            <Menu class="h-6 w-6" />
-          </button>
-        {:else}
-          <a
-            href="/login"
-            class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            {m.login()}
-          </a>
-        {/if}
-      </div>
-    </div>
-  </div>
-
-  {#if isMenuOpen && $user.isLoggedIn}
-    <div class="md:hidden">
-      <div class="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 shadow">
-        <a
-          href="/favorites"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          {m.favorites()}
-        </a>
-
-        <a
-          href="/chats"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          {m.chat()}
-        </a>
-
-        {#if $user.role == "ADMIN" || $user.role == "MODERATOR"}
-          <a
-            href="/stats"
-            class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            {m.stats()}
-          </a>
-        {/if}
-        <a
-          href="/me"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          {m.profile()}
-        </a>
-        <a
-          href="/create"
-          class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          {m.create()}
-        </a>
+        </div>
       </div>
     </div>
   {/if}
@@ -360,20 +538,28 @@
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
     >
-      <div class="bg-white dark:bg-gray-800 p-4 rounded w-96">
-        <div id="location-map" class="w-full h-64"></div>
+      <div
+        class="bg-white dark:bg-gray-800 p-4 rounded-lg w-full max-w-md mx-4"
+      >
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
+          {m.select_location()}
+        </h3>
+        <div
+          id="location-map"
+          class="w-full h-64 rounded overflow-hidden"
+        ></div>
         <div class="mt-4 flex justify-end space-x-2">
-          <button
-            on:click={confirmLocation}
-            class="px-4 py-2 bg-indigo-600 text-white rounded"
-          >
-            {m.confirm()}
-          </button>
           <button
             on:click={() => (showLocationModal = false)}
             class="px-4 py-2 bg-gray-300 text-black rounded"
           >
             {m.cancel()}
+          </button>
+          <button
+            on:click={confirmLocation}
+            class="px-4 py-2 bg-indigo-600 text-white rounded"
+          >
+            {m.confirm()}
           </button>
         </div>
       </div>
