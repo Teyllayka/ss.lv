@@ -142,5 +142,7 @@
   "listed": "Listed",
   "deal_accepted": "Deal accepted!",
   "language": "Language",
-  "select_location": "Select location"
+  "select_location": "Select location",
+  "subject": "Subject",
+  "phone": "Phone"
 }

@@ -50,7 +50,6 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {#if !isSubmitted}
           <form method="post" on:submit={sendEmail} class="space-y-6">
-            <!-- CSRF token is kept in case it's needed for other integrations -->
             <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
             <div
               class="relative"
@@ -59,7 +58,7 @@
               <InputField
                 type="text"
                 name="from_name"
-                placeholder="Name"
+                placeholder={m.name()}
                 errors={form?.errors || []}
               />
             </div>
@@ -71,7 +70,7 @@
               <InputField
                 type="email"
                 name="from_email"
-                placeholder="Email"
+                placeholder={m.email()}
                 errors={form?.errors || []}
               />
             </div>
@@ -83,7 +82,7 @@
               <InputField
                 type="text"
                 name="from_category"
-                placeholder="Subject"
+                placeholder={m.subject()}
                 errors={form?.errors || []}
               />
             </div>
@@ -94,7 +93,7 @@
             >
               <TextField
                 name="message"
-                placeholder="Message"
+                placeholder={m.message()}
                 errors={form?.errors || []}
               />
             </div>

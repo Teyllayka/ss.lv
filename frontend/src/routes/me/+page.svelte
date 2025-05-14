@@ -489,7 +489,6 @@
                     </div>
                   {/if}
 
-                  <!-- carry old URL so backend can know if unchanged -->
                   <input
                     type="hidden"
                     name="existingAvatar"
@@ -521,13 +520,13 @@
                     value={userData.companyName}
                   />
                 {/if}
-                <!-- <InputField
+                <InputField
                   name="phone"
                   placeholder={m.phone()}
                   type="text"
                   errors={form?.errors || []}
                   value={userData.phone}
-                /> -->
+                />
 
                 <InputField
                   name="password"

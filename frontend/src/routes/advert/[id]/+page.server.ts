@@ -35,6 +35,7 @@ export async function load(event: LoadEvent) {
             id
             name
             surname
+            email
           }
         }
 

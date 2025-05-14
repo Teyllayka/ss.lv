@@ -36,7 +36,7 @@
   "thanks_for_contacting_us": "Paldies, ka sazinājāties ar mums. Mēs atbildēsim jums pēc iespējas ātrāk.",
   "get_in_touch": "Sazinieties ar mums",
   "have_questions": "Vai jums ir jautājumi vai nepieciešama palīdzība? Mēs esam šeit, lai palīdzētu! Jūtieties brīvi sazināties ar mums, izmantojot zemāk norādīto kontaktinformāciju vai aizpildot formu.",
-  "working_hours": " Pirmdiena - Piektdiena: 9:00 - 17:00<br />\r\n              Sestdiena: 10:00 - 14:00<br />\r\n              Svētdiena: Slēgts",
+  "working_hours": "Pirmdiena - Piektdiena: 9:00 - 17:00<br />\r\n              Sestdiena: 10:00 - 14:00<br />\r\n              Svētdiena: Slēgts",
   "cookie_policy": "Sīkdatņu politika",
   "last_updated": "Pēdējoreiz atjaunināts:",
   "faq": "Biežāk uzdotie jautājumi",
@@ -135,5 +135,7 @@
   "create_advert": "Izveidot sludinājumu",
   "creating_advert": "Notiek sludinājuma izveide...",
   "language": "Valoda",
-  "select_location": "Izvēlieties atrašanās vietu"
+  "select_location": "Izvēlieties atrašanās vietu",
+  "subject": "Temats",
+  "phone": "Tālrunis"
 }

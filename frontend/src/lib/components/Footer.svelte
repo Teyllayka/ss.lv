@@ -5,7 +5,6 @@
   let footerLinks = [
     { name: m.contact(), href: "/contact" },
     { name: m.faq_footer(), href: "/faq" },
-    { name: m.shipping(), href: "/shipping" },
   ];
 
   let pages = [

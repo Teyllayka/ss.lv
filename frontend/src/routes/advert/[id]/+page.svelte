@@ -30,7 +30,7 @@
   export let form;
 
   $: advert = data?.advert?.data?.advert || null;
-  $: gridCols = $user.isLoggedIn ? "grid-cols-3" : "grid-cols-2";
+  $: gridCols = $user.isLoggedIn ? "grid-cols-2" : "grid-cols-1";
   $: ({ similarAdverts: similarAdvertsQuery } = data);
 
   let rating = 0;
@@ -624,17 +624,21 @@
                     {/if}
 
                     <button
+                      on:click={() => {
+                        window.location.href = `mailto:${advert.user.email}`;
+                      }}
+                      title={advert.user.email}
                       class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
                       <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                      <span>{m.message()}</span>
+                      <span>{m.email()}</span>
                     </button>
-                    <button
+                    <!-- <button
                       class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                     >
                       <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
                       <span>{m.call()}</span>
-                    </button>
+                    </button> -->
                   </div>
                 </div>
               {/if}

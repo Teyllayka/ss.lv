@@ -34,7 +34,7 @@
   let lang = languageTag();
   let isSearchExpanded = false;
 
-  function changeLanguage(e: Event) {
+  function changeLanguage(e: any) {
     const newLang = (e.target as HTMLSelectElement).value as "en" | "ru" | "lv";
     setLanguageTag(newLang);
 
@@ -192,7 +192,7 @@
 </script>
 
 <header class="bg-white dark:bg-gray-800 shadow-md">
-  <div class="max-w-7xl mx-auto px-2 sm:px-4">
+  <div class="max-w-7xl mx-auto px-4 sm:px-2 md:px-4">
     <div class="relative flex items-center justify-between h-16">
       <div class="flex-shrink-0 flex items-center">
         <a href="/" class="flex items-center">
@@ -201,22 +201,36 @@
           >
         </a>
 
-        <div class="hidden sm:flex sm:items-center sm:ml-6">
+        <button
+          on:click={toggleTheme}
+          class="ml-1 p-2 text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+          aria-label="Toggle Theme"
+        >
+          {#if isDark}
+            <Sun class="h-5 w-5" />
+          {:else}
+            <Moon class="h-5 w-5" />
+          {/if}
+        </button>
+
+        <div class="hidden sm:flex sm:items-center sm:ml-2">
           <button
             on:click={() => (showLocationModal = true)}
             type="button"
             class="text-gray-500 group bg-white dark:bg-gray-800 rounded-md inline-flex items-center text-sm font-medium hover:text-gray-900 dark:hover:text-white focus:outline-none"
           >
             <MapPin class="h-4 w-4 mr-1" />
-            <span class="hidden md:inline">{locationName}</span>
-            <span class="md:hidden">Location</span>
+            <span class="hidden md:inline text-sm">{locationName}</span>
+            <span class="md:hidden text-xs">{locationName}</span>
           </button>
         </div>
       </div>
 
       {#if !$page.url.pathname.includes("/search")}
         <div
-          class="hidden sm:block absolute left-1/2 transform -translate-x-1/2 w-full max-w-md"
+          class="mx-auto absolute left-1/2 transform -translate-x-1/2
+         w-5/12 lg:w-5/12 md:w-4/12 sm:w-3/12 hidden sm:block
+         px-4"
         >
           <form on:submit|preventDefault={handleSearch} class="relative w-full">
             <input
@@ -255,18 +269,6 @@
           </button>
 
           <button
-            on:click={toggleTheme}
-            class="ml-1 p-2 text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
-            aria-label="Toggle Theme"
-          >
-            {#if isDark}
-              <Sun class="h-5 w-5" />
-            {:else}
-              <Moon class="h-5 w-5" />
-            {/if}
-          </button>
-
-          <button
             type="button"
             class="ml-1 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
             on:click={toggleMenu}
@@ -278,18 +280,6 @@
 
       <div class="hidden sm:flex sm:items-center">
         <div class="flex items-center space-x-2 md:space-x-4">
-          <button
-            on:click={toggleTheme}
-            class="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-white focus:outline-none"
-            aria-label="Toggle Theme"
-          >
-            {#if isDark}
-              <Sun class="h-5 w-5" />
-            {:else}
-              <Moon class="h-5 w-5" />
-            {/if}
-          </button>
-
           <select
             bind:value={lang}
             on:change={changeLanguage}
@@ -499,7 +489,6 @@
                 class={`py-2 px-3 rounded text-center ${lang === "en" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
                   const event = { target: { value: "en" } };
-                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >
@@ -509,7 +498,6 @@
                 class={`py-2 px-3 rounded text-center ${lang === "lv" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
                   const event = { target: { value: "lv" } };
-                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >
@@ -519,7 +507,6 @@
                 class={`py-2 px-3 rounded text-center ${lang === "ru" ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 on:click={() => {
                   const event = { target: { value: "ru" } };
-                  //@ts-ignore
                   changeLanguage(event);
                 }}
               >

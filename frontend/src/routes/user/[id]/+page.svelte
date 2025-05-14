@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
+  import * as m from "$lib/paraglide/messages.js";
   import {
     Star,
     Phone,
