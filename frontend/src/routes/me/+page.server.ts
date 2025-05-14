@@ -1,14 +1,96 @@
 import { graphql } from "$houdini";
-import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
+import { fail, redirect, type LoadEvent, type RequestEvent } from "@sveltejs/kit";
 import { user } from "$lib/userStore";
 import { editProfileSchema, validateSchema } from "$lib/schemas";
+import type { PageServerLoad } from "./$types.js";
 
-export function load({ cookies }: any) {
-  const logedIn = cookies.get("accessToken") || cookies.get("refreshToken");
+export const load: PageServerLoad = async (event) => {
+  const logedIn = event. cookies.get("accessToken") || event.cookies.get("refreshToken");
 
   if (!logedIn) {
     return redirect(302, "/login");
   }
+
+  const meQuery = graphql(`
+query me {
+  me {
+    id
+    name
+    surname
+    companyName
+    email
+    emailVerified
+    rating
+    telegramUsername
+    phone
+    role
+    avatarUrl
+
+    reviewedAdverts {
+      title
+      lat
+      lon
+      price
+      createdAt
+      photoUrl
+      review {
+        message
+        rating
+        createdAt
+      }
+    }
+
+    advertsWithReviews {
+      title
+      price
+      lat
+      lon
+      available
+      photoUrl
+      review {
+        rating
+        message
+        createdAt
+        user {
+          name
+          avatarUrl
+        }
+      }
+    }
+
+    adverts {
+      id
+      title
+      price
+      description
+      lat
+      lon
+      createdAt
+      photoUrl
+      additionalPhotos
+      oldPrice
+      available
+
+      review {
+        rating
+        id
+        message
+      }
+    }
+  }
+}
+
+
+
+  `);
+
+  const me = await meQuery.fetch({ event, policy: "NoCache" });
+
+
+  return {
+    me,
+  }
+
 }
 
 export const actions = {

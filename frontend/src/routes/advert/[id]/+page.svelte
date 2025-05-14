@@ -30,7 +30,12 @@
   export let form;
 
   $: advert = data?.advert?.data?.advert || null;
-  $: gridCols = $user.isLoggedIn ? "grid-cols-2" : "grid-cols-1";
+  $: gridCols = $user.isLoggedIn
+    ? advert.user.phone
+      ? "grid-cols-3"
+      : "grid-cols-2"
+    : "grid-cols-2";
+
   $: ({ similarAdverts: similarAdvertsQuery } = data);
 
   let rating = 0;
@@ -188,8 +193,6 @@
           action="?/edit"
           use:enhance={() => {
             return async ({ result, update }) => {
-              console.log("Edit advert success", result);
-
               if (result.type == "failure") {
                 update();
               }
@@ -633,12 +636,15 @@
                       <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
                       <span>{m.email()}</span>
                     </button>
-                    <!-- <button
-                      class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
-                    >
-                      <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                      <span>{m.call()}</span>
-                    </button> -->
+
+                    {#if advert.user.phone}
+                      <button
+                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                      >
+                        <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                        <span>{m.call()}</span>
+                      </button>
+                    {/if}
                   </div>
                 </div>
               {/if}

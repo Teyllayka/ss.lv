@@ -279,7 +279,7 @@
       </div>
 
       <div class="hidden sm:flex sm:items-center">
-        <div class="flex items-center space-x-2 md:space-x-4">
+        <div class="flex items-center space-x-1 md:space-x-2">
           <select
             bind:value={lang}
             on:change={changeLanguage}
@@ -292,7 +292,7 @@
           </select>
 
           {#if $user.isLoggedIn && browser}
-            <div class="hidden sm:flex items-center space-x-2 md:space-x-4">
+            <div class="hidden sm:flex items-center space-x-1 md:space-x-2">
               <a
                 href="/favorites"
                 class="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"

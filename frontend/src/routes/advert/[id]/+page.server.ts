@@ -36,6 +36,7 @@ export async function load(event: LoadEvent) {
             name
             surname
             email
+            phone
           }
         }
 
@@ -51,6 +52,8 @@ export async function load(event: LoadEvent) {
           name
           surname
           createdAt
+          email
+          phone
         }
       }
     }

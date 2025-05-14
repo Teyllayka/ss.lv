@@ -6,7 +6,6 @@
 
   export let advert;
   export let reviewer;
-  console.log("advert", advert);
 </script>
 
 <div

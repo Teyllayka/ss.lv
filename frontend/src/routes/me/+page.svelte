@@ -10,6 +10,7 @@
     ShoppingBag,
     AlertCircle,
     Camera,
+    Phone,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
@@ -23,7 +24,6 @@
   import { goto } from "$app/navigation";
 
   export let form;
-
   export let data: PageData;
 
   function preventFormReset(formElement: any) {
@@ -43,9 +43,8 @@
     });
   }
 
-  $: ({ me } = data);
-  $: console.log("me", $me);
-  $: userData = { ...$me.data?.me, ...form?.data } as UserData;
+  $: me = data?.me?.data?.me || null;
+  $: userData = { ...me, ...form?.data } as UserData;
 
   let activeTab: TabType = "profile";
   let activeReviewTab: ReviewTabType = "received";
@@ -118,15 +117,7 @@
   class="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 transition-colors duration-300"
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {#if $me.fetching}
-      <div class="text-center text-gray-600 dark:text-gray-400">
-        Loading user data...
-      </div>
-    {:else if $me.errors}
-      <div class="text-center text-red-500 dark:text-red-400">
-        Failed to load user data.
-      </div>
-    {:else if $me.data && userData}
+    {#if me && userData}
       <div
         class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden"
         in:fade={{ duration: 300 }}
@@ -221,7 +212,7 @@
           {#if activeTab === "profile"}
             <div in:fade>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- {#if userData.phone}
+                {#if userData.phone}
                   <div class="flex items-center">
                     <Phone
                       class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
@@ -230,7 +221,7 @@
                       {userData.phone}
                     </span>
                   </div>
-                {/if} -->
+                {/if}
                 {#if userData.email}
                   <div class="flex items-center">
                     <Mail
