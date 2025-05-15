@@ -5,4 +5,6 @@ import { chatUrl } from "./consts";
 
 export const socket = io(chatUrl, {
     path: chatUrl.includes("127.0.0.1") ? "/socket.io" : "/chat/socket.io",
+    transports: ['websocket', 'polling'],
+    
 });
