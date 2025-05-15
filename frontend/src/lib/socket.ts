@@ -1,17 +1,16 @@
 import { io } from "socket.io-client";
-import { chatUrl } from "./consts"; 
+import { chatUrl, isDev } from "./consts"; 
 
-function deriveSocketPath(url: string) {
-  try {
-    const pathname = new URL(url).pathname.replace(/\/$/, "");
-    return pathname === "" ? "/socket.io" : `${pathname}/socket.io`;
-  } catch {
-    const p = url.replace(/\/$/, "");
-    return p === "" ? "/socket.io" : `${p}/socket.io`;
-  }
-}
+const host = isDev
+  ? "http://localhost:4000"
+  : window.location.origin;
 
-export const socket = io(chatUrl, {
-  path: deriveSocketPath(chatUrl),
-  transports: ["websocket"],
+const socketPath = isDev
+  ? "/socket.io"
+  : "/chat/socket.io";
+
+export const socket = io(host, {
+  path: socketPath,
+  transports: ["polling", "websocket"],
+  secure: !isDev,                 
 });

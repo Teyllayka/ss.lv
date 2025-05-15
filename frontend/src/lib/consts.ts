@@ -9,3 +9,4 @@ export const inactiveTabClass =
 
 
 export const chatUrl = env.PUBLIC_CHAT_API || "http://127.0.0.1:4000";
+export const isDev = chatUrl === "https://ad-ee.tech/chat";
