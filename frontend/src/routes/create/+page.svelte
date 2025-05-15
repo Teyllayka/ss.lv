@@ -241,34 +241,36 @@
         </div>
 
         {#if category && categoryFields[category]}
-          <div
-            class="space-y-6"
-            in:fly={{ y: 20, duration: 300, delay: 500, easing: cubicOut }}
-          >
-            {#each categoryFields[category] as field}
-              <div class="relative">
-                {#if field.type === "select"}
-                  <SelectField
-                    name={field.name}
-                    placeholder={`Select ${field.label}`}
-                    options={field.options}
-                    errors={form?.errors || []}
-                    value={form?.data[field.name]}
-                    disabled={!$user.emailVerified}
-                  />
-                {:else if field.type === "text" || field.type == "number"}
-                  <InputField
-                    name={field.name}
-                    type={field.type}
-                    placeholder={field.label}
-                    errors={form?.errors || []}
-                    value={form?.data[field.name]}
-                    disabled={!$user.emailVerified}
-                  />
-                {/if}
-              </div>
-            {/each}
-          </div>
+          {#key category}
+            <div
+              class="space-y-6"
+              in:fly={{ y: 20, duration: 300, delay: 500, easing: cubicOut }}
+            >
+              {#each categoryFields[category] as field}
+                <div class="relative">
+                  {#if field.type === "select"}
+                    <SelectField
+                      name={field.name}
+                      placeholder={`Select ${field.label}`}
+                      options={field.options}
+                      errors={form?.errors || []}
+                      value={form?.data[field.name]}
+                      disabled={!$user.emailVerified}
+                    />
+                  {:else if field.type === "text" || field.type == "number"}
+                    <InputField
+                      name={field.name}
+                      type={field.type}
+                      placeholder={field.label}
+                      errors={form?.errors || []}
+                      value={form?.data[field.name]}
+                      disabled={!$user.emailVerified}
+                    />
+                  {/if}
+                </div>
+              {/each}
+            </div>
+          {/key}
         {/if}
 
         <div

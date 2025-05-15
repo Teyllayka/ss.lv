@@ -157,7 +157,11 @@
   onMount(async () => {
     if (!advert?.lat || !advert?.lon) return;
     const L = (await import("leaflet")).default;
-
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "/images/marker-icon-2x.png",
+      iconUrl: "/images/marker-icon.png",
+      shadowUrl: "/images/marker-shadow.png",
+    });
     map = L.map("map", {
       attributionControl: false,
     }).setView([advert.lat, advert.lon], 13);

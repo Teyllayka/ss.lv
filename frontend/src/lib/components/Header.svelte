@@ -166,6 +166,12 @@
       if (currentCoords[0] === 0 && currentCoords[1] === 0) {
         currentCoords = [51.505, -0.09];
       }
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "/images/marker-icon-2x.png",
+        iconUrl: "/images/marker-icon.png",
+        shadowUrl: "/images/marker-shadow.png",
+      });
+
       map = L.map(mapElement, {
         attributionControl: false,
       }).setView(currentCoords, 13);
