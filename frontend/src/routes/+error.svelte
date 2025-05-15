@@ -10,51 +10,50 @@
         ArrowLeft,
         RefreshCw,
     } from "lucide-svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     $: status = $page.status;
     $: message = $page.error?.message || "";
 
     const errorTypes = {
         404: {
-            title: "Page Not Found",
-            description:
-                "The page you're looking for doesn't exist or has been moved.",
+            title: m.page_not_found(),
+            description: m.page_not_found_description(),
             icon: FileSearch,
             color: "text-amber-500",
             bgColor: "bg-amber-100 dark:bg-amber-900/30",
         },
         500: {
-            title: "Server Error",
-            description:
-                "Our server encountered an error. Please try again later.",
+            title: m.server_error(),
+            description: m.server_error_description(),
             icon: ServerCrash,
             color: "text-red-500",
             bgColor: "bg-red-100 dark:bg-red-900/30",
         },
         503: {
-            title: "Service Unavailable",
-            description:
-                "Our service is currently unavailable. We're working on it!",
+            title: m.service_unavailable(),
+            description: m.service_unavailable_description(),
             icon: ServerCrash,
             color: "text-red-500",
             bgColor: "bg-red-100 dark:bg-red-900/30",
         },
         offline: {
-            title: "You're Offline",
-            description: "Check your internet connection and try again.",
+            title: m.youre_offline(),
+            description: m.youre_offline_description(),
             icon: Wifi,
             color: "text-blue-500",
             bgColor: "bg-blue-100 dark:bg-blue-900/30",
         },
         default: {
-            title: "Something Went Wrong",
-            description: "An unexpected error occurred.",
+            title: m.something_went_wrong(),
+            description: m.something_went_wrong_description(),
             icon: AlertTriangle,
             color: "text-orange-500",
             bgColor: "bg-orange-100 dark:bg-orange-900/30",
         },
     };
 
+    // @ts-ignore
     $: errorType = errorTypes[status] || errorTypes.default;
 
     $: if (typeof window !== "undefined" && !window.navigator.onLine) {
@@ -112,7 +111,7 @@
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Go Back
+                    {m.go_back()}
                 </button>
 
                 <button
@@ -120,7 +119,7 @@
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                     <Home class="h-4 w-4" />
-                    Home Page
+                    {m.home_page()}
                 </button>
 
                 <button
@@ -128,7 +127,7 @@
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                 >
                     <RefreshCw class="h-4 w-4" />
-                    Refresh
+                    {m.refresh()}
                 </button>
             </div>
         </div>
@@ -137,7 +136,7 @@
             class="px-6 py-4 bg-gray-100 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700"
         >
             <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-                If this problem persists, please contact our support team.
+                {m.support_team_contact()}
             </p>
         </div>
     </div>
@@ -146,15 +145,7 @@
         class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400 max-w-md"
     >
         <p>
-            Need help? Try clearing your browser cache or using a different
-            browser.
-        </p>
-        <p class="mt-2">
-            You can also check our <a
-                href="/help"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-                >help center</a
-            > for more information.
+            {m.browser_cache_help()}
         </p>
     </div>
 </div>

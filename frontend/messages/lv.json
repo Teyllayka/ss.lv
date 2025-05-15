@@ -135,5 +135,20 @@
   "create_advert": "Izveidot sludinājumu",
   "creating_advert": "Notiek sludinājuma izveide...",
   "language": "Valoda",
-  "select_location": "Izvēlieties atrašanās vietu"
+  "select_location": "Izvēlieties atrašanās vietu",
+  "page_not_found": "Lapa nav atrasta",
+  "page_not_found_description": "Lapa, kuru meklējat, nepastāv vai ir pārvietota.",
+  "server_error": "Servera kļūda",
+  "server_error_description": "Mūsu serverī radās kļūda. Lūdzu, mēģiniet vēlreiz vēlāk.",
+  "service_unavailable": "Pakalpojums nav pieejams",
+  "service_unavailable_description": "Mūsu pakalpojums pašlaik nav pieejams. Mēs strādājam pie tā!",
+  "youre_offline": "Jūs esat bezsaistē",
+  "youre_offline_description": "Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.",
+  "something_went_wrong": "Notikusi kļūda",
+  "something_went_wrong_description": "Notika neparedzēta kļūda.",
+  "go_back": "Atpakaļ",
+  "home_page": "Sākumlapa",
+  "refresh": "Atsvaidzināt",
+  "support_team_contact": "Ja problēma turpinās, lūdzu, sazinieties ar mūsu atbalsta komandu.",
+  "browser_cache_help": "Vai nepieciešama palīdzība? Mēģiniet notīrīt pārlūkprogrammas kešatmiņu vai izmantot citu pārlūkprogrammu."
 }

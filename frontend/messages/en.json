@@ -144,5 +144,20 @@
   "language": "Language",
   "select_location": "Select location",
   "subject": "Subject",
-  "phone": "Phone"
+  "phone": "Phone",
+  "page_not_found": "Page Not Found",
+  "page_not_found_description": "The page you're looking for doesn't exist or has been moved.",
+  "server_error": "Server Error",
+  "server_error_description": "Our server encountered an error. Please try again later.",
+  "service_unavailable": "Service Unavailable",
+  "service_unavailable_description": "Our service is currently unavailable. We're working on it!",
+  "youre_offline": "You're Offline",
+  "youre_offline_description": "Check your internet connection and try again.",
+  "something_went_wrong": "Something Went Wrong",
+  "something_went_wrong_description": "An unexpected error occurred.",
+  "go_back": "Go Back",
+  "home_page": "Home Page",
+  "refresh": "Refresh",
+  "support_team_contact": "If this problem persists, please contact our support team.",
+  "browser_cache_help": "Need help? Try clearing your browser cache or using a different browser."
 }
