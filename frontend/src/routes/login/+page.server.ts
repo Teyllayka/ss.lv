@@ -1,7 +1,6 @@
 import { graphql } from "$houdini";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 import { loginSchema, validateSchema } from "$lib/schemas";
-import { user } from "$lib/userStore";
 
 export const actions = {
   default: async (event: RequestEvent) => {

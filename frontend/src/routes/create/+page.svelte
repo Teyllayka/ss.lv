@@ -10,6 +10,7 @@
   import AddressField from "$lib/components/AddressField.svelte";
   export let form;
   import * as m from "$lib/paraglide/messages.js";
+  import { capitalizeFirstLetter } from "$lib/helpers.js";
 
   let category: keyof typeof categoryFields | "" = "";
   let isLoading = false;
@@ -17,6 +18,14 @@
   let dynamicFields: Record<string, string> = {};
   let mainPhoto: string | null = null;
   let additionalPhotos: string[] = [];
+
+  $: mainPhotoError = form?.errors?.find((e: any) => e.field === "mainPhoto");
+  $: additionalPhotosError = form?.errors?.find(
+    (e: any) => e.field === "additionalPhotos",
+  );
+
+  $: console.log("mainPhotoError", mainPhotoError);
+  $: console.log("additionalPhotosError", additionalPhotosError);
 
   const categories = [
     { value: "electronics", label: "Electronics" },
@@ -158,7 +167,12 @@
           class="relative"
           in:fly={{ y: 20, duration: 300, delay: 200, easing: cubicOut }}
         >
-          <AddressField name="location" placeholder={m.location()} />
+          <AddressField
+            id="location"
+            name="location"
+            errors={form?.errors || []}
+            placeholder={m.location()}
+          />
         </div>
 
         <div
@@ -304,12 +318,12 @@
                 />
               </label>
             </div>
-            {#if errors.mainPhoto}
+            {#if mainPhotoError}
               <p
                 class="text-red-500 text-xs mt-1"
                 in:fly={{ y: 10, duration: 300, easing: cubicOut }}
               >
-                {errors.mainPhoto}
+                {capitalizeFirstLetter(mainPhotoError.message)}
               </p>
             {/if}
           </div>
@@ -350,6 +364,14 @@
                 />
               </label>
             </div>
+            {#if additionalPhotosError}
+              <p
+                class="text-red-500 text-xs mt-1"
+                in:fly={{ y: 10, duration: 300, easing: cubicOut }}
+              >
+                {capitalizeFirstLetter(additionalPhotosError.message)}
+              </p>
+            {/if}
           </div>
 
           {#if additionalPhotos.length > 0}
