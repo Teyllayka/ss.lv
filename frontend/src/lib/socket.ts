@@ -13,5 +13,5 @@ function deriveSocketPath(url: string) {
 
 export const socket = io(chatUrl, {
   path: deriveSocketPath(chatUrl),
-  transports: ["polling", "websocket"],
+  transports: ["websocket"],
 });
