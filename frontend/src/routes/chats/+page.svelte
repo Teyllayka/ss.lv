@@ -11,7 +11,7 @@
     } from "lucide-svelte";
     import { user } from "$lib/userStore";
     import { getContext, onMount } from "svelte";
-    import { socket } from "$lib/socket.js";
+    import { socket } from "$lib/socket";
     import type { Writable } from "$houdini";
     import * as m from "$lib/paraglide/messages.js";
 
