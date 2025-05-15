@@ -83,7 +83,7 @@ services:
       - "4173:3000"
     environment:
       PUBLIC_API_URL: /backend
-      PUBLIC_CHAT_API: https://ad-ee.tech/chat
+      PUBLIC_CHAT_API: https://ad-ee.tech
     depends_on:
       - backend
       - chat
