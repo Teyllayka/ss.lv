@@ -83,18 +83,27 @@ export async function load(event: LoadEvent) {
   `);
 
   if (!advertId) {
-    return { similarAdverts: null };
+    return redirect(302, "/");
   }
+
+  const advert = await advertQuery.fetch({
+    variables: { id: advertId },
+    event,
+  });
+
+  console.log("advert", advert);
+
+  if(!advert.data) {
+    return redirect(302, "/");
+  }
+
 
   const similarAdverts = await similarAdvertsQuery.fetch({
     variables: { id: advertId },
     event,
   });
 
-  const advert = await advertQuery.fetch({
-    variables: { id: advertId },
-    event,
-  });
+
 
   return { similarAdverts, advert };
 }
