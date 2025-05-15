@@ -159,5 +159,8 @@
   "home_page": "Home Page",
   "refresh": "Refresh",
   "support_team_contact": "If this problem persists, please contact our support team.",
-  "browser_cache_help": "Need help? Try clearing your browser cache or using a different browser."
+  "browser_cache_help": "Need help? Try clearing your browser cache or using a different browser.",
+  "no_chats_matching": "No chats match your search criteria.",
+  "no_active_chats": "You don't have any active chats yet.",
+  "please_verify_email": "Please verify your email address to create an advert."
 }

@@ -110,7 +110,7 @@
                     on:click={goBack}
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
-                    <ArrowLeft class="h-4 w-4" />
+                    <ArrowLeft class="h-4 w-4 shrink-0" />
                     {m.go_back()}
                 </button>
 
@@ -118,7 +118,7 @@
                     on:click={goHome}
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
-                    <Home class="h-4 w-4" />
+                    <Home class="h-4 w-4 shrink-0" />
                     {m.home_page()}
                 </button>
 
@@ -126,7 +126,7 @@
                     on:click={refresh}
                     class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                 >
-                    <RefreshCw class="h-4 w-4" />
+                    <RefreshCw class="h-4 w-4 shrink-0" />
                     {m.refresh()}
                 </button>
             </div>

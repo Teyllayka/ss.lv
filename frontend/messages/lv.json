@@ -150,5 +150,9 @@
   "home_page": "Sākumlapa",
   "refresh": "Atsvaidzināt",
   "support_team_contact": "Ja problēma turpinās, lūdzu, sazinieties ar mūsu atbalsta komandu.",
-  "browser_cache_help": "Vai nepieciešama palīdzība? Mēģiniet notīrīt pārlūkprogrammas kešatmiņu vai izmantot citu pārlūkprogrammu."
+  "browser_cache_help": "Vai nepieciešama palīdzība? Mēģiniet notīrīt pārlūkprogrammas kešatmiņu vai izmantot citu pārlūkprogrammu.",
+  "search_chats": "Meklēt sludinājumus vai čatus...",
+  "no_chats_matching": "Nav čatu, kas atbilst jūsu meklēšanas kritērijiem.",
+  "no_active_chats": "Jums vēl nav neviena aktīva čata.",
+  "please_verify_email": "Lūdzu, apstipriniet savu e-pasta adresi, lai izveidotu sludinājumu."
 }

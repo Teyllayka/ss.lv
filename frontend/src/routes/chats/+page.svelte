@@ -272,8 +272,8 @@
                         </h3>
                         <p class="mt-1 text-gray-500 dark:text-gray-400">
                             {searchQuery
-                                ? "No chats match your search criteria."
-                                : "You don't have any active chats yet."}
+                                ? m.no_chats_matching()
+                                : m.no_active_chats()}
                         </p>
                     </div>
                 {:else}
