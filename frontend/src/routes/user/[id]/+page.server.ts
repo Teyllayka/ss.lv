@@ -23,7 +23,6 @@ query User($id: Int!) {
     email
     rating
     avatarUrl
-    telegramUsername
     adverts {
       id
       title

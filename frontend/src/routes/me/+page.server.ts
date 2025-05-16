@@ -21,7 +21,6 @@ query me {
     email
     emailVerified
     rating
-    telegramUsername
     phone
     role
     avatarUrl
