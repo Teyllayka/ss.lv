@@ -1,4 +1,3 @@
-
 FROM oven/bun:1.1 AS builder
 WORKDIR /app
 
@@ -14,11 +13,10 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the application
 COPY . .
 
-# Fix for SvelteKit tsconfig issue - ensure .svelte-kit directory exists before build
-RUN mkdir -p .svelte-kit
-RUN touch .svelte-kit/tsconfig.json
+# Run SvelteKit sync to generate files before building
+RUN bun run svelte-kit sync
 
-# Run the build with NODE_ENV set to production to avoid certain dev-only behaviors
+# Run the build with NODE_ENV set to production
 RUN NODE_ENV=production bun run build    # outputs to ./build
 
 FROM oven/bun:1.1 AS runner
