@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install
 
-# copy & build
 COPY . .
 RUN yarn build    # emits ./build
 
@@ -18,4 +17,4 @@ COPY --from=builder /app/package.json ./package.json
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "build/index.js"]
+CMD ["node", "--max-old-space-size=2048", "build/index.js"]
