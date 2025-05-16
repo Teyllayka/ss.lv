@@ -1,21 +1,21 @@
-FROM node:22-alpine AS builder
+FROM oven/bun:1.2.13-alpine AS builder
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN bun install --frozen-lockfile                                         
 
 COPY . .
-RUN yarn build    # outputs to ./build
+RUN bun run build                                                        
 
-FROM node:22-alpine AS runner
+FROM oven/bun:1.2.13-alpine AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/bun.lockb ./
 
-RUN yarn install --production --frozen-lockfile
+RUN bun install --production --frozen-lockfile                          
 
 EXPOSE 3000
-CMD ["node", "--max-old-space-size=2048", "build/index.js"]
+CMD ["bun", "run", "build/index.js"]
