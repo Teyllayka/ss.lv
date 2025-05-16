@@ -9,10 +9,8 @@
   import { onMount, setContext } from "svelte";
   import { writable } from "svelte/store";
   import { page } from "$app/stores";
-  import { invalidateAll, replaceState } from "$app/navigation";
 
   export let data: LayoutData;
-  $: HeaderMe = data.HeaderMe;
 
   const region = writable("Select Region");
   const areUnreadMessages = writable({
@@ -20,35 +18,23 @@
   });
 
   const location = writable([0, 0]);
-  let isInvalidating = false;
 
-  $: if (HeaderMe && $HeaderMe.data && $HeaderMe.data.me) {
+  let me;
+
+  $: me = data.HeaderMe.data?.me;
+
+  $: if (me) {
     user.set({
-      emailVerified: $HeaderMe.data.me.emailVerified || false,
-      isCompany: $HeaderMe.data.me.companyName != null,
-      isLoggedIn: $HeaderMe.data.me != null,
-      role: $HeaderMe.data.me.role,
-      id: $HeaderMe.data.me.id,
-      banned: $HeaderMe.data.me.banned,
+      emailVerified: me.emailVerified || false,
+      isCompany: me.companyName != null,
+      isLoggedIn: true,
+      role: me.role,
+      id: me.id,
+      banned: me.banned,
     });
   }
 
   onMount(() => {
-    const unsubscribe = page.subscribe(async ($page) => {
-      const refetchParam = $page.url.searchParams.get("refetch");
-      if (refetchParam === "true" && !isInvalidating) {
-        isInvalidating = true;
-
-        const url = new URL(window.location.href);
-        url.searchParams.delete("refetch");
-        replaceState(url, {});
-
-        await invalidateAll();
-
-        isInvalidating = false;
-      }
-    });
-
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -68,8 +54,6 @@
       isDarkMode = true;
       document.documentElement.classList.add("dark");
     }
-
-    return unsubscribe;
   });
 
   setContext("region", region);
