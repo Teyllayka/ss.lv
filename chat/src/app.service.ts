@@ -289,9 +289,6 @@ export class AppService {
         'owner.company_name as owner_company_name',
         'owner.email as owner_email',
         'owner.phone as owner_phone',
-        'owner.telegram_id as owner_telegram_id',
-        'owner.telegram_username as owner_telegram_username',
-        'owner.balance as owner_balance',
         'owner.email_verified as owner_email_verified',
         'owner.role as owner_role',
 
@@ -304,9 +301,6 @@ export class AppService {
         'participant.company_name as participant_company_name',
         'participant.email as participant_email',
         'participant.phone as participant_phone',
-        'participant.telegram_id as participant_telegram_id',
-        'participant.telegram_username as participant_telegram_username',
-        'participant.balance as participant_balance',
         'participant.email_verified as participant_email_verified',
         'participant.role as participant_role',
 
@@ -362,9 +356,6 @@ export class AppService {
         company_name: row.owner_company_name,
         email: row.owner_email,
         phone: row.owner_phone,
-        telegram_id: row.owner_telegram_id,
-        telegram_username: row.owner_telegram_username,
-        balance: row.owner_balance,
         email_verified: row.owner_email_verified,
         role: row.owner_role,
       };
@@ -379,9 +370,6 @@ export class AppService {
         company_name: row.participant_company_name,
         email: row.participant_email,
         phone: row.participant_phone,
-        telegram_id: row.participant_telegram_id,
-        telegram_username: row.participant_telegram_username,
-        balance: row.participant_balance,
         email_verified: row.participant_email_verified,
         role: row.participant_role,
       };
