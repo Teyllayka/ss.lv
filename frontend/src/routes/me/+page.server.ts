@@ -86,6 +86,7 @@ query me {
 
   const me = await meQuery.fetch({ event, policy: "NoCache" });
 
+  console.log("me", me);
 
   return {
     me,
