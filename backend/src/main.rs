@@ -22,7 +22,7 @@ use deadpool_redis::{Config, Pool, Runtime};
 use dotenvy::dotenv;
 use entity::{
     advert::{self, Entity as Advert},
-    payment::{self, Entity as Payment},
+    // payment::{self, Entity as Payment},
     user::{self, Entity as User},
 };
 use hmac::{Hmac, Mac};

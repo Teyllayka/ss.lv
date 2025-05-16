@@ -162,5 +162,6 @@
   "browser_cache_help": "Need help? Try clearing your browser cache or using a different browser.",
   "no_chats_matching": "No chats match your search criteria.",
   "no_active_chats": "You don't have any active chats yet.",
-  "please_verify_email": "Please verify your email address to create an advert."
+  "please_verify_email": "Please verify your email address to create an advert.",
+  "ban_user": "Ban User"
 }

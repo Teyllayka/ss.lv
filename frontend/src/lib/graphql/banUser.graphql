@@ -1,0 +1,5 @@
+mutation BanUser($userId: Int!) {
+  banUser(userId: $userId) @cache(policy: NetworkOnly) {
+    id
+  }
+}

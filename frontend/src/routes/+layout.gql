@@ -8,5 +8,6 @@ query HeaderMe {
     emailVerified
     role
     avatarUrl
+    banned
   }
 }

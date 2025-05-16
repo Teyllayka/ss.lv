@@ -1,5 +1,4 @@
 import { writable } from "svelte/store";
-import Cookies from "js-cookie";
 
 const defaultUser: UserStore = {
   emailVerified: false,
@@ -7,6 +6,7 @@ const defaultUser: UserStore = {
   isLoggedIn: false,
   role: "USER",
   id: 0,
+  banned: false,
 };
 
 function createUserStore() {

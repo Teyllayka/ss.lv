@@ -34,7 +34,9 @@
     ? advert?.user.phone
       ? "grid-cols-3"
       : "grid-cols-2"
-    : "grid-cols-2";
+    : advert?.user.phone
+      ? "grid-cols-2"
+      : "grid-cols-1";
 
   $: ({ similarAdverts: similarAdvertsQuery } = data);
 
@@ -607,49 +609,53 @@
                     {m.member_since()}
                     {formatDate(advert.user.createdAt.toString())}
                   </p>
-                  <div class={`grid ${gridCols} gap-4`}>
-                    {#if $user.isLoggedIn}
-                      <form
-                        method="POST"
-                        action="?/chat"
-                        use:enhance
-                        class="flex items-center justify-center"
-                      >
-                        <input
-                          type="hidden"
-                          name="advertId"
-                          value={advert.id}
-                        />
-                        <button
-                          type="submit"
-                          class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                  {#if !$user.banned}
+                    <div class={`grid ${gridCols} gap-4`}>
+                      {#if $user.isLoggedIn}
+                        <form
+                          method="POST"
+                          action="?/chat"
+                          use:enhance
+                          class="flex items-center justify-center"
                         >
-                          <MessageSquare class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                          <span>{m.chat()}</span>
-                        </button>
-                      </form>
-                    {/if}
+                          <input
+                            type="hidden"
+                            name="advertId"
+                            value={advert.id}
+                          />
+                          <button
+                            type="submit"
+                            class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                          >
+                            <MessageSquare
+                              class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2"
+                            />
+                            <span>{m.chat()}</span>
+                          </button>
+                        </form>
+                      {/if}
 
-                    <button
-                      on:click={() => {
-                        window.location.href = `mailto:${advert?.user.email}`;
-                      }}
-                      title={advert.user.email}
-                      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
-                    >
-                      <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                      <span>{m.email()}</span>
-                    </button>
-
-                    {#if advert.user.phone}
                       <button
-                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                        on:click={() => {
+                          window.location.href = `mailto:${advert?.user.email}`;
+                        }}
+                        title={advert.user.email}
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
                       >
-                        <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
-                        <span>{m.call()}</span>
+                        <Mail class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                        <span>{m.email()}</span>
                       </button>
-                    {/if}
-                  </div>
+
+                      {#if advert.user.phone}
+                        <button
+                          class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline flex flex-col sm:flex-row items-center justify-center"
+                        >
+                          <Phone class="w-5 h-5 mb-1 sm:mb-0 sm:mr-2" />
+                          <span>{m.call()}</span>
+                        </button>
+                      {/if}
+                    </div>
+                  {/if}
                 </div>
               {/if}
             </div>

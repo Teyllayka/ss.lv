@@ -42,22 +42,6 @@ export class AppController {
     return message;
   }
 
-  @Post('update-message')
-  @UseGuards(AuthGuard)
-  async updateMessage(@Req() s, @Body() b) {
-    const message = await this.appservice.updateMessage(s, b);
-    this.eventsGateway.server.emit('message-' + message.chat_id);
-    return message;
-  }
-
-  @Post('delete-message')
-  @UseGuards(AuthGuard)
-  async deleteMessage(@Req() s, @Body() b) {
-    const message = await this.appservice.deleteMessage(s, b);
-    this.eventsGateway.server.emit('message-' + message.chat_id);
-    return message;
-  }
-
   @Post('request-deal')
   @UseGuards(AuthGuard)
   async requestDeal(@Req() s, @Body() b) {

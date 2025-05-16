@@ -8,6 +8,7 @@ export function POST({ cookies }: any) {
   cookies.delete("refreshToken", { path: "/" });
   cookies.delete("expiresAt", { path: "/" });
   cookies.delete("user", { path: "/" });
+  cookies.delete("userId", { path: "/" });
   cache.reset()
   return redirect(303, "/");
 }

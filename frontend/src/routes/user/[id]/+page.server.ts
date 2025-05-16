@@ -1,15 +1,14 @@
 import { graphql } from "$houdini";
-import { user } from "$lib/userStore";
-import { redirect, type LoadEvent } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
 
-export async function load(event: LoadEvent) {
-  let userValue: any;
+export const load: PageServerLoad = async (event) => {
+  const userId = event.cookies.get("userId");
+  const id = parseInt(event.params.id ?? "0");
 
-  user.subscribe((value) => {
-    userValue = value;
-  });
+  console.log("userId", userId, id);
 
-  if (userValue?.id.toString() === event.params.id) {
+  if (userId === event.params.id) {
     return redirect(302, "/me");
   }
 
@@ -87,8 +86,8 @@ query User($id: Int!) {
 }
   `);
 
-  const userData = await userQuery.fetch({ event, policy: "NoCache" });
-
+  const userData = await userQuery.fetch({ variables: { id: id },event, policy: "NoCache" });
+  console.log("u", userData);
 
   if (!userData.data) {
     throw redirect(302, "/");

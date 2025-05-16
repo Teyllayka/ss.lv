@@ -8,9 +8,10 @@ use crate::{verify_access_token, Context, Token};
 use actix_web::Result;
 use async_graphql::{Object, SimpleObject};
 use chrono::Utc;
-use deadpool_redis::redis::{cmd, RedisError};
+use deadpool_redis::redis::cmd;
 use entity::{
     advert::{self, Entity as Advert},
+    chat::{self, Entity as Chat},
     favorites::{self},
     payment::{self},
     reviews::{self, Entity as Reviews},
@@ -18,7 +19,6 @@ use entity::{
 };
 use jwt::SignWithKey;
 use jwt::VerifyWithKey;
-use rand::{distributions::Alphanumeric, Rng};
 use sea_orm::ColumnTrait;
 use sea_orm::{ActiveModelTrait, EntityTrait, QueryFilter, Set};
 
@@ -40,6 +40,7 @@ const REFRESH_EXPIRATION: usize = 180;
 pub struct LoginResponse {
     refresh_token: String,
     access_token: String,
+    user_id: i32,
 }
 
 #[derive(Default)]
@@ -350,7 +351,6 @@ impl UserMutation {
             password_hash: Set(Some(parsed_hash.to_string())),
             created_at: Set(naive_date_time),
             updated_at: Set(naive_date_time),
-            balance: Set(0.0),
             ..Default::default()
         };
 
@@ -495,10 +495,12 @@ impl UserMutation {
 
         ctx.append_http_header("Set-Cookie", format!("refresh_token={}", refresh_token));
         ctx.append_http_header("Set-Cookie", format!("access_token={}", access_token));
+        ctx.append_http_header("Set-Cookie", format!("user_id={}", user.id));
 
         Ok(LoginResponse {
             refresh_token,
             access_token,
+            user_id: user.id,
         })
     }
 
@@ -693,6 +695,7 @@ impl UserMutation {
         return Ok(LoginResponse {
             refresh_token,
             access_token,
+            user_id: user.id,
         });
     }
 
@@ -938,11 +941,86 @@ impl UserMutation {
     //     return Ok(payment_link.url);
     // }
 
-    async fn connect_account(
+    // async fn connect_account(
+    //     &self,
+    //     ctx: &async_graphql::Context<'_>,
+    //     code: String,
+    // ) -> Result<String, async_graphql::Error> {
+    //     let my_ctx = ctx.data::<Context>().unwrap();
+
+    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
+    //         Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
+    //         None => {
+    //             return Err(async_graphql::Error::new(
+    //                 "you are not logged in".to_string(),
+    //             ));
+    //         }
+    //     };
+
+    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
+    //         Ok(claims) => claims,
+    //         Err(err) => return Err(err),
+    //     };
+
+    //     let id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
+    //         id_str.parse().map_err(|_| {
+    //             async_graphql::Error::new("Invalid user ID in token: failed to parse string")
+    //         })?
+    //     } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
+    //         id_num as i32
+    //     } else {
+    //         return Err(async_graphql::Error::new(
+    //             "Invalid user ID in token: missing id",
+    //         ));
+    //     };
+    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+
+    //     match user {
+    //         Some(_) => (),
+    //         None => return Err(async_graphql::Error::new("Wrong token".to_string())),
+    //     };
+
+    //     let mut conn = my_ctx.redis_pool.get().await.unwrap();
+    //     let redis_code: Result<String, RedisError> =
+    //         cmd("GET").arg(&[code.clone()]).query_async(&mut conn).await;
+
+    //     match redis_code {
+    //         Ok(_) => (),
+    //         Err(_) => return Err(async_graphql::Error::new("Wrong code".to_string())),
+    //     };
+
+    //     let _: () = cmd("DEL")
+    //         .arg(&[code])
+    //         .query_async(&mut conn)
+    //         .await
+    //         .map_err(|_| async_graphql::Error::new("Failed to delete the previous code"))?;
+
+    //     let new_code: String = rand::thread_rng()
+    //         .sample_iter(&Alphanumeric)
+    //         .take(6)
+    //         .map(char::from)
+    //         .collect();
+
+    //     let _: () = cmd("SET")
+    //         .arg(&[&new_code, &id.to_string()])
+    //         .query_async(&mut conn)
+    //         .await
+    //         .map_err(|_| async_graphql::Error::new("Failed to set new code in Redis"))?;
+
+    //     let _: () = cmd("EXPIRE")
+    //         .arg(&[&new_code, "300"])
+    //         .query_async(&mut conn)
+    //         .await
+    //         .map_err(|_| async_graphql::Error::new("Failed to set expiration for new code"))?;
+
+    //     return Ok(new_code);
+    // }
+
+    async fn ban_user(
         &self,
         ctx: &async_graphql::Context<'_>,
-        code: String,
-    ) -> Result<String, async_graphql::Error> {
+        user_id: i32,
+    ) -> Result<user::Model, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
         let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
@@ -973,43 +1051,40 @@ impl UserMutation {
         let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
         match user {
-            Some(_) => (),
+            Some(u) => {
+                (if u.role == user::Role::Admin {
+                    ()
+                } else {
+                    return Err(async_graphql::Error::new(
+                        "You are not authorized to ban users".to_string(),
+                    ));
+                })
+            }
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         };
 
-        let mut conn = my_ctx.redis_pool.get().await.unwrap();
-        let redis_code: Result<String, RedisError> =
-            cmd("GET").arg(&[code.clone()]).query_async(&mut conn).await;
-
-        match redis_code {
-            Ok(_) => (),
-            Err(_) => return Err(async_graphql::Error::new("Wrong code".to_string())),
+        let active_user = user::ActiveModel {
+            id: Set(user_id),
+            banned: Set(true),
+            ..Default::default()
         };
 
-        let _: () = cmd("DEL")
-            .arg(&[code])
-            .query_async(&mut conn)
-            .await
-            .map_err(|_| async_graphql::Error::new("Failed to delete the previous code"))?;
+        let updated_user: user::Model = active_user.update(&my_ctx.db).await?;
 
-        let new_code: String = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(6)
-            .map(char::from)
-            .collect();
+        let deletion_result = advert::Entity::delete_many()
+            .filter(advert::Column::UserId.eq(user_id))
+            .exec(&my_ctx.db)
+            .await?;
 
-        let _: () = cmd("SET")
-            .arg(&[&new_code, &id.to_string()])
-            .query_async(&mut conn)
-            .await
-            .map_err(|_| async_graphql::Error::new("Failed to set new code in Redis"))?;
+        println!("Deleted {:?} adverts", deletion_result);
 
-        let _: () = cmd("EXPIRE")
-            .arg(&[&new_code, "300"])
-            .query_async(&mut conn)
-            .await
-            .map_err(|_| async_graphql::Error::new("Failed to set expiration for new code"))?;
+        let chat_delete_result = chat::Entity::delete_many()
+            .filter(chat::Column::ParticipantId.eq(user_id))
+            .exec(&my_ctx.db)
+            .await?;
 
-        return Ok(new_code);
+        println!("Deleted {:?} chats", chat_delete_result);
+
+        return Ok(updated_user);
     }
 }

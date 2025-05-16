@@ -25,6 +25,7 @@ export const actions = {
         login(email: $email, password: $password) {
           refreshToken
           accessToken
+          userId
         }
       }
     `);
@@ -56,6 +57,13 @@ export const actions = {
           path: "/",
         },
       );
+      event.cookies.set("userId", res.data.login.userId.toString(), {
+        path: "/",
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        expires: new Date(Date.now() + 60 * 100 * 1000),
+      });
       redirect(302, "/?refetch=true");
     } else {
       return fail(400, {

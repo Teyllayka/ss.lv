@@ -8,12 +8,17 @@
     CheckCircle,
     User,
     ShoppingBag,
+    UserX,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
   import { renderStars } from "$lib/helpers";
   import ProfileAdvert from "$lib/components/ProfileAdvert.svelte";
   import ProfileReview from "$lib/components/ProfileReview.svelte";
   import { activeTabClass, inactiveTabClass } from "$lib/consts";
+  import { user } from "$lib/userStore";
+  import { BanUserStore } from "$houdini";
+
+  const banUser = new BanUserStore();
 
   export let data: PageData;
 
@@ -32,6 +37,20 @@
     }
   }
 
+  async function handleBan() {
+    try {
+      if (!userData) return;
+
+      let res = await banUser.mutate({
+        userId: userData.id,
+      });
+
+      console.log("User banned:", res);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  }
+
   $: filteredActiveAdverts =
     userData?.adverts?.filter((a) => a.available) || [];
   $: filteredSoldAdverts = userData?.adverts?.filter((a) => !a.available) || [];
@@ -42,17 +61,29 @@
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div
-      class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden"
+      class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden relative"
       in:fade={{ duration: 300 }}
     >
+      {#if $user.role === "ADMIN" && userData}
+        <button
+          on:click={handleBan}
+          class="absolute top-4 right-4 flex items-center bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <UserX class="w-5 h-5 mr-2" />
+          <span>{m.ban_user()}</span>
+        </button>
+      {/if}
+
       <div class="p-6">
         {#if userData}
           <div class="flex flex-col md:flex-row items-center mb-6">
-            <img
-              src={userData.avatarUrl}
-              alt="{userData.name} {userData.surname}"
-              class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
-            />
+            {#if userData.avatarUrl}
+              <img
+                src={userData.avatarUrl}
+                alt="{userData.name} {userData.surname}"
+                class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
+              />
+            {/if}
             <div class="text-center md:text-left">
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {userData.name}

@@ -14,6 +14,8 @@
     import { socket } from "$lib/socket";
     import type { Writable } from "$houdini";
     import * as m from "$lib/paraglide/messages.js";
+    import { cubicOut } from "svelte/easing";
+    import { fly } from "svelte/transition";
 
     export let data;
 
@@ -225,240 +227,257 @@
             class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden"
         >
             <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h1
-                        class="text-2xl font-bold text-gray-900 dark:text-white"
-                    >
-                        {m.my_chats()}
-                    </h1>
-                    <div class="relative">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                        >
-                            <Search class="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            bind:value={searchQuery}
-                            placeholder={m.search_chats()}
-                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                </div>
-
-                {#if loading}
-                    <div class="flex justify-center items-center py-12">
-                        <div
-                            class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"
-                        ></div>
-                    </div>
-                {:else if error}
+                {#if $user.banned}
                     <div
-                        class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
+                        class="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6"
                         role="alert"
+                        in:fly={{ y: 20, duration: 300, easing: cubicOut }}
                     >
-                        <strong class="font-bold">{m.error()}</strong>
-                        <span class="block sm:inline"> {error}</span>
-                    </div>
-                {:else if groupedChats.length === 0}
-                    <div class="text-center py-12">
-                        <MessageCircle
-                            class="h-16 w-16 text-gray-400 mx-auto mb-4"
-                        />
-                        <h3
-                            class="text-lg font-medium text-gray-900 dark:text-white"
-                        >
-                            {m.no_chats_found()}
-                        </h3>
-                        <p class="mt-1 text-gray-500 dark:text-gray-400">
-                            {searchQuery
-                                ? m.no_chats_matching()
-                                : m.no_active_chats()}
+                        <p class="font-bold">Your account has been banned</p>
+                        <p>
+                            You are not allowed to view or send messages. Please
+                            contact support for more information.
                         </p>
                     </div>
                 {:else}
-                    {#each groupedChats as group (group.advert.id)}
-                        {@const groupClosed = group.chats.some(
-                            (item) =>
-                                item.deal?.status === "accepted" ||
-                                item.chat.archived,
-                        )}
-                        <div
-                            class="mb-8 block border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
+                    <div class="flex justify-between items-center mb-6">
+                        <h1
+                            class="text-2xl font-bold text-gray-900 dark:text-white"
                         >
+                            {m.my_chats()}
+                        </h1>
+                        <div class="relative">
                             <div
-                                class="flex items-center p-4 bg-gray-50 dark:bg-gray-800"
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
                             >
-                                {#if group.advert.photo_url}
-                                    <a href={`/advert/${group.advert.id}`}>
-                                        <img
-                                            src={group.advert.photo_url}
-                                            alt={group.advert.title}
-                                            class="h-16 w-16 rounded object-cover mr-4"
-                                        />
-                                    </a>
-                                {:else}
-                                    <div
-                                        class="h-16 w-16 rounded bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-4"
-                                    >
-                                        <User
-                                            class="h-8 w-8 text-gray-600 dark:text-gray-300"
-                                        />
-                                    </div>
-                                {/if}
-                                <div class="flex-1">
-                                    <h2
-                                        class="text-xl font-semibold text-gray-900 dark:text-white"
-                                    >
-                                        {group.advert.title}
-                                        {#if groupClosed}
-                                            <span
-                                                class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded"
-                                                >{m.closed()}</span
-                                            >
-                                        {/if}
-                                    </h2>
-                                </div>
+                                <Search class="h-5 w-5 text-gray-400" />
                             </div>
-                            <ul
-                                class="divide-y divide-gray-200 dark:divide-gray-700"
+                            <input
+                                type="text"
+                                bind:value={searchQuery}
+                                placeholder={m.search_chats()}
+                                class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    {#if loading}
+                        <div class="flex justify-center items-center py-12">
+                            <div
+                                class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"
+                            ></div>
+                        </div>
+                    {:else if error}
+                        <div
+                            class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
+                            role="alert"
+                        >
+                            <strong class="font-bold">{m.error()}</strong>
+                            <span class="block sm:inline"> {error}</span>
+                        </div>
+                    {:else if groupedChats.length === 0}
+                        <div class="text-center py-12">
+                            <MessageCircle
+                                class="h-16 w-16 text-gray-400 mx-auto mb-4"
+                            />
+                            <h3
+                                class="text-lg font-medium text-gray-900 dark:text-white"
                             >
-                                {#each group.chats as item (item.chat.id)}
-                                    {@const other = getOtherUserInfo(item)}
-                                    {@const isUnread =
-                                        isLastMessageUnread(item)}
-                                    <li
-                                        class:bg-blue-50={isUnread}
-                                        class:dark:bg-blue-900={isUnread}
-                                        class:dark:bg-opacity-20={isUnread}
-                                    >
-                                        <a
-                                            href={`/chats/${item.chat.id}`}
-                                            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition duration-150 ease-in-out"
+                                {m.no_chats_found()}
+                            </h3>
+                            <p class="mt-1 text-gray-500 dark:text-gray-400">
+                                {searchQuery
+                                    ? m.no_chats_matching()
+                                    : m.no_active_chats()}
+                            </p>
+                        </div>
+                    {:else}
+                        {#each groupedChats as group (group.advert.id)}
+                            {@const groupClosed = group.chats.some(
+                                (item) =>
+                                    item.deal?.status === "accepted" ||
+                                    item.chat.archived,
+                            )}
+                            <div
+                                class="mb-8 block border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm"
+                            >
+                                <div
+                                    class="flex items-center p-4 bg-gray-50 dark:bg-gray-800"
+                                >
+                                    {#if group.advert.photo_url}
+                                        <a href={`/advert/${group.advert.id}`}>
+                                            <img
+                                                src={group.advert.photo_url}
+                                                alt={group.advert.title}
+                                                class="h-16 w-16 rounded object-cover mr-4"
+                                            />
+                                        </a>
+                                    {:else}
+                                        <div
+                                            class="h-16 w-16 rounded bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-4"
                                         >
-                                            <div class="flex items-center">
-                                                {#if other.avatar_url}
-                                                    <img
-                                                        src={other.avatar_url}
-                                                        alt={`${other.name} ${other.surname}`}
-                                                        class="h-12 w-12 rounded-full object-cover mr-4"
-                                                    />
-                                                {:else}
-                                                    <div
-                                                        class="h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-4"
-                                                    >
-                                                        <User
-                                                            class="h-6 w-6 text-gray-600 dark:text-gray-300"
+                                            <User
+                                                class="h-8 w-8 text-gray-600 dark:text-gray-300"
+                                            />
+                                        </div>
+                                    {/if}
+                                    <div class="flex-1">
+                                        <h2
+                                            class="text-xl font-semibold text-gray-900 dark:text-white"
+                                        >
+                                            {group.advert.title}
+                                            {#if groupClosed}
+                                                <span
+                                                    class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded"
+                                                    >{m.closed()}</span
+                                                >
+                                            {/if}
+                                        </h2>
+                                    </div>
+                                </div>
+                                <ul
+                                    class="divide-y divide-gray-200 dark:divide-gray-700"
+                                >
+                                    {#each group.chats as item (item.chat.id)}
+                                        {@const other = getOtherUserInfo(item)}
+                                        {@const isUnread =
+                                            isLastMessageUnread(item)}
+                                        <li
+                                            class:bg-blue-50={isUnread}
+                                            class:dark:bg-blue-900={isUnread}
+                                            class:dark:bg-opacity-20={isUnread}
+                                        >
+                                            <a
+                                                href={`/chats/${item.chat.id}`}
+                                                class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition duration-150 ease-in-out"
+                                            >
+                                                <div class="flex items-center">
+                                                    {#if other.avatar_url}
+                                                        <img
+                                                            src={other.avatar_url}
+                                                            alt={`${other.name} ${other.surname}`}
+                                                            class="h-12 w-12 rounded-full object-cover mr-4"
                                                         />
+                                                    {:else}
+                                                        <div
+                                                            class="h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-4"
+                                                        >
+                                                            <User
+                                                                class="h-6 w-6 text-gray-600 dark:text-gray-300"
+                                                            />
+                                                        </div>
+                                                    {/if}
+                                                    <div>
+                                                        <p
+                                                            class="text-sm font-medium text-gray-900 dark:text-white"
+                                                        >
+                                                            {other.name}
+                                                            {other.surname}
+                                                        </p>
+                                                        {#if item.chat.last_message}
+                                                            <p
+                                                                class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
+                                                            >
+                                                                <span
+                                                                    class="font-medium mr-1"
+                                                                >
+                                                                    {getLastMessageSenderName(
+                                                                        item,
+                                                                    )}:
+                                                                </span>
+                                                                <span
+                                                                    class:font-semibold={isUnread}
+                                                                    class:text-gray-800={isUnread}
+                                                                    class:dark:text-gray-200={isUnread}
+                                                                >
+                                                                    {item.chat
+                                                                        .last_message
+                                                                        .content
+                                                                        .length >
+                                                                    30
+                                                                        ? item.chat.last_message.content.substring(
+                                                                              0,
+                                                                              30,
+                                                                          ) +
+                                                                          "..."
+                                                                        : item
+                                                                              .chat
+                                                                              .last_message
+                                                                              .content}
+                                                                </span>
+                                                            </p>
+                                                        {/if}
                                                     </div>
-                                                {/if}
-                                                <div>
-                                                    <p
-                                                        class="text-sm font-medium text-gray-900 dark:text-white"
-                                                    >
-                                                        {other.name}
-                                                        {other.surname}
-                                                    </p>
+                                                </div>
+                                                <div
+                                                    class="flex flex-col items-end"
+                                                >
                                                     {#if item.chat.last_message}
                                                         <p
                                                             class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
                                                         >
-                                                            <span
-                                                                class="font-medium mr-1"
-                                                            >
-                                                                {getLastMessageSenderName(
-                                                                    item,
-                                                                )}:
-                                                            </span>
-                                                            <span
-                                                                class:font-semibold={isUnread}
-                                                                class:text-gray-800={isUnread}
-                                                                class:dark:text-gray-200={isUnread}
-                                                            >
-                                                                {item.chat
+                                                            <Calendar
+                                                                class="h-3 w-3 mr-1"
+                                                            />
+                                                            {formatDate(
+                                                                item.chat
                                                                     .last_message
-                                                                    .content
-                                                                    .length > 30
-                                                                    ? item.chat.last_message.content.substring(
-                                                                          0,
-                                                                          30,
-                                                                      ) + "..."
-                                                                    : item.chat
-                                                                          .last_message
-                                                                          .content}
-                                                            </span>
+                                                                    .created_at,
+                                                            )}
+                                                        </p>
+                                                        {#if isLastMessageFromCurrentUser(item)}
+                                                            <div
+                                                                class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center"
+                                                            >
+                                                                {#if item.chat.last_message.read_at}
+                                                                    <CheckCheck
+                                                                        class="h-4 w-4 text-blue-500"
+                                                                    />
+                                                                    <span
+                                                                        class="ml-1 text-xs"
+                                                                        >{m.read()}</span
+                                                                    >
+                                                                {:else}
+                                                                    <Check
+                                                                        class="h-4 w-4"
+                                                                    />
+                                                                    <span
+                                                                        class="ml-1 text-xs"
+                                                                        >{m.sent()}</span
+                                                                    >
+                                                                {/if}
+                                                            </div>
+                                                        {:else if isUnread}
+                                                            <div
+                                                                class="mt-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full"
+                                                            >
+                                                                {m.new_()}
+                                                            </div>
+                                                        {/if}
+                                                    {:else}
+                                                        <p
+                                                            class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
+                                                        >
+                                                            <Calendar
+                                                                class="h-3 w-3 mr-1"
+                                                            />
+                                                            {formatDate(
+                                                                item.chat
+                                                                    .updated_at,
+                                                            )}
                                                         </p>
                                                     {/if}
+                                                    <ChevronRight
+                                                        class="h-5 w-5 text-gray-400 mt-1"
+                                                    />
                                                 </div>
-                                            </div>
-                                            <div
-                                                class="flex flex-col items-end"
-                                            >
-                                                {#if item.chat.last_message}
-                                                    <p
-                                                        class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
-                                                    >
-                                                        <Calendar
-                                                            class="h-3 w-3 mr-1"
-                                                        />
-                                                        {formatDate(
-                                                            item.chat
-                                                                .last_message
-                                                                .created_at,
-                                                        )}
-                                                    </p>
-                                                    {#if isLastMessageFromCurrentUser(item)}
-                                                        <div
-                                                            class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center"
-                                                        >
-                                                            {#if item.chat.last_message.read_at}
-                                                                <CheckCheck
-                                                                    class="h-4 w-4 text-blue-500"
-                                                                />
-                                                                <span
-                                                                    class="ml-1 text-xs"
-                                                                    >{m.read()}</span
-                                                                >
-                                                            {:else}
-                                                                <Check
-                                                                    class="h-4 w-4"
-                                                                />
-                                                                <span
-                                                                    class="ml-1 text-xs"
-                                                                    >{m.sent()}</span
-                                                                >
-                                                            {/if}
-                                                        </div>
-                                                    {:else if isUnread}
-                                                        <div
-                                                            class="mt-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full"
-                                                        >
-                                                            {m.new_()}
-                                                        </div>
-                                                    {/if}
-                                                {:else}
-                                                    <p
-                                                        class="text-xs text-gray-500 dark:text-gray-400 flex items-center"
-                                                    >
-                                                        <Calendar
-                                                            class="h-3 w-3 mr-1"
-                                                        />
-                                                        {formatDate(
-                                                            item.chat
-                                                                .updated_at,
-                                                        )}
-                                                    </p>
-                                                {/if}
-                                                <ChevronRight
-                                                    class="h-5 w-5 text-gray-400 mt-1"
-                                                />
-                                            </div>
-                                        </a>
-                                    </li>
-                                {/each}
-                            </ul>
-                        </div>
-                    {/each}
+                                            </a>
+                                        </li>
+                                    {/each}
+                                </ul>
+                            </div>
+                        {/each}
+                    {/if}
                 {/if}
             </div>
         </div>

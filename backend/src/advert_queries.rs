@@ -957,6 +957,9 @@ impl AdvertMutation {
                         "You are not verified".to_string(),
                     ));
                 }
+                if user.banned {
+                    return Err(async_graphql::Error::new("You are banned".to_string()));
+                }
             }
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         }

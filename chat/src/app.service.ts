@@ -99,6 +99,17 @@ export class AppService {
   async sendMessage(s, b) {
     const { content, chatId, urls } = b;
 
+
+    let user = await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', s.user.id)
+      .executeTakeFirst();
+
+    if (user.banned) {
+      throw new UnauthorizedException('User is banned');
+    }
+
     let chat: Chat | undefined;
 
     chat = (await this.db
@@ -617,45 +628,6 @@ export class AppService {
     return deal;
   }
 
-  async updateMessage(s, b) {
-    const { messageId, content } = b;
-    const message = await this.db
-      .selectFrom('message')
-      .selectAll()
-      .where('message.id', '=', messageId)
-      .where('message.user_id', '=', s.user.id)
-      .executeTakeFirst();
-    if (!message) {
-      throw new UnauthorizedException('Not authorized to update this message');
-    }
-    return await this.db
-      .updateTable('message')
-      .set({ content })
-      .where('message.id', '=', messageId)
-      .where('message.user_id', '=', s.user.id)
-      .returningAll()
-      .executeTakeFirst();
-  }
-
-  async deleteMessage(s, b) {
-    const { messageId } = b;
-    const message = await this.db
-      .selectFrom('message')
-      .selectAll()
-      .where('message.id', '=', messageId)
-      .where('message.user_id', '=', s.user.id)
-      .executeTakeFirst();
-    if (!message) {
-      throw new UnauthorizedException('Not authorized to delete this message');
-    }
-    return await this.db
-      .deleteFrom('message')
-      .where('message.id', '=', messageId)
-      .where('message.user_id', '=', s.user.id)
-      .returningAll()
-      .executeTakeFirst();
-  }
-
   async getUser(userId: number) {
     return await this.db
       .selectFrom('user')
@@ -693,6 +665,18 @@ export class AppService {
     userId: number,
     postId: number,
   ): Promise<Chat> {
+
+    const user = await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', userId)
+      .executeTakeFirst();
+
+    if (user.banned) {
+      throw new UnauthorizedException('User is banned');
+    }
+
+
     const advert = await this.db
       .selectFrom('advert')
       .selectAll()

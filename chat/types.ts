@@ -21,12 +21,10 @@ export interface User {
   avatar_url?: string | null;
   name?: string | null;
   surname?: string | null;
+  banned: boolean;
   company_name?: string | null;
   email?: string | null;
   phone?: string | null;
-  telegram_id?: string | null;
-  telegram_username?: string | null;
-  balance: number;
   password_hash?: string | null;
   email_verified: boolean;
   role: 'A' | 'U' | 'M';

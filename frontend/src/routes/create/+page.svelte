@@ -126,6 +126,20 @@
         {m.create_new_advert()}
       </h1>
 
+      {#if $user.banned}
+        <div
+          class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+          role="alert"
+          in:fly={{ y: 20, duration: 300, easing: cubicOut }}
+        >
+          <p class="font-bold">Your account has been banned</p>
+          <p>
+            You are not allowed to create new advertisements. Please contact
+            support for more information.
+          </p>
+        </div>
+      {/if}
+
       {#if !$user.emailVerified}
         <div
           class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
@@ -133,12 +147,6 @@
         >
           <p class="font-bold">{m.email_not_verified()}</p>
           <p>Please verify your email address to create an advert.</p>
-          <!-- <button
-            on:click={toggleVerificationPopup}
-            class="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-          >
-            Verify Email
-          </button> -->
         </div>
       {/if}
 
@@ -147,7 +155,7 @@
         use:enhance
         class="space-y-6"
         enctype="multipart/form-data"
-        class:blur-sm={!$user.emailVerified}
+        class:blur-sm={!$user.emailVerified || $user.banned}
       >
         <div
           class="relative"
@@ -159,7 +167,7 @@
             placeholder={m.title()}
             errors={form?.errors || []}
             value={form?.data.title}
-            disabled={!$user.emailVerified}
+            disabled={!$user.emailVerified || $user.banned}
           />
         </div>
 
@@ -172,6 +180,7 @@
             name="location"
             errors={form?.errors || []}
             placeholder={m.location()}
+            disabled={!$user.emailVerified || $user.banned}
           />
         </div>
 
@@ -185,7 +194,7 @@
             placeholder={m.price()}
             errors={form?.errors || []}
             value={form?.data.price}
-            disabled={!$user.emailVerified}
+            disabled={!$user.emailVerified || $user.banned}
           />
         </div>
 
@@ -198,7 +207,7 @@
             placeholder={m.description()}
             errors={form?.errors || []}
             value={form?.data.description || ""}
-            disabled={!$user.emailVerified}
+            disabled={!$user.emailVerified || $user.banned}
           />
         </div>
 
@@ -219,7 +228,7 @@
             name="category"
             bind:value={category}
             on:change={handleCategoryChange}
-            disabled={!$user.emailVerified}
+            disabled={!$user.emailVerified || $user.banned}
             required
             class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out text-gray-800 dark:text-white {errors.category
               ? 'border-red-500'
@@ -255,7 +264,7 @@
                       options={field.options}
                       errors={form?.errors || []}
                       value={form?.data[field.name]}
-                      disabled={!$user.emailVerified}
+                      disabled={!$user.emailVerified || $user.banned}
                     />
                   {:else if field.type === "text" || field.type == "number"}
                     <InputField
@@ -264,7 +273,7 @@
                       placeholder={field.label}
                       errors={form?.errors || []}
                       value={form?.data[field.name]}
-                      disabled={!$user.emailVerified}
+                      disabled={!$user.emailVerified || $user.banned}
                     />
                   {/if}
                 </div>
@@ -316,7 +325,7 @@
                   accept="image/*"
                   on:change={handleMainPhotoChange}
                   class="hidden"
-                  disabled={!$user.emailVerified}
+                  disabled={!$user.emailVerified || $user.banned}
                 />
               </label>
             </div>
@@ -362,7 +371,7 @@
                   on:change={handleAdditionalPhotosChange}
                   multiple
                   class="hidden"
-                  disabled={!$user.emailVerified}
+                  disabled={!$user.emailVerified || $user.banned}
                 />
               </label>
             </div>

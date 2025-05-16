@@ -30,10 +30,8 @@ pub struct Model {
     #[sea_orm(unique)]
     pub email: Option<String>,
     pub phone: Option<String>,
-    pub telegram_id: Option<String>,
-    pub telegram_username: Option<String>,
-    pub balance: f32,
     pub email_verified: bool,
+    pub banned: bool,
     #[graphql(visible = false)]
     pub password_hash: Option<String>,
     #[sea_orm(ignore)]
@@ -92,10 +90,6 @@ impl ActiveModelBehavior for ActiveModel {}
 impl Entity {
     pub fn find_by_email(email: String) -> Select<Entity> {
         Self::find().filter(Column::Email.eq(email))
-    }
-
-    pub fn find_by_telegram_id(telegram_id: String) -> Select<Entity> {
-        Self::find().filter(Column::TelegramId.eq(telegram_id))
     }
 
     pub fn find_by_phone(phone: String) -> Select<Entity> {

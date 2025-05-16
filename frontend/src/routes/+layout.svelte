@@ -29,6 +29,7 @@
       isLoggedIn: $HeaderMe.data.me != null,
       role: $HeaderMe.data.me.role,
       id: $HeaderMe.data.me.id,
+      banned: $HeaderMe.data.me.banned,
     });
   }
 

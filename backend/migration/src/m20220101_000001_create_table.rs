@@ -49,9 +49,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::CompanyName).string().null())
                     .col(ColumnDef::new(User::Email).string().unique_key().null())
                     .col(ColumnDef::new(User::Phone).string().null())
-                    .col(ColumnDef::new(User::TelegramId).string().unique_key().null())
-                    .col(ColumnDef::new(User::TelegramUsername).string().null())
-                    .col(ColumnDef::new(User::Balance).float().not_null())
                     .col(ColumnDef::new(User::PasswordHash).string().null())
                     .col(
                         ColumnDef::new(User::EmailVerified)
@@ -59,6 +56,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default("false"),
                     )
+                    .col(ColumnDef::new(User::Banned).boolean().not_null().default("false"))
                     .col(
                         ColumnDef::new(User::Role)
                             .custom(Role::name())
@@ -468,11 +466,9 @@ enum User {
     CompanyName,
     Email,
     Phone,
-    TelegramId,
-    TelegramUsername,
-    Balance,
     PasswordHash,
     EmailVerified,
+    Banned,
     Role,
 }
 

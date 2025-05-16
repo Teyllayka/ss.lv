@@ -24,4 +24,5 @@ interface UserStore {
   isLoggedIn: boolean;
   role: string;
   id: number;
+  banned: boolean;
 }
