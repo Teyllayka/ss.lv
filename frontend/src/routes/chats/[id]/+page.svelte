@@ -667,8 +667,7 @@
 
                         <button
                             type="submit"
-                            disabled={!messageInput.trim() &&
-                                photos.length === 0}
+                            disabled={!messageInput.trim()}
                             class="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Send class="h-5 w-5" />
