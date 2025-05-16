@@ -49,7 +49,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::CompanyName).string().null())
                     .col(ColumnDef::new(User::Email).string().unique_key().null())
                     .col(ColumnDef::new(User::Phone).string().null())
-                    .col(ColumnDef::new(User::PasswordHash).string().null())
+                    .col(ColumnDef::new(User::PasswordHash).string().not_null())
                     .col(
                         ColumnDef::new(User::EmailVerified)
                             .boolean()
@@ -65,10 +65,6 @@ impl MigrationTrait for Migration {
                     )
                     .check(
                         Expr::cust("(email IS NOT NULL OR phone IS NOT NULL)").to_owned(),
-                    )
-                    .check(
-                        Expr::cust("(password_hash IS NOT NULL OR telegram_id IS NOT NULL)")
-                            .to_owned(),
                     )
                     .check(
                         Expr::cust("((name IS NOT NULL AND surname IS NOT NULL) OR company_name IS NOT NULL)")
