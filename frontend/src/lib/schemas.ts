@@ -69,7 +69,7 @@ interface AdvertFormValues {
   description: string;
   price: string;
   location: string;
-  mainPhoto: File;
+  photos: string[];
 }
 
 export const advertSchema: ObjectSchema<AdvertFormValues> = object({
@@ -79,19 +79,10 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
     .min(100, "Description must be at least 100 characters long"),
   price: string().required("Price is required"),
   location: string().required("Location is required"),
-  mainPhoto: mixed<File>()
-    .required("Main photo is required")
-    .test("fileType", "Unsupported file format", (value) => {
-      if (!value) return false;
-      if (!(value instanceof File)) return false;
-      return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-    })
-    .test("fileSize", "File size too large", (value) => {
-      if (!value) return false;
-      if (!(value instanceof File)) return false;
-      const maxSize = 5 * 1024 * 1024;
-      return value.size <= maxSize;
-    }),
+   photos: array()
+      .of(string().url("Invalid photo URL").defined())
+      .min(1, "At least one photo is required")
+      .required(),
 });
 
 export let contactSchema = object({
@@ -138,7 +129,6 @@ export let advertRealEstateSchema = object({
   floor: number().notRequired(),
   totalFloors: number().notRequired(),
   yearBuilt: number().required(),
-  amenities: array().of(string()).notRequired(),
   heatingType: string().required(),
 });
 
@@ -154,9 +144,7 @@ export let advertServiceSchema = object({
   availability: string().required(),
   hourlyRate: number().required(),
   experienceYears: number().required(),
-  certifications: array().of(string()).notRequired(),
 });
-
 
 
 export let editProfileSchema = object({
@@ -173,10 +161,7 @@ export let editAdvertSchema = object({
     .required("Description is required")
     .min(100, "Description must be at least 100 characters long"),
   price: string().required("Price is required"),
-  // location: string().required("Location is required"),
-  // condition: string()
-  //   .oneOf(["New", "Used"], "Invalid condition")
-  //   .required("Condition is required"),
+
 });
 
 export async function validateSchema(schema: ObjectSchema<any>, fields: any) {
@@ -196,20 +181,12 @@ export async function validateSchema(schema: ObjectSchema<any>, fields: any) {
 }
 
 
+export const fullAdvertSchemas: Record<string, ObjectSchema<any>> = {
+  vehicles:    advertSchema.concat(advertCarSchema),
+  electronics: advertSchema.concat(advertElectronicsSchema),
+  "real-estate": advertSchema.concat(advertRealEstateSchema),
+  furniture:   advertSchema.concat(advertFurnitureSchema),
+  services:    advertSchema.concat(advertServiceSchema),
+};
 
-export function getCategorySchema(category: string): ObjectSchema<any> | null {
-  switch (category) {
-    case "vehicles":
-      return advertCarSchema;
-    case "electronics":
-      return advertElectronicsSchema;
-    case "real-estate":
-      return advertRealEstateSchema;
-    case "furniture":
-      return advertFurnitureSchema;
-    case "services":
-      return advertServiceSchema;
-    default:
-      return advertSchema;
-  }
-}
+fullAdvertSchemas.default = advertSchema;

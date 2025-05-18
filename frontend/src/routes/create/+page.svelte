@@ -53,6 +53,17 @@
   function removeAdditionalPhoto(index: number) {
     additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
   }
+
+  async function uploadFile(file: File) {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("https://gachi.gay/api/upload", {
+      method: "POST",
+      body: fd,
+    });
+    const json = await res.json();
+    return json.link;
+  }
 </script>
 
 <div
@@ -95,7 +106,22 @@
 
       <form
         method="post"
-        use:enhance
+        use:enhance={async ({ formData }) => {
+          const main = formData.get("mainPhoto") as File | null;
+          const additional = formData.getAll("additionalPhotos") as File[];
+
+          const uploadPromises: Promise<string>[] = [];
+          if (main) {
+            uploadPromises.push(uploadFile(main));
+          }
+          uploadPromises.push(...additional.map((file) => uploadFile(file)));
+
+          const urls = await Promise.all(uploadPromises);
+
+          formData.delete("mainPhoto");
+          formData.delete("additionalPhotos");
+          formData.append("photos", JSON.stringify(urls));
+        }}
         class="space-y-6"
         enctype="multipart/form-data"
         class:blur-sm={!$user.emailVerified || $user.banned}

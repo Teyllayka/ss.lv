@@ -9,8 +9,8 @@ export const inactiveTabClass =
 
 
 export const socketChatUrl = env.PUBLIC_CHAT_API || "http://127.0.0.1:4000";
-export const chatUrl = !env.PUBLIC_CHAT_API?.includes('127.0.0.1') ? env.PUBLIC_CHAT_API + "/chat" : "http://127.0.0.1:4000";
-//export const chatUrl =  "http://127.0.0.1:4000";
+//export const chatUrl = !env.PUBLIC_CHAT_API?.includes('127.0.0.1') ? env.PUBLIC_CHAT_API + "/chat" : "http://127.0.0.1:4000";
+export const chatUrl =  "http://127.0.0.1:4000";
 
 
 export const categories = [
@@ -66,7 +66,6 @@ export const categoryFields: Record<string, Array<any>> = {
     { name: "floor", label: "Floor", type: "number" },
     { name: "totalFloors", label: "Total Floors", type: "number" },
     { name: "yearBuilt", label: "Year Built", type: "number" },
-    { name: "amenities", label: "Amenities", type: "text" },
     { name: "heatingType", label: "Heating Type", type: "text" },
   ],
   services: [
@@ -74,6 +73,5 @@ export const categoryFields: Record<string, Array<any>> = {
     { name: "availability", label: "Availability", type: "text" },
     { name: "hourlyRate", label: "Hourly Rate", type: "number" },
     { name: "experienceYears", label: "Experience (years)", type: "number" },
-    { name: "certifications", label: "Certifications", type: "text" },
   ],
 };
