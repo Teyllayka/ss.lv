@@ -71,36 +71,6 @@
   let isMenuOpen = false;
   let searchQuery = "";
 
-  onMount(() => {
-    csrfToken = "aa";
-
-    function handleNewMessage(data: any) {
-      if (!$page.url.pathname.includes(`/chats${data.chat_id}`)) {
-        areUnreadMessages.update((prev) => ({
-          unreadMessages: prev.unreadMessages + 1,
-        }));
-      }
-    }
-
-    socket.on("user-" + $user.id, handleNewMessage);
-
-    fetch("/api/are-unread", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${csrfToken}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        areUnreadMessages.set({ unreadMessages: data });
-      });
-
-    return () => {
-      socket.off("user-" + $user.id, handleNewMessage);
-    };
-  });
-
   function toggleMenu() {
     isMenuOpen = !isMenuOpen;
   }
@@ -130,6 +100,18 @@
   let mapInitialized = false;
 
   onMount(() => {
+    const saved = localStorage.getItem("location");
+    if (saved) {
+      try {
+        const [lat, lon] = JSON.parse(saved);
+        if (lat !== 0 || lon !== 0) {
+          locationStore.set([lat, lon]);
+        }
+      } catch (e) {
+        console.warn("Failed to parse saved location:", e);
+      }
+    }
+
     isDark = localStorage.getItem("theme") === "dark";
 
     const unsubscribe = locationStore.subscribe(async ([lat, lon]) => {
@@ -151,6 +133,35 @@
         locationName = "Set Location";
       }
     });
+
+    csrfToken = "aa";
+
+    function handleNewMessage(data: any) {
+      if (!$page.url.pathname.includes(`/chats${data.chat_id}`)) {
+        areUnreadMessages.update((prev) => ({
+          unreadMessages: prev.unreadMessages + 1,
+        }));
+      }
+    }
+
+    socket.on("user-" + $user.id, handleNewMessage);
+
+    fetch("/api/are-unread", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${csrfToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        areUnreadMessages.set({ unreadMessages: data });
+      });
+
+    return () => {
+      socket.off("user-" + $user.id, handleNewMessage);
+    };
+
     return unsubscribe;
   });
 
@@ -186,6 +197,10 @@
           marker = L.marker(e.latlng).addTo(map);
         }
         locationStore.set([e.latlng.lat, e.latlng.lng]);
+        localStorage.setItem(
+          "location",
+          JSON.stringify([e.latlng.lat, e.latlng.lng]),
+        );
       });
       mapInitialized = true;
     });

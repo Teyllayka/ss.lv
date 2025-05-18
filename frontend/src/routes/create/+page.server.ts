@@ -1,7 +1,6 @@
 import {
-  advertCarSchema,
-  advertElectronicsSchema,
   advertSchema,
+  getCategorySchema,
   validateSchema,
 } from "$lib/schemas";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
@@ -150,13 +149,3 @@ export function load({ cookies }: any) {
   }
 }
 
-function getCategorySchema(category: string) {
-  switch (category) {
-    case "vehicles":
-      return advertCarSchema;
-    case "electronics":
-      return advertElectronicsSchema;
-    default:
-      return null;
-  }
-}

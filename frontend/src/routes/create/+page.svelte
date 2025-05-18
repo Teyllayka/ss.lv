@@ -11,6 +11,7 @@
   export let form;
   import * as m from "$lib/paraglide/messages.js";
   import { capitalizeFirstLetter } from "$lib/helpers.js";
+  import { categories, categoryFields } from "$lib/consts.js";
 
   let category: keyof typeof categoryFields | "" = "";
   let isLoading = false;
@@ -23,64 +24,6 @@
   $: additionalPhotosError = form?.errors?.find(
     (e: any) => e.field === "additionalPhotos",
   );
-
-  $: console.log("mainPhotoError", mainPhotoError);
-  $: console.log("additionalPhotosError", additionalPhotosError);
-
-  const categories = [
-    { value: "electronics", label: "Electronics" },
-    { value: "vehicles", label: "Vehicles" },
-    { value: "furniture", label: "Furniture" },
-    { value: "clothing", label: "Clothing" },
-  ];
-
-  const categoryFields = {
-    electronics: [
-      { name: "brand", label: "Brand", type: "text" },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used", "For Parts"],
-      },
-    ],
-    vehicles: [
-      { name: "make", label: "Make", type: "text" },
-      { name: "model", label: "Model", type: "text" },
-      { name: "year", label: "Year", type: "number" },
-      { name: "mileage", label: "Mileage", type: "number" },
-      {
-        name: "fuelType",
-        label: "Fuel Type",
-        type: "select",
-        options: ["Petrol", "Diesel", "Electric", "Hybrid"],
-      },
-    ],
-    furniture: [
-      { name: "material", label: "Material", type: "text" },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used", "Antique"],
-      },
-    ],
-    clothing: [
-      { name: "size", label: "Size", type: "text" },
-      {
-        name: "gender",
-        label: "Gender",
-        type: "select",
-        options: ["Men", "Women", "Unisex", "Kids"],
-      },
-      {
-        name: "condition",
-        label: "Condition",
-        type: "select",
-        options: ["New", "Like New", "Used"],
-      },
-    ],
-  };
 
   function handleCategoryChange() {
     dynamicFields = {};

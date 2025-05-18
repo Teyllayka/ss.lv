@@ -1,4 +1,4 @@
-import { object, ObjectSchema, string, number, mixed, ref } from "yup";
+import { object, ObjectSchema, string, number, mixed, ref, date, array } from "yup";
 
 export let loginSchema = object({
   email: string().email().required(),
@@ -69,7 +69,6 @@ interface AdvertFormValues {
   description: string;
   price: string;
   location: string;
-  condition: string;
   mainPhoto: File;
 }
 
@@ -80,9 +79,6 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
     .min(100, "Description must be at least 100 characters long"),
   price: string().required("Price is required"),
   location: string().required("Location is required"),
-  condition: string()
-    .oneOf(["New", "Like New", "Used", "For Parts"], "Invalid condition")
-    .required("Condition is required"),
   mainPhoto: mixed<File>()
     .required("Main photo is required")
     .test("fileType", "Unsupported file format", (value) => {
@@ -108,16 +104,60 @@ export let contactSchema = object({
 export let advertCarSchema = object({
   engineFuelType: string().required(),
   engineVolume: number().required(),
+  enginePower: number().required(),
+  fuelConsumption: number().required(),
+  transmission: string().oneOf(["Manual","Automatic","Semi-Automatic"]).required(),
+  bodyType: string().required(),
   releaseYear: number().required(),
   mileage: number().required(),
+  seats: number().required(),
+  doors: number().required(),
   color: string().required(),
   brand: string().required(),
   model: string().required(),
+  VIN: string().length(17, "VIN must be 17 characters").required(),
+  registrationDate: date().required(),
 });
 
 export let advertElectronicsSchema = object({
   brand: string().required(),
+  modelNumber: string().required(),
+  serialNumber: string().required(),
+  warrantyPeriod: string().required(),
+  releaseDate: date().required(),
+  condition: string()
+    .oneOf(["New","Like New","Used","For Parts"],"Invalid condition")
+    .required(),
 });
+
+export let advertRealEstateSchema = object({
+  propertyType: string().oneOf(["House","Apartment","Land","Commercial"]).required(),
+  area: number().required(),
+  bedrooms: number().required(),
+  bathrooms: number().required(),
+  floor: number().notRequired(),
+  totalFloors: number().notRequired(),
+  yearBuilt: number().required(),
+  amenities: array().of(string()).notRequired(),
+  heatingType: string().required(),
+});
+
+export let advertFurnitureSchema = object({
+  type: string().required(),
+  material: string().required(),
+  dimensions: string().required(),
+  weight: number().notRequired(),
+});
+
+export let advertServiceSchema = object({
+  serviceType: string().required(),
+  availability: string().required(),
+  hourlyRate: number().required(),
+  experienceYears: number().required(),
+  certifications: array().of(string()).notRequired(),
+});
+
+
 
 export let editProfileSchema = object({
   name: string(),
@@ -153,4 +193,23 @@ export async function validateSchema(schema: ObjectSchema<any>, fields: any) {
   }
 
   return errors;
+}
+
+
+
+export function getCategorySchema(category: string): ObjectSchema<any> | null {
+  switch (category) {
+    case "vehicles":
+      return advertCarSchema;
+    case "electronics":
+      return advertElectronicsSchema;
+    case "real-estate":
+      return advertRealEstateSchema;
+    case "furniture":
+      return advertFurnitureSchema;
+    case "services":
+      return advertServiceSchema;
+    default:
+      return advertSchema;
+  }
 }
