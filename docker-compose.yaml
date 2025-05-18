@@ -84,6 +84,7 @@ services:
     environment:
       PUBLIC_API_URL: /backend
       PUBLIC_CHAT_API: https://ad-ee.tech
+      BODY_SIZE_LIMIT: 100M
     depends_on:
       - backend
       - chat
