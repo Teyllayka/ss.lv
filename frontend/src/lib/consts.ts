@@ -9,8 +9,8 @@ export const inactiveTabClass =
 
 
 export const socketChatUrl = env.PUBLIC_CHAT_API || "http://127.0.0.1:4000";
-//export const chatUrl = !env.PUBLIC_CHAT_API?.includes('127.0.0.1') ? env.PUBLIC_CHAT_API + "/chat" : "http://127.0.0.1:4000";
-export const chatUrl =  "http://127.0.0.1:4000";
+export const chatUrl = !env.PUBLIC_CHAT_API?.includes('127.0.0.1') ? env.PUBLIC_CHAT_API + "/chat" : "http://127.0.0.1:4000";
+//export const chatUrl =  "http://127.0.0.1:4000";
 
 
 export const categories = [
