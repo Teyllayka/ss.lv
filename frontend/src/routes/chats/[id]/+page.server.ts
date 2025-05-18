@@ -109,9 +109,11 @@ export const actions: Actions = {
     if(!response.ok) {
       const errorData = await response.text();
       console.error("Error response", errorData);
+      return;
     }
 
-    const data = await response.json();
+    const data = await response.text();
     console.log("Deal offer response", data);
+    return;
   },
 };
