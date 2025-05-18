@@ -106,7 +106,7 @@ export const actions: Actions = {
       }),
     });
 
-    // const data = await response.json();
-    // console.log("Deal offer response", data);
+    const data = await response.json();
+    console.log("Deal offer response", data);
   },
 };
