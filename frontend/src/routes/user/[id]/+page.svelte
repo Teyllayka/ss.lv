@@ -165,21 +165,6 @@
                     </span>
                   </div>
                 {/if}
-                <!-- {#if userData.telegramUsername}
-                    <div class="flex items-center">
-                      <AtSign
-                        class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
-                      />
-                      <a
-                        href="https://t.me/{userData.telegramUsername}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                      >
-                        @{userData.telegramUsername}
-                      </a>
-                    </div>
-                  {/if} -->
               </div>
 
               <div class="mb-6 flex justify-center">

@@ -243,21 +243,6 @@
                     {/if}
                   </div>
                 {/if}
-                <!-- {#if userData.telegramUsername}
-                  <div class="flex items-center">
-                    <AtSign
-                      class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2"
-                    />
-                    <a
-                      href="https://t.me/{userData.telegramUsername}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      @{userData.telegramUsername}
-                    </a>
-                  </div>
-                {/if} -->
               </div>
 
               {#if !userData.emailVerified}
@@ -286,25 +271,6 @@
                   </button>
                 </div>
               {/if}
-
-              <!-- {#if !userData.telegramUsername}
-                <div
-                  class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4"
-                  role="alert"
-                >
-                  <div class="flex">
-                    <AtSign class="w-6 h-6 mr-2" />
-                    <p>Link your Telegram account for easier communication.</p>
-                  </div>
-                  <button
-                    type="button"
-                    class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <AtSign class="w-4 h-4 mr-2" />
-                    Link Telegram Account
-                  </button>
-                </div>
-              {/if} -->
 
               <div class="mb-6 mt-6 flex justify-center">
                 <div

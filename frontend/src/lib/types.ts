@@ -8,7 +8,6 @@ interface UserData {
   email: string;
   phone: string;
   emailVerified: boolean;
-  telegramUsername: string;
   rating: number;
   adverts: any[];
   advertsWithReviews: any[];

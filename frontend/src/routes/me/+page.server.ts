@@ -222,7 +222,6 @@ export const actions = {
           email
           emailVerified
           rating
-          telegramUsername
           phone
           avatarUrl
 
