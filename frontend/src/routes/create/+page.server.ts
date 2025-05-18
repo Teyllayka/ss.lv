@@ -130,6 +130,8 @@ export const actions = {
       { event },
     );
 
+    console.log("res", res);
+
     if (!res.errors && res.data) {
       const advertId = res.data.createAdvert.id;
       throw redirect(302, `/advert/${advertId}`);
