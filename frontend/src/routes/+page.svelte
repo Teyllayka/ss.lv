@@ -32,7 +32,7 @@
   let isLoadingMore = false;
   let isMore = true;
 
-  $: isMore = allAdverts.length % 12 === 0;
+  $: isMore = allAdverts.length > 0 && allAdverts.length % 12 === 0;
 
   const loadMore = async () => {
     if (isLoadingMore || !$adverts.data) return;

@@ -27,6 +27,7 @@ export const handle = async ({
       event.cookies.delete("accessToken", { path: "/" });
       event.cookies.delete("refreshToken", { path: "/" });
       event.cookies.delete("expiresAt", { path: "/" });
+      event.cookies.delete("userId", { path: "/" });
       redirect(302, "/login");
     }
 

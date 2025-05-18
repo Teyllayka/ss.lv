@@ -1,5 +1,6 @@
 <script lang="ts">
   import { run } from "svelte/legacy";
+  import { tick } from "svelte";
 
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
@@ -26,6 +27,19 @@
   run(() => {
     e = errors.find((x) => x.field === name);
   });
+
+  let inputEl: HTMLTextAreaElement | null = null;
+
+  $effect(() => {
+    if (e) {
+      tick().then(() => {
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    }
+  });
 </script>
 
 <div class="field relative">
@@ -35,6 +49,7 @@
     {value}
     required
     {disabled}
+    bind:this={inputEl}
     rows="4"
     class="w-full min-h-[50px] px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2 {e
       ? 'border-red-500 ring-red-500'

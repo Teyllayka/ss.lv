@@ -2,19 +2,9 @@
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { capitalizeFirstLetter } from "$lib/helpers";
+  import { tick } from "svelte";
 
   const API_URL = "https://nominatim.openstreetmap.org/search?format=json&q=";
-
-  interface Props {
-    id?: string;
-    name: string;
-    placeholder: string;
-    errors?: any[];
-    value?: string;
-    disableAutoFill?: boolean;
-    disabled?: boolean;
-    onLocationSelect?: (location: any) => void;
-  }
 
   const {
     id,
@@ -31,6 +21,7 @@
   let suggestions = $state<any[]>([]);
   let isFocused = $state(false);
   let selectedSuggestion = $state<any | null>(null);
+  let inputEl: HTMLInputElement | null = null;
 
   let debounceTimer: any;
 
@@ -79,6 +70,17 @@
       isFocused = false;
     }, 200);
   }
+
+  $effect(() => {
+    if (e) {
+      tick().then(() => {
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    }
+  });
 </script>
 
 <div class="field relative">
@@ -90,6 +92,7 @@
     on:input={debounceFetchSuggestions}
     on:focus={handleInputFocus}
     on:blur={handleInputBlur}
+    bind:this={inputEl}
     class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2
       {e
       ? 'border-red-500 ring-red-500'

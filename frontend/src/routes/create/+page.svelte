@@ -168,6 +168,7 @@
             errors={form?.errors || []}
             value={form?.data.title}
             disabled={!$user.emailVerified || $user.banned}
+            required={true}
           />
         </div>
 
@@ -195,6 +196,7 @@
             errors={form?.errors || []}
             value={form?.data.price}
             disabled={!$user.emailVerified || $user.banned}
+            required={true}
           />
         </div>
 
@@ -274,6 +276,7 @@
                       errors={form?.errors || []}
                       value={form?.data[field.name]}
                       disabled={!$user.emailVerified || $user.banned}
+                      required={true}
                     />
                   {/if}
                 </div>

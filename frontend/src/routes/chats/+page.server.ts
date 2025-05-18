@@ -10,6 +10,8 @@ export async function load({ cookies, fetch }: any) {
     return redirect(302, "/login");
   }
 
+  console.log("chatUrl", chatUrl);
+
   let chats = await fetch(`${chatUrl}/get-chats`, {
     method: "GET",
     headers: {
@@ -17,6 +19,7 @@ export async function load({ cookies, fetch }: any) {
     },
   });
 
+  
   let data = await chats.json();
 
   return {

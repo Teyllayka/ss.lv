@@ -81,7 +81,7 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
   price: string().required("Price is required"),
   location: string().required("Location is required"),
   condition: string()
-    .oneOf(["New", "Used"], "Invalid condition")
+    .oneOf(["New", "Like New", "Used", "For Parts"], "Invalid condition")
     .required("Condition is required"),
   mainPhoto: mixed<File>()
     .required("Main photo is required")

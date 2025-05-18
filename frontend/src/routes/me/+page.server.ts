@@ -143,7 +143,6 @@ export const actions = {
           phone
           email
           emailVerified
-          telegramUsername
         }
       }
     `);

@@ -525,7 +525,11 @@
                                     class={`max-w-[70%] ${message.user_id === get(user).id ? "bg-blue-500 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-lg rounded-tr-lg rounded-br-lg"} px-3 py-2 shadow`}
                                 >
                                     {#if message.content}
-                                        <p class="text-sm">{message.content}</p>
+                                        <p
+                                            class="text-sm whitespace-normal break-words"
+                                        >
+                                            {message.content}
+                                        </p>
                                     {/if}
 
                                     {#if message.urls && message.urls.length > 0}
@@ -662,6 +666,7 @@
                                 name="content"
                                 bind:value={messageInput}
                                 placeholder="Type a message..."
+                                maxLength={300}
                             />
                         </div>
 

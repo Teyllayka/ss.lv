@@ -1,6 +1,6 @@
 <script lang="ts">
   import { run } from "svelte/legacy";
-
+  import { tick } from "svelte";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { capitalizeFirstLetter } from "$lib/helpers";
@@ -13,6 +13,8 @@
     disableAutoFill?: boolean;
     disabled?: boolean;
     id?: string;
+    required?: boolean;
+    maxLength?: number;
   }
 
   let {
@@ -24,11 +26,25 @@
     disableAutoFill = false,
     disabled = false,
     id,
+    required = false,
+    maxLength = 60,
   }: Props = $props();
+  let inputEl: HTMLInputElement | null = null;
 
   let e: any = $state(null);
   run(() => {
     e = errors.find((x: any) => x.field === name);
+  });
+
+  $effect(() => {
+    if (e) {
+      tick().then(() => {
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    }
   });
 </script>
 
@@ -45,6 +61,9 @@
     {placeholder}
     autocomplete={disableAutoFill ? "off" : undefined}
     {disabled}
+    bind:this={inputEl}
+    {required}
+    maxlength={maxLength}
   />
   <label
     class="absolute left-4 -top-5 text-sm text-gray-600 dark:text-gray-400 transition-all duration-300 ease-in-out peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 dark:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-sm peer-focus:text-blue-500 dark:peer-focus:text-blue-400"
