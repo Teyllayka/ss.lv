@@ -5,11 +5,13 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [
+    houdini(),
     paraglide({ project: "./project.inlang", outdir: "./src/lib/paraglide",  }),
-    houdini(
-    ),
     sveltekit(),
   ],
+  build: {
+    sourcemap: false,
+  }
   //   server: {
   //     proxy: {
   //       "/backend": {
