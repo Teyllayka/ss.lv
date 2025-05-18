@@ -106,6 +106,11 @@ export const actions: Actions = {
       }),
     });
 
+    if(!response.ok) {
+      const errorData = await response.text();
+      console.error("Error response", errorData);
+    }
+
     const data = await response.json();
     console.log("Deal offer response", data);
   },
