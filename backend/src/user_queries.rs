@@ -13,7 +13,6 @@ use entity::{
     advert::{self, Entity as Advert},
     chat::{self, Entity as Chat},
     favorites::{self},
-    payment::{self},
     reviews::{self, Entity as Reviews},
     user::{self, Entity as User},
 };
@@ -493,9 +492,9 @@ impl UserMutation {
             .await
             .unwrap();
 
-        ctx.append_http_header("Set-Cookie", format!("refresh_token={}", refresh_token));
-        ctx.append_http_header("Set-Cookie", format!("access_token={}", access_token));
-        ctx.append_http_header("Set-Cookie", format!("user_id={}", user.id));
+        ctx.append_http_header("Set-Cookie", format!("refreshToken={}", refresh_token));
+        ctx.append_http_header("Set-Cookie", format!("accessToken={}", access_token));
+        ctx.append_http_header("Set-Cookie", format!("userId={}", user.id));
 
         Ok(LoginResponse {
             refresh_token,
