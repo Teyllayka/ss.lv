@@ -12,7 +12,7 @@ export const handle: Handle = async ({
     accessToken,
     expiresAt,
     refreshToken,
-  }, event.url);
+  }, event.url.href);
 
 
   if (event.url.pathname === "/login") {
