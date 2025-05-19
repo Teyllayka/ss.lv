@@ -1,13 +1,9 @@
 import { graphql, setSession } from "$houdini";
-import { redirect, type RequestEvent } from "@sveltejs/kit";
+import { redirect, type Handle, type RequestEvent } from "@sveltejs/kit";
 
-/* @type { import('@sveltejs/kit').Handle } */
-export const handle = async ({
+export const handle: Handle = async ({
   event,
   resolve,
-}: {
-  event: RequestEvent;
-  resolve: any;
 }) => {
   let accessToken = event.cookies.get("accessToken");
   const expiresAt = event.cookies.get("expiresAt");
@@ -18,61 +14,80 @@ export const handle = async ({
     refreshToken,
   }, event.url.pathname);
 
-  if ((expiresAt && parseInt(expiresAt) < Date.now()) || !accessToken) {
+
+  if (event.url.pathname === "/login") {
+    return await resolve(event);
+  }
+
+  const needsRefresh = (expiresAt && parseInt(expiresAt) < Date.now()) || !accessToken;
+  
+  if (needsRefresh) {
     console.log("Access token expired or not present");
     if (!refreshToken) {
-      event.cookies.delete("accessToken", { path: "/" });
-      event.cookies.delete("refreshToken", { path: "/" });
-      event.cookies.delete("expiresAt", { path: "/" });
-      event.cookies.delete("userId", { path: "/" });
+      console.log("No refresh token available, redirecting to login");
+      clearAuthCookies(event);
       throw redirect(302, "/login");
     }
     
-    const refresh = graphql(`
-      mutation refresh($refreshToken: String!) {
-        refresh(refreshToken: $refreshToken) {
-          refreshToken
-          accessToken
+    try {
+      const refresh = graphql(`
+        mutation refresh($refreshToken: String!) {
+          refresh(refreshToken: $refreshToken) {
+            refreshToken
+            accessToken
+          }
         }
-      }
-    `);
+      `);
 
-    let res = await refresh.mutate({ refreshToken: refreshToken }, { event });
-    console.log("Refresh response", res);
+      let res = await refresh.mutate({ refreshToken }, { event });
+      console.log("Refresh response", res);
 
-    if (!res.errors && res.data) {
-      console.log("Refresh success", res.data.refresh);
-      accessToken = res.data.refresh.accessToken;
-      event.cookies.set("accessToken", res.data.refresh.accessToken, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 100,
-      });
-      event.cookies.set("refreshToken", res.data.refresh.refreshToken, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 180,
-      });
-      event.cookies.set(
-        "expiresAt",
-        (Date.now() + 100 * 60 * 1000).toString(),
-        {
+      if (!res.errors && res.data?.refresh) {
+        console.log("Refresh success", res.data.refresh);
+        accessToken = res.data.refresh.accessToken;
+        
+        event.cookies.set("accessToken", accessToken, {
           path: "/",
-        },
-      );
-    } else {
-      console.log("Refresh error", res.errors);
-      event.cookies.delete("accessToken", { path: "/" });
-      event.cookies.delete("refreshToken", { path: "/" });
-      event.cookies.delete("expiresAt", { path: "/" });
+          httpOnly: true,
+          sameSite: "strict",
+          maxAge: 60 * 100, // 100 minutes
+        });
+        
+        event.cookies.set("refreshToken", res.data.refresh.refreshToken, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "strict",
+          maxAge: 60 * 180, // 3 hours
+        });
+        
+        const newExpiresAt = Date.now() + 100 * 60 * 1000; // 100 minutes in ms
+        event.cookies.set("expiresAt", newExpiresAt.toString(), {
+          path: "/",
+        });
+        
+        setSession(event, { accessToken });
+      } else {
+        console.log("Refresh error", res.errors);
+        clearAuthCookies(event);
+        throw redirect(302, "/login");
+      }
+    } catch (error) {
+      console.error("Token refresh failed", error);
+      clearAuthCookies(event);
       throw redirect(302, "/login");
     }
+  } else {
+    setSession(event, { accessToken });
   }
-
-  setSession(event, { accessToken });
 
   return await resolve(event);
 
 };
+
+
+function clearAuthCookies(event: RequestEvent) {
+  event.cookies.delete("accessToken", { path: "/" });
+  event.cookies.delete("refreshToken", { path: "/" });
+  event.cookies.delete("expiresAt", { path: "/" });
+  event.cookies.delete("userId", { path: "/" });
+}
