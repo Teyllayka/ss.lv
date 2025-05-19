@@ -19,12 +19,13 @@ export const handle = async ({
   }, event.url.pathname);
 
   if ((expiresAt && parseInt(expiresAt) < Date.now()) || !accessToken) {
+    console.log("Access token expired or not present");
     if (!refreshToken) {
       event.cookies.delete("accessToken", { path: "/" });
       event.cookies.delete("refreshToken", { path: "/" });
       event.cookies.delete("expiresAt", { path: "/" });
       event.cookies.delete("userId", { path: "/" });
-      redirect(302, "/login");
+      throw redirect(302, "/login");
     }
     
     const refresh = graphql(`
@@ -37,8 +38,10 @@ export const handle = async ({
     `);
 
     let res = await refresh.mutate({ refreshToken: refreshToken }, { event });
+    console.log("Refresh response", res);
 
     if (!res.errors && res.data) {
+      console.log("Refresh success", res.data.refresh);
       accessToken = res.data.refresh.accessToken;
       event.cookies.set("accessToken", res.data.refresh.accessToken, {
         path: "/",
@@ -60,10 +63,11 @@ export const handle = async ({
         },
       );
     } else {
+      console.log("Refresh error", res.errors);
       event.cookies.delete("accessToken", { path: "/" });
       event.cookies.delete("refreshToken", { path: "/" });
       event.cookies.delete("expiresAt", { path: "/" });
-      redirect(302, "/login");
+      throw redirect(302, "/login");
     }
   }
 
