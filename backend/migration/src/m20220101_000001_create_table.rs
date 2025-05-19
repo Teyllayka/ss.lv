@@ -202,38 +202,6 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // Create Payment Table.
-        manager
-            .create_table(
-                Table::create()
-                    .table(Payment::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(Payment::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(Payment::OrderId).string().not_null())
-                    .col(ColumnDef::new(Payment::UserId).integer().not_null())
-                    .col(ColumnDef::new(Payment::Amount).float().not_null())
-                    .col(
-                        ColumnDef::new(Payment::Status)
-                            .custom(Status::name())
-                            .not_null(),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-payment-user_id")
-                            .from(Payment::Table, Payment::UserId)
-                            .to(User::Table, User::Id)
-                            .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-
         // Create Reviews Table.
         manager
             .create_table(
@@ -430,9 +398,6 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Reviews::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(Payment::Table).to_owned())
-            .await?;
-        manager
             .drop_table(Table::drop().table(Favorites::Table).to_owned())
             .await?;
         manager
@@ -515,16 +480,6 @@ enum Reviews {
     CreatedAt,
     Rating,
     Message,
-}
-
-#[derive(DeriveIden)]
-enum Payment {
-    Table,
-    Id,
-    OrderId,
-    UserId,
-    Amount,
-    Status,
 }
 
 #[derive(DeriveIden)]

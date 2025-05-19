@@ -50,9 +50,6 @@ pub enum Relation {
     #[sea_orm(has_many = "super::advert::Entity")]
     Advert,
 
-    #[sea_orm(has_many = "super::payment::Entity")]
-    Payment,
-
     #[sea_orm(has_many = "super::favorites::Entity")]
     Favorites,
 
