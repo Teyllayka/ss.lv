@@ -69,8 +69,6 @@ export const handle = async ({
 
   setSession(event, { accessToken });
 
-  return await resolve(event, {
-        filterSerializedResponseHeaders: (name: string) =>
-      name.toLowerCase() === 'content-type'
-  });
+  return await resolve(event);
+
 };
