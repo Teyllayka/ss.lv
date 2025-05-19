@@ -18,7 +18,15 @@ export const handle = async ({
     refreshToken,
   }, event.url.pathname);
 
-  if (expiresAt && (parseInt(expiresAt) < Date.now() || !accessToken)) {
+  if ((expiresAt && parseInt(expiresAt) < Date.now()) || !accessToken) {
+    if (!refreshToken) {
+      event.cookies.delete("accessToken", { path: "/" });
+      event.cookies.delete("refreshToken", { path: "/" });
+      event.cookies.delete("expiresAt", { path: "/" });
+      event.cookies.delete("userId", { path: "/" });
+      redirect(302, "/login");
+    }
+    
     const refresh = graphql(`
       mutation refresh($refreshToken: String!) {
         refresh(refreshToken: $refreshToken) {
@@ -27,14 +35,6 @@ export const handle = async ({
         }
       }
     `);
-
-    if (!refreshToken) {
-      event.cookies.delete("accessToken", { path: "/" });
-      event.cookies.delete("refreshToken", { path: "/" });
-      event.cookies.delete("expiresAt", { path: "/" });
-      event.cookies.delete("userId", { path: "/" });
-      redirect(302, "/login");
-    }
 
     let res = await refresh.mutate({ refreshToken: refreshToken }, { event });
 
