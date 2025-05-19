@@ -15,7 +15,7 @@ export const handle: Handle = async ({
   }, event.url.href);
 
 
-  if (event.url.pathname === "/login") {
+  if (event.url.pathname === "/login" || event.url.pathname === "/backend") {
     return await resolve(event);
   }
 
