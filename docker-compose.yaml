@@ -32,6 +32,8 @@ services:
       - ./htpasswd:/etc/nginx/.htpasswd:ro
     networks:
       - app-network
+    depends_on:
+      - backend
     logging:
       driver: "json-file"
       options:
@@ -90,6 +92,12 @@ services:
       - backend
       - chat
       - nginx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - app-network
     restart: always

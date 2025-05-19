@@ -150,65 +150,27 @@ export const actions: Actions = {
       data[key] = value;
     });
 
-    const errs = await validateSchema(editAdvertSchema, data);
-
-    if (errs.length > 0) {
-      const serializableData = { ...data };
-      delete serializableData.newMainPhoto;
-      delete serializableData.newPhotos;
-      delete serializableData.existingPhotos;
-      delete serializableData.existingMainPhoto;
-
-      return fail(400, {
-        data: serializableData,
-        errors: errs,
-      });
+    let photos: string[] = [];
+    try {
+      photos = JSON.parse(data.photos as string);
+    } catch {
+      return fail(400, { error: "Invalid photos payload" });
     }
 
-    const newPhotos = formData.getAll("newPhotos") || [];
-    const existingPhotos =
-      (formData.getAll("existingPhotos") as string[]) || [];
 
-    if (!data.existingPhotos && data?.newMainPhoto?.size === 0) {
-      return fail(400, { error: "Invalid main photo" });
-    }
+    const errs = await validateSchema(editAdvertSchema, { ...data, photos });
 
-    console.log(data.existingMainPhoto, data.newMainPhoto);
-    let urls: string[] = [];
-    const hasNewMain =
-      data.newMainPhoto instanceof File && data.newMainPhoto.size > 0;
-
-    if (!hasNewMain && data.existingMainPhoto) {
-      urls.push(data.existingMainPhoto);
-    }
-
-    if (hasNewMain) {
-      const formGachi = new FormData();
-      formGachi.append("file", data.newMainPhoto);
-      const response = await fetch("https://gachi.gay/api/upload", {
-        method: "POST",
-        body: formGachi,
-      });
-      const dataGachi = await response.json();
-      urls.push(dataGachi.link);
-    }
-
-    urls.push(...existingPhotos);
-
-    for (const entry of newPhotos) {
-      if (entry instanceof File && entry.size > 0) {
-        const formGachi = new FormData();
-        formGachi.append("file", entry);
-        const response = await fetch("https://gachi.gay/api/upload", {
-          method: "POST",
-          body: formGachi,
+   if (errs.length > 0) {
+        const serializable = { ...data };
+        delete serializable.photos;
+        return fail(400, {
+          data: serializable,
+          errors: errs,
         });
-        const dataGachi = await response.json();
-        urls.push(dataGachi.link);
       }
-    }
+   
 
-    console.log(urls);
+    
 
     const baseFields = [
       "title",
@@ -219,6 +181,7 @@ export const actions: Actions = {
       "additionalPhotos",
       "location_json",
       "category",
+      "photos",
     ];
 
     const baseData: any = {};
@@ -230,10 +193,6 @@ export const actions: Actions = {
       }
     }
 
-    delete baseData.newMainPhoto;
-    delete baseData.existingMainPhoto;
-    delete baseData.existingPhotos;
-    delete baseData.newPhotos;
 
     const edit = graphql(`
       mutation editAdvert(
@@ -274,7 +233,7 @@ export const actions: Actions = {
         description: baseData.description,
         lat: 1,
         lon: 2,
-        photos: urls,
+        photos,
         price: parseFloat(baseData.price),
         title: baseData.title,
         id: parseInt(id),

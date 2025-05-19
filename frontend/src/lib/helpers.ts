@@ -52,3 +52,16 @@ export function calculateDistance(aa: any, bb: any) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round((R * c) / 1000);
 }
+
+
+
+export async function uploadFile(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("https://gachi.gay/api/upload", {
+    method: "POST",
+    body: form,
+  });
+  const json = await res.json();
+  return json.link;
+}

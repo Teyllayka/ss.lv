@@ -15,7 +15,7 @@ export const actions = {
       data[key] = value;
     });
 
-       let photos: string[] = [];
+    let photos: string[] = [];
     try {
       photos = JSON.parse(data.photos as string);
     } catch {
@@ -23,7 +23,7 @@ export const actions = {
     }
 
     const category = data.category;
-     const fullSchema = fullAdvertSchemas[category] || fullAdvertSchemas.default;
+    const fullSchema = fullAdvertSchemas[category] || fullAdvertSchemas.default;
 
     const errs = await validateSchema(fullSchema, { ...data, photos });
 

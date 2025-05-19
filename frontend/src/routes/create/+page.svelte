@@ -10,7 +10,7 @@
   import AddressField from "$lib/components/AddressField.svelte";
   export let form;
   import * as m from "$lib/paraglide/messages.js";
-  import { capitalizeFirstLetter } from "$lib/helpers.js";
+  import { capitalizeFirstLetter, uploadFile } from "$lib/helpers.js";
   import { categories, categoryFields } from "$lib/consts.js";
 
   let category: keyof typeof categoryFields | "" = "";
@@ -52,17 +52,6 @@
 
   function removeAdditionalPhoto(index: number) {
     additionalPhotos = additionalPhotos.filter((_, i) => i !== index);
-  }
-
-  async function uploadFile(file: File) {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("https://gachi.gay/api/upload", {
-      method: "POST",
-      body: fd,
-    });
-    const json = await res.json();
-    return json.link;
   }
 </script>
 

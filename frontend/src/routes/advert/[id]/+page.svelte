@@ -14,7 +14,7 @@
     Tag,
   } from "lucide-svelte";
   import type { PageData } from "./$houdini";
-  import { calculateDistance, renderStars } from "$lib/helpers";
+  import { calculateDistance, renderStars, uploadFile } from "$lib/helpers";
   import { user } from "$lib/userStore";
   import { goto } from "$app/navigation";
   import { getContext, onDestroy, onMount } from "svelte";
@@ -197,7 +197,22 @@
         <form
           method="post"
           action="?/edit"
-          use:enhance={() => {
+          use:enhance={async ({ formData }) => {
+            const tasks = [];
+            if (editMainPhotoFile) tasks.push(uploadFile(editMainPhotoFile));
+            for (const f of newAdditionalPhotoFiles) tasks.push(uploadFile(f));
+            const uploaded = await Promise.all(tasks);
+            const photos = [];
+            if (editMainPhotoFile) photos.push(uploaded.shift());
+            else photos.push(formData.get("existingMainPhoto"));
+            photos.push(...currentAdditionalPhotos, ...uploaded);
+            formData.delete("newMainPhoto");
+            formData.delete("newAdditionalPhotos");
+            formData.delete("existingMainPhoto");
+            formData.delete("existingPhotos");
+            formData.delete("removedPhotos");
+            formData.append("photos", JSON.stringify(photos));
+
             return async ({ result, update }) => {
               if (result.type == "failure") {
                 update();
@@ -243,6 +258,10 @@
                 editForm.price = advert.price;
                 editMainPhoto = advert.photoUrl;
                 currentAdditionalPhotos = [...(advert.additionalPhotos || [])];
+
+                newAdditionalPhotos = [];
+                newAdditionalPhotoFiles = [];
+                removedPhotos = [];
               }
             };
           }}
