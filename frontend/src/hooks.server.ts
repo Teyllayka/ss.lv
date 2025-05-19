@@ -12,6 +12,11 @@ export const handle = async ({
   let accessToken = event.cookies.get("accessToken");
   const expiresAt = event.cookies.get("expiresAt");
   const refreshToken = event.cookies.get("refreshToken");
+  console.log("Handling request", {
+    accessToken,
+    expiresAt,
+    refreshToken,
+  }, event.url.pathname);
 
   if (expiresAt && (parseInt(expiresAt) < Date.now() || !accessToken)) {
     const refresh = graphql(`
