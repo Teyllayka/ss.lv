@@ -6,40 +6,24 @@ const PRIVATE_ROUTES = [
   '/favorites',
   '/create',
   '/stats/',
-  /^\/chats\/.*$/    
+  /^\/chats\/.*$/
 ];
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
+  let accessToken    = event.cookies.get('accessToken');
+  let expiresAt      = event.cookies.get('expiresAt');
+  const refreshToken = event.cookies.get('refreshToken');
 
-  let accessToken   = event.cookies.get('accessToken');
-  const expiresAt   = event.cookies.get('expiresAt');
-  const refreshToken= event.cookies.get('refreshToken');
+  console.log('Incoming request:', { path: pathname, accessToken, expiresAt, refreshToken });
+  setSession(event, { accessToken });
+  const tokenExpired = expiresAt && parseInt(expiresAt, 10) < Date.now();
+  const needsRefresh = !accessToken || tokenExpired;
 
-  console.log('Cookies on every request:', { accessToken, expiresAt, refreshToken, path: pathname });
-
-  const isPrivate = PRIVATE_ROUTES.some(route =>
-    typeof route === 'string'
-      ? pathname === route
-      : route.test(pathname)
-  );
-  if (!isPrivate) {
-    if (accessToken) setSession(event, { accessToken });
-    return resolve(event);
-  }
-
-  if (!accessToken && !refreshToken) {
-    throw redirect(302, '/login');
-  }
-
-  const needsRefresh = !accessToken || (expiresAt && parseInt(expiresAt, 10) < Date.now());
-  if (needsRefresh) {
+  if (needsRefresh && refreshToken) {
+    console.log('Attempting refresh…');
     event.cookies.delete('accessToken', { path: '/' });
     event.cookies.delete('expiresAt',   { path: '/' });
-
-    if (!refreshToken) {
-      throw redirect(302, '/login');
-    }
 
     try {
       const refresh = graphql(`
@@ -51,30 +35,41 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
       `);
       const res = await refresh.mutate({ refreshToken }, { event });
+      console.log('Refresh response:', res);
 
       if (res.errors || !res.data?.refresh) {
         throw new Error('Refresh failed');
       }
 
-      accessToken = res.data.refresh.accessToken;
-      const newRefreshToken = res.data.refresh.refreshToken;
-      const newExpiresAt    = Date.now() + 100 * 60 * 1000;
+      accessToken       = res.data.refresh.accessToken;
+      const newRefresh  = res.data.refresh.refreshToken;
+      const newExpires  = Date.now() + 100 * 60 * 1000; // e.g. 100 min
 
       event.cookies.set('accessToken', accessToken, {
         path: '/', httpOnly: true, sameSite: 'strict', maxAge: 60 * 100
       });
-      event.cookies.set('refreshToken', newRefreshToken, {
+      event.cookies.set('refreshToken', newRefresh, {
         path: '/', httpOnly: true, sameSite: 'strict', maxAge: 60 * 180
       });
-      event.cookies.set('expiresAt', newExpiresAt.toString(), { path: '/' });
-      setSession(event, { accessToken });
+      event.cookies.set('expiresAt', newExpires.toString(), { path: '/' });
 
+      setSession(event, { accessToken });
     } catch (err) {
       console.error('Refresh error:', err);
       event.cookies.delete('refreshToken', { path: '/' });
       event.cookies.delete('userId',       { path: '/' });
-      throw redirect(302, '/login');
+      accessToken = undefined;
     }
+  }
+
+  const isPrivate = PRIVATE_ROUTES.some(route =>
+    typeof route === 'string'
+      ? pathname === route
+      : route.test(pathname)
+  );
+
+  if (isPrivate && !accessToken) {
+    throw redirect(302, '/login');
   }
 
   return resolve(event);
