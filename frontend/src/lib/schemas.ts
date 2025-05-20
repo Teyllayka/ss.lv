@@ -80,9 +80,9 @@ export const advertSchema: ObjectSchema<AdvertFormValues> = object({
   price: string().required("Price is required"),
   location: string().required("Location is required"),
    photos: array()
-      .of(string().url("Invalid photo URL").defined())
+      .of(string().url("Invalid photo URL").required("Photos are required"))
       .min(1, "At least one photo is required")
-      .required(),
+      .required("Photos are required"),
 });
 
 export let contactSchema = object({
@@ -107,7 +107,7 @@ export let advertCarSchema = object({
   brand: string().required(),
   model: string().required(),
   VIN: string().length(17, "VIN must be 17 characters").required(),
-  registrationDate: date().required(),
+  registrationDate: number().max(4).required(),
 });
 
 export let advertElectronicsSchema = object({
@@ -115,7 +115,7 @@ export let advertElectronicsSchema = object({
   modelNumber: string().required(),
   serialNumber: string().required(),
   warrantyPeriod: string().required(),
-  releaseDate: date().required(),
+  releaseDate: number().max(4).required(),
   condition: string()
     .oneOf(["New","Like New","Used","For Parts"],"Invalid condition")
     .required(),

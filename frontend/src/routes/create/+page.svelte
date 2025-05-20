@@ -20,9 +20,9 @@
   let mainPhoto: string | null = null;
   let additionalPhotos: string[] = [];
 
-  $: mainPhotoError = form?.errors?.find((e: any) => e.field === "mainPhoto");
+  $: mainPhotoError = form?.errors?.find((e: any) => e.field === "photos[0]");
   $: additionalPhotosError = form?.errors?.find(
-    (e: any) => e.field === "additionalPhotos",
+    (e: any) => e.field === "photos[1]",
   );
 
   function handleCategoryChange() {
@@ -44,7 +44,6 @@
     }
 
     mainPhoto = URL.createObjectURL(file);
-    input.value = "";
   }
 
   function handleAdditionalPhotosChange(event: Event) {
@@ -59,8 +58,6 @@
     imagesOnly.forEach((file) => {
       additionalPhotos = [...additionalPhotos, URL.createObjectURL(file)];
     });
-
-    input.value = "";
   }
 
   function removeAdditionalPhoto(index: number) {
@@ -109,9 +106,11 @@
       <form
         method="post"
         use:enhance={async ({ formData }) => {
+          isLoading = true;
           const main = formData.get("mainPhoto") as File | null;
           const additional = formData.getAll("additionalPhotos") as File[];
 
+          console.log("main", main, "additional", additional);
           if (!main && additional.length === 0) {
             return;
           }
@@ -127,6 +126,11 @@
           formData.delete("mainPhoto");
           formData.delete("additionalPhotos");
           formData.append("photos", JSON.stringify(urls));
+
+          return async ({ update }) => {
+            await update();
+            isLoading = false;
+          };
         }}
         class="space-y-6"
         enctype="multipart/form-data"
@@ -387,7 +391,13 @@
 
         <button
           type="submit"
-          class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+          class="w-full py-3 px-4
+            text-white text-center text-base font-semibold shadow-md rounded-lg
+            transition-all duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-offset-2
+            {isLoading
+            ? 'bg-gray-400 cursor-not-allowed focus:ring-gray-400 focus:ring-offset-gray-200'
+            : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200'}"
           disabled={isLoading || !$user.emailVerified || $user.banned}
           in:fly={{ y: 20, duration: 300, delay: 700, easing: cubicOut }}
         >

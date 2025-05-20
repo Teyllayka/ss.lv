@@ -27,7 +27,7 @@ export const categoryFields: Record<string, Array<any>> = {
     { name: "modelNumber", label: "Model Number", type: "text" },
     { name: "serialNumber", label: "Serial Number", type: "text" },
     { name: "warrantyPeriod", label: "Warranty Period", type: "text" },
-    { name: "releaseDate", label: "Release Date", type: "date" },
+    { name: "releaseDate", label: "Release Date", type: "number" },
     {
       name: "condition",
       label: "Condition",
@@ -50,7 +50,7 @@ export const categoryFields: Record<string, Array<any>> = {
     { name: "brand", label: "Brand", type: "text" },
     { name: "model", label: "Model", type: "text" },
     { name: "VIN", label: "VIN", type: "text" },
-    { name: "registrationDate", label: "Registration Date", type: "date" },
+    { name: "registrationDate", label: "Registration Date", type: "number" },
   ],
   furniture: [
     { name: "type", label: "Type", type: "text" },

@@ -1,5 +1,4 @@
 import {
-  advertSchema,
   fullAdvertSchemas,
   validateSchema,
 } from "$lib/schemas";
