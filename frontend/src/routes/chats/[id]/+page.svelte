@@ -199,15 +199,24 @@
         const files = input.files;
         if (!files) return;
 
-        const newFiles = Array.from(files);
+        const selected = Array.from(files);
 
-        photoFiles = [...photoFiles, ...newFiles];
-        photos = [...photos, ...newFiles.map((f) => URL.createObjectURL(f))];
+        const imagesOnly = selected.filter((f) => f.type.startsWith("image/"));
+
+        const availableSlots = 5 - photoFiles.length;
+        const toAdd = imagesOnly.slice(0, availableSlots);
+
+        photoFiles = [...photoFiles, ...toAdd];
+        photos = [...photos, ...toAdd.map((f) => URL.createObjectURL(f))];
+
+        if (photoFiles.length >= 5) {
+            input.value = "";
+        }
     }
 
     function removePhoto(index: number) {
-        photoFiles.splice(index, 1);
-        photos.splice(index, 1);
+        photoFiles = photoFiles.filter((_, i) => i !== index);
+        photos = photos.filter((_, i) => i !== index);
     }
 </script>
 
@@ -650,15 +659,18 @@
                             bind:this={photoInput}
                             on:change={handlePhotosChange}
                             class="hidden"
+                            disabled={photos.length >= 5}
                         />
 
-                        <button
-                            type="button"
-                            class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            on:click={() => photoInput.click()}
-                        >
-                            <ImageIcon class="h-5 w-5" />
-                        </button>
+                        {#if photos.length < 5}
+                            <button
+                                type="button"
+                                class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                on:click={() => photoInput.click()}
+                            >
+                                <ImageIcon class="h-5 w-5" />
+                            </button>
+                        {/if}
 
                         <div class="flex-1">
                             <InputField

@@ -35,19 +35,32 @@
   }
 
   function handleMainPhotoChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      mainPhoto = URL.createObjectURL(file);
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return;
     }
+
+    mainPhoto = URL.createObjectURL(file);
+    input.value = "";
   }
 
   function handleAdditionalPhotosChange(event: Event) {
-    const files = (event.target as HTMLInputElement).files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        additionalPhotos = [...additionalPhotos, URL.createObjectURL(files[i])];
-      }
-    }
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files) return;
+
+    const imagesOnly = Array.from(files).filter((f) =>
+      f.type.startsWith("image/"),
+    );
+
+    imagesOnly.forEach((file) => {
+      additionalPhotos = [...additionalPhotos, URL.createObjectURL(file)];
+    });
+
+    input.value = "";
   }
 
   function removeAdditionalPhoto(index: number) {
@@ -99,13 +112,17 @@
           const main = formData.get("mainPhoto") as File | null;
           const additional = formData.getAll("additionalPhotos") as File[];
 
-          const uploadPromises: Promise<string>[] = [];
-          if (main) {
-            uploadPromises.push(uploadFile(main));
+          if (!main && additional.length === 0) {
+            return;
           }
-          uploadPromises.push(...additional.map((file) => uploadFile(file)));
 
-          const urls = await Promise.all(uploadPromises);
+          const filesToUpload: File[] = [];
+          if (main) filesToUpload.push(main);
+          filesToUpload.push(...additional);
+
+          const urls = await Promise.all(
+            filesToUpload.map((file) => uploadFile(file)),
+          );
 
           formData.delete("mainPhoto");
           formData.delete("additionalPhotos");
@@ -371,7 +388,7 @@
         <button
           type="submit"
           class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-          disabled={isLoading || !$user.emailVerified}
+          disabled={isLoading || !$user.emailVerified || $user.banned}
           in:fly={{ y: 20, duration: 300, delay: 700, easing: cubicOut }}
         >
           {#if isLoading}
