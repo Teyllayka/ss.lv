@@ -1047,9 +1047,9 @@ impl UserMutation {
                 "Invalid user ID in token: missing id",
             ));
         };
-        let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
+        let caller: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
 
-        match user {
+        match caller {
             Some(u) => {
                 (if u.role == user::Role::Admin {
                     ()
@@ -1062,9 +1062,15 @@ impl UserMutation {
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         };
 
+        let target = user::Entity::find_by_id(user_id)
+        .one(&my_ctx.db)
+        .await?
+        .ok_or_else(|| async_graphql::Error::new("User not found"))?;
+
+
         let active_user = user::ActiveModel {
             id: Set(user_id),
-            banned: Set(true),
+            banned: Set(!target.banned),
             ..Default::default()
         };
 

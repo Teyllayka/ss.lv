@@ -7,13 +7,11 @@ RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build    # outputs to ./build
 
-# --- Production stage ---
 FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# 👇 Increase max memory to 4GB (customizable)
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
 COPY --from=builder /app/build ./build

@@ -5,7 +5,6 @@ import { loginSchema, validateSchema } from "$lib/schemas";
 export const actions = {
   default: async (event: RequestEvent) => {
     const formData = await event.request.formData();
-
     const data: any = {};
     formData.forEach((value, key) => {
       data[key] = value;

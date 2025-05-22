@@ -135,14 +135,29 @@
               <h1
                 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center"
               >
-                {userData.name}
-                {userData.surname}
+                {#if userData.name}
+                  {userData.name}
+                {/if}
+                {#if userData.surname}
+                  {userData.surname}
+                {/if}
+                {#if userData.companyName}
+                  {userData.companyName}
+                {/if}
                 {#if userData.role in roleStyles}
                   <span
                     class={`ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${roleStyles[userData.role]}`}
                     style="align-self: center;"
                   >
                     {userData.role}
+                  </span>
+                {/if}
+                {#if userData.companyName}
+                  <span
+                    class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                    style="align-self: center;"
+                  >
+                    {m.company()}
                   </span>
                 {/if}
               </h1>

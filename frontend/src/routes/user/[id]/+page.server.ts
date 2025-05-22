@@ -7,7 +7,7 @@ export const load: PageServerLoad = async (event) => {
   const id = parseInt(event.params.id ?? "0");
 
   console.log("userId", userId, id);
-
+  event.depends(`user:${id}`); 
   if (userId === event.params.id) {
     return redirect(302, "/me");
   }
@@ -19,9 +19,11 @@ query User($id: Int!) {
     id
     name
     surname
+    companyName
     phone
     email
     rating
+    banned
     avatarUrl
     adverts {
       id
