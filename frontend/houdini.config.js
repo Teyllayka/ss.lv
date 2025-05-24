@@ -2,8 +2,8 @@
 const config = {
   schemaPath: "./schema.graphql",
   watchSchema: {
-    url: "http://127.0.0.1:8080",
-    //url: "/backend",
+    //url: "http://127.0.0.1:8080",
+    url: "/backend",
   },
   plugins: {
     "houdini-svelte": {},
