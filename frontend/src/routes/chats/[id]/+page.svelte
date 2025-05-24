@@ -218,6 +218,8 @@
         photoFiles = photoFiles.filter((_, i) => i !== index);
         photos = photos.filter((_, i) => i !== index);
     }
+
+    let sending = false; 
 </script>
 
 <svelte:window bind:innerHeight={windowHeight} />
@@ -640,6 +642,7 @@
                         class="flex items-center space-x-2"
                         enctype="multipart/form-data"
                         use:enhance={() => {
+                            sending = true;
                             return async ({ result, update }) => {
                                 if (result) {
                                     messageInput = "";
@@ -684,7 +687,7 @@
 
                         <button
                             type="submit"
-                            disabled={!messageInput.trim()}
+                            disabled={!messageInput.trim() || sending}
                             class="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Send class="h-5 w-5" />

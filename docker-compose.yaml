@@ -1,27 +1,31 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   container_name: nginx_proxy
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx.dev.conf:/etc/nginx/nginx.conf  
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - app-network
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
-  #   restart: always
+  nginx-dev:
+    image: nginx:latest
+    profiles: ["dev"]
+    container_name: nginx_proxy_dev
+    ports:
+      - "7080:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf  
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: always
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  nginx:
+
+  nginx-prod:
     image: nginx:latest
     container_name: nginx_proxy
+    profiles: ["prod"]
     ports:
       - "80:80"
       - "443:443"
@@ -92,7 +96,6 @@ services:
     depends_on:
       - backend
       - chat
-      - nginx
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
       interval: 30s
@@ -146,6 +149,8 @@ services:
   redis:
     image: redis:7
     container_name: redis
+    ports:
+      - "6379:6379"
     restart: always
     volumes:
       - redis_data:/data

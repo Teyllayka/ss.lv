@@ -359,7 +359,7 @@ impl UserMutation {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs() as usize;
-        let expiration = now + (ACCESS_EXPIRATION * 60); // 1 minutes from now
+        let expiration = now + (ACCESS_EXPIRATION * 60); 
         let mut email_verif: BTreeMap<&str, Value> = BTreeMap::new();
         email_verif.insert("sub", json!("someone"));
         email_verif.insert(

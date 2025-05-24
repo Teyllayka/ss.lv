@@ -413,17 +413,14 @@ impl AdvertQuery {
     ) -> Result<Vec<advert::Model>, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
 
-        // Start with available adverts whose title contains the search term.
         let mut query = advert::Entity::find()
             .filter(advert::Column::Available.eq(true))
             .filter(advert::Column::Title.contains(&title));
 
-        // Filter by category if provided.
         if let Some(cat) = category {
             query = query.filter(advert::Column::Category.eq(cat));
         }
 
-        // Price filters.
         if let Some(min) = min_price {
             query = query.filter(advert::Column::Price.gte(min));
         }
@@ -431,7 +428,6 @@ impl AdvertQuery {
             query = query.filter(advert::Column::Price.lte(max));
         }
 
-        // Custom specifications filtering.
         if let Some(fields) = custom_fields {
             if let Some(fields) = fields.as_object() {
                 for (key, value) in fields {
@@ -450,7 +446,6 @@ impl AdvertQuery {
             }
         }
 
-        // Location filters.
         if let (Some(lat), Some(lon), Some(range)) = (center_lat, center_lon, location_range) {
             query = query
                 .filter(advert::Column::Lat.between(lat - (range / 111.0), lat + (range / 111.0)))
@@ -460,19 +455,14 @@ impl AdvertQuery {
                 ));
         }
 
-        // Execute the query.
         let mut adverts = query.all(&my_ctx.db).await?;
 
-        // ---- Compute ratings for each advert ----
-        // Collect advert IDs.
         let advert_ids: Vec<i32> = adverts.iter().map(|adv| adv.id).collect();
-        // Retrieve all reviews for these adverts.
         let reviews = Reviews::find()
             .filter(reviews::Column::AdvertId.is_in(advert_ids.clone()))
             .all(&my_ctx.db)
             .await?;
 
-        // Build a mapping of advert_id to (total_rating, review_count).
         let mut ratings_map: std::collections::HashMap<i32, (f32, usize)> =
             std::collections::HashMap::new();
         for review in reviews {
@@ -481,8 +471,6 @@ impl AdvertQuery {
             entry.1 += 1;
         }
 
-        // Attach computed average rating to each advert.
-        // (We follow your convention by setting the advert's user.rating field.)
         for advert in &mut adverts {
             let avg_rating = if let Some(&(total, count)) = ratings_map.get(&advert.id) {
                 if count > 0 {
@@ -496,7 +484,6 @@ impl AdvertQuery {
             advert.user.rating = avg_rating;
         }
 
-        // ---- Filter adverts by min_rating if provided ----
         if let Some(min_rating) = min_rating {
             adverts = adverts
                 .into_iter()
@@ -504,7 +491,6 @@ impl AdvertQuery {
                 .collect();
         }
 
-        // ---- Sorting ----
         if let Some(field) = sort_field {
             let order = sort_order
                 .map(|s| s.to_lowercase())
@@ -549,11 +535,10 @@ impl AdvertQuery {
                         adverts.sort_by(|a, b| b.title.cmp(&a.title));
                     }
                 }
-                _ => {} // For unrecognized fields, no additional sorting is applied.
+                _ => {} 
             }
         }
 
-        // ---- Apply offset for pagination ----
         let offset = offset as usize;
         let adverts = if offset < adverts.len() {
             adverts.into_iter().skip(offset).collect()
