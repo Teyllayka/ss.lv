@@ -288,11 +288,6 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .service(web::resource("/").guard(guard::Post()).to(index))
-            // .service(
-            //     web::resource("/webhook")
-            //         .guard(guard::Post())
-            //         .to(handle_webhook),
-            // )
             .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
     .bind((ip, port))?
