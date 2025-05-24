@@ -22,7 +22,6 @@ use deadpool_redis::{Config, Pool, Runtime};
 use dotenvy::dotenv;
 use entity::{
     advert::{self, Entity as Advert},
-    // payment::{self, Entity as Payment},
     user::{self, Entity as User},
 };
 use hmac::{Hmac, Mac};
@@ -37,14 +36,12 @@ use std::{
     collections::BTreeMap,
     time::{SystemTime, UNIX_EPOCH},
 };
-// use stripe::{CheckoutSession, EventObject, EventType, Webhook, WebhookError};
 use user_queries::{UserMutation, UserQuery};
 
 pub fn verify_access_token(
     access_token: String,
     access_key: &Hmac<Sha256>,
 ) -> Result<BTreeMap<String, Value>, Error> {
-    // Remove the "Bearer " prefix if present.
     let access_token = access_token.replace("Bearer ", "");
 
     let claims: BTreeMap<String, Value> = match access_token.verify_with_key(access_key) {
@@ -85,6 +82,8 @@ pub struct Statistics {
     pub today_advert_count: u64,
 }
 
+
+#[derive(Debug)]
 pub struct Context {
     pub db: DatabaseConnection,
     pub redis_pool: Pool,
@@ -189,108 +188,6 @@ async fn index(
     schema.execute(request).await.into()
 }
 
-// async fn handle_webhook(
-//     req: HttpRequest,
-//     payload: web::Bytes,
-//     ctx: web::Data<Context>,
-// ) -> HttpResponse {
-//     let payload_str = std::str::from_utf8(&payload).unwrap();
-
-//     let stripe_signature = get_header_value(&req, "Stripe-Signature").unwrap_or_default();
-
-//     if let Ok(event) = Webhook::construct_event(
-//         payload_str,
-//         stripe_signature,
-//         "whsec_8ae96f7644564cca47b0a534d34590fac5a4df98933620999f25460001c5df2a",
-//     ) {
-//         match event.type_ {
-//             EventType::AccountUpdated => {
-//                 if let EventObject::Account(account) = event.data.object {
-//                     handle_account_updated(account)
-//                         .expect("Failed to handle account updated event");
-//                 }
-//             }
-//             EventType::CheckoutSessionCompleted => {
-//                 if let EventObject::CheckoutSession(session) = event.data.object {
-//                     if let Err(err) = handle_checkout_session(session, ctx.clone()).await {
-//                         println!("Error handling checkout session: {:?}", err);
-//                         return HttpResponse::InternalServerError().finish();
-//                     }
-//                 }
-//             }
-//             _ => {
-//                 println!("Unknown event encountered in webhook: {:?}", event.type_);
-//             }
-//         }
-//     } else {
-//         println!("Failed to construct webhook event, ensure your webhook secret is correct.");
-//     }
-
-//     HttpResponse::Ok().finish()
-// }
-
-// fn get_header_value<'b>(req: &'b HttpRequest, key: &'b str) -> Option<&'b str> {
-//     req.headers().get(key)?.to_str().ok()
-// }
-
-// fn handle_account_updated(account: stripe::Account) -> Result<(), WebhookError> {
-//     println!(
-//         "Received account updated webhook for account: {:?}",
-//         account.id
-//     );
-//     Ok(())
-// }
-
-// async fn handle_checkout_session(
-//     session: CheckoutSession,
-//     ctx: web::Data<Context>,
-// ) -> Result<(), async_graphql::Error> {
-//     println!(
-//         "Received checkout session completed webhook with id: {:?}",
-//         session.id
-//     );
-
-//     let stripe_session_id = session.payment_link.unwrap();
-
-//     let db = &ctx.db;
-
-//     let payment = Payment::find()
-//         .filter(payment::Column::OrderId.eq(&*stripe_session_id.id()))
-//         .one(db)
-//         .await
-//         .expect("Failed to find payment by order id");
-
-//     let payment = match payment {
-//         Some(payment) => payment,
-//         None => return Err(async_graphql::Error::new("payment not found".to_string())),
-//     };
-
-//     let new_payment: payment::ActiveModel = payment::ActiveModel {
-//         status: Set(payment::Status::Completed),
-//         ..payment.into()
-//     };
-
-//     let adv: payment::Model = new_payment.update(db).await?;
-
-//     let user = User::find()
-//         .filter(user::Column::Id.eq(adv.user_id))
-//         .one(db)
-//         .await?;
-
-//     let user = match user {
-//         Some(user) => user,
-//         None => return Err(async_graphql::Error::new("user not found".to_string())),
-//     };
-
-//     let new_user: user::ActiveModel = user::ActiveModel {
-//         balance: Set(user.balance + adv.amount),
-//         ..user.into()
-//     };
-
-//     let _: user::Model = new_user.update(db).await?;
-
-//     return Ok(());
-// }
 
 async fn index_graphiql() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
@@ -309,8 +206,6 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let db_url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
     let redis_url = dotenvy::var("REDIS_URL").expect("REDIS_URL environment variable not found");
-    // let stripe =
-    //     dotenvy::var("STRIPE_SECRET").expect("STRIPE_SECRET environment variable not found");
     let refresh_secret =
         dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
     let access_secret =
