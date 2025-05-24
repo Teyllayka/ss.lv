@@ -381,7 +381,7 @@ impl UserMutation {
             .unwrap_or("User");
 
         let payload = json!({
-            "from": { "email": "test@test-zxk54v8mwxpljy6v.mlsender.net", "name": "Mailtrap Test" },
+            "from": { "email": "info@ad-ee.tech", "name": "Adee" },
             "to": [{ "email": user.email }],
             "subject": "You are awesome!",
             "text": format!(
@@ -397,7 +397,7 @@ impl UserMutation {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://api.mailersend.com/v1/email")
-            .bearer_auth("mlsn.bc1d354f7403b8031b0087212d1eee7481576b7fc3d6d6468d7af0928c464e1f")
+            .bearer_auth("mlsn.56f5a1ab2530adb7b4b580b34e825b8ca01f1159a1a7f2bb57eadb838c504f02")
             .json(&payload)
             .send()
             .await
@@ -827,7 +827,7 @@ impl UserMutation {
             .unwrap_or("User");
 
         let payload = json!({
-            "from": { "email": "test@test-zxk54v8mwxpljy6v.mlsender.net", "name": "Mailtrap Test" },
+            "from": { "email": "info@ad-ee.tech", "name": "Adee" },
             "to": [{ "email": user.email }],
             "subject": "You are awesome!",
             "text": format!(
@@ -843,7 +843,7 @@ impl UserMutation {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://api.mailersend.com/v1/email")
-            .bearer_auth("mlsn.bc1d354f7403b8031b0087212d1eee7481576b7fc3d6d6468d7af0928c464e1f")
+            .bearer_auth("mlsn.56f5a1ab2530adb7b4b580b34e825b8ca01f1159a1a7f2bb57eadb838c504f02")
             .json(&payload)
             .send()
             .await
