@@ -397,7 +397,7 @@ impl UserMutation {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://api.mailersend.com/v1/email")
-            .bearer_auth("mlsn.56f5a1ab2530adb7b4b580b34e825b8ca01f1159a1a7f2bb57eadb838c504f02")
+            .bearer_auth(&my_ctx.mailersend_token)
             .json(&payload)
             .send()
             .await
@@ -843,7 +843,7 @@ impl UserMutation {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://api.mailersend.com/v1/email")
-            .bearer_auth("mlsn.56f5a1ab2530adb7b4b580b34e825b8ca01f1159a1a7f2bb57eadb838c504f02")
+            .bearer_auth(&my_ctx.mailersend_token)
             .json(&payload)
             .send()
             .await

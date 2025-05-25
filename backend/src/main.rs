@@ -28,7 +28,7 @@ use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use migration::{sea_orm::EntityTrait, Migrator, MigratorTrait};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, PaginatorTrait, QueryFilter, Set,
+    ColumnTrait, Database, DatabaseConnection, PaginatorTrait, QueryFilter,
 };
 use serde_json::Value;
 use sha2::Sha256;
@@ -87,24 +87,20 @@ pub struct Statistics {
 pub struct Context {
     pub db: DatabaseConnection,
     pub redis_pool: Pool,
-    // pub stripe_secret: String,
     pub access_key: Hmac<Sha256>,
     pub refresh_key: Hmac<Sha256>,
+    pub mailersend_token: String,
     pub email_key: Hmac<Sha256>,
-    pub username: String,
-    pub password: String,
 }
 
 impl Context {
     pub fn new(
         db: DatabaseConnection,
         redis_pool: Pool,
-        // stripe_secret: String,
         access_key: Hmac<Sha256>,
         refresh_key: Hmac<Sha256>,
+        mailersend_token: String,
         email_key: Hmac<Sha256>,
-        username: String,
-        password: String,
     ) -> Self {
         Self {
             db,
@@ -112,9 +108,8 @@ impl Context {
             // stripe_secret,
             access_key,
             refresh_key,
+            mailersend_token,
             email_key,
-            username,
-            password,
         }
     }
 }
@@ -210,14 +205,13 @@ async fn main() -> std::io::Result<()> {
         dotenvy::var("REFRESH_SECRET").expect("REFRESH_SECRET environment variable not found");
     let access_secret =
         dotenvy::var("ACCESS_SECRET").expect("ACCESS_SECRET environment variable not found");
-    let username =
-        dotenvy::var("MAILJET_USERNAME").expect("MAILJET_USERNAME environment variable not found");
-    let password =
-        dotenvy::var("MAILJET_PASSWORD").expect("MAILJET_PASSWORD environment variable not found");
     let port = (dotenvy::var("BACKEND_PORT").expect("BACKEND_PORT environment variable not found"))
         .parse::<u16>()
         .expect("port is not a number");
     let ip = dotenvy::var("BACKEND_IP").expect("BACKEND_IP environment variable not found");
+    let mailersend_token = dotenvy::var("MAILERSEND_TOKEN")
+        .expect("MAILERSEND_TOKEN environment variable not found");
+    let email_key = dotenvy::var("EMAIL_SECRET").expect("EMAIL_SECRET environment variable not found");
     // tracing_subscriber::fmt()
     //     .with_max_level(tracing::Level::DEBUG)
     //     .with_test_writer()
@@ -232,7 +226,7 @@ async fn main() -> std::io::Result<()> {
 
     let access_key: Hmac<Sha256> = Hmac::new_from_slice(access_secret.as_bytes()).unwrap();
     let refresh_key: Hmac<Sha256> = Hmac::new_from_slice(refresh_secret.as_bytes()).unwrap();
-    let email_key: Hmac<Sha256> = Hmac::new_from_slice(username.as_bytes()).unwrap();
+    let email_key: Hmac<Sha256> = Hmac::new_from_slice(email_key.as_bytes()).unwrap();
     let cfg = Config::from_url(redis_url);
     let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
 
@@ -244,9 +238,8 @@ async fn main() -> std::io::Result<()> {
                 // stripe.clone(),
                 access_key.clone(),
                 refresh_key.clone(),
-                email_key.clone(),
-                username.clone(),
-                password.clone(),
+                mailersend_token.clone(),
+                email_key.clone(   )
             ))
             .finish();
 
@@ -256,9 +249,8 @@ async fn main() -> std::io::Result<()> {
             // stripe.clone(),
             access_key.clone(),
             refresh_key.clone(),
+            mailersend_token.clone(),
             email_key.clone(),
-            username.clone(),
-            password.clone(),
         ));
 
         let cors = Cors::default()
