@@ -29,7 +29,6 @@ Projektā izmantots:
 8. [TypeScript Documentation, 2024](https://www.typescriptlang.org/docs/) — statiskā tipizācija.  
 9. [Vite Documentation, 2024](https://vitejs.dev/guide/) — izstrādes serveris un bundling.  
 
-:exclamation: *Obligāti jānorāda visi avoti, kas izmantoti kodam vai dokumentācijai. Ja atrod kodu, kas sakrīt ar citu autoru darbu, tas nederēs par pašu izstrādātu risinājumu.*
 
 ## Uzstādīšanas instrukcijas  
 1. **Priekšnosacījumi:**  
