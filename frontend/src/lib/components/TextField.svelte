@@ -12,6 +12,7 @@
     value?: string | undefined | null;
     disabled?: boolean;
     id?: string;
+    maxlength?: number;
   }
 
   let {
@@ -21,6 +22,7 @@
     value = $bindable(),
     disabled = false,
     id,
+    maxlength = 400
   }: Props = $props();
 
   let e: any = $state(null);
@@ -49,6 +51,7 @@
     {value}
     required
     {disabled}
+    {maxlength}
     bind:this={inputEl}
     rows="4"
     class="w-full min-h-[50px] px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ease-in-out placeholder-transparent peer text-gray-800 dark:text-white border-solid border-2 {e
