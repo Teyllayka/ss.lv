@@ -189,6 +189,7 @@
             errors={form?.errors || []}
             value={form?.data.description || ""}
             disabled={!$user.emailVerified || $user.banned}
+            maxlength={1000}
           />
         </div>
 

@@ -169,10 +169,19 @@
     }).setView([advert.lat, advert.lon], 13);
 
     L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(map);
-    L.marker([advert.lat, advert.lon])
-      .addTo(map)
-      .bindPopup(advert.title)
-      .openPopup();
+    const popupContent = `
+  <div style="max-width: 200px; word-wrap: break-word; white-space: normal;">
+    ${advert.title}
+  </div>
+`;
+
+L.marker([advert.lat, advert.lon])
+  .addTo(map)
+  .bindPopup(popupContent, {
+    maxWidth: 200,
+    className: 'custom-popup'
+  })
+  .openPopup();
   });
 
   onDestroy(() => {
@@ -491,29 +500,24 @@
               </div>
             </div>
             <div class="md:w-1/2 p-6 space-y-6">
-              <div class="flex justify-between items-start">
-                <div class="flex flex-col">
-                  <h1
-                    class="text-3xl font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap"
-                  >
+              <div class="space-y-4">
+                <div class="flex flex-col flex-1 min-w-0">
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white truncate">
                     {advert.title}
                   </h1>
                   {#if !advert.available}
-                    <div
-                      class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit"
-                    >
+                    <div class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit">
                       <CheckCircle class="w-4 h-4 mr-1" />
                       {m.sold()}
                     </div>
                   {:else}
-                    <div
-                      class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit"
-                    >
+                    <div class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit">
                       <Tag class="w-4 h-4 mr-1" />
                       {m.available()}
                     </div>
                   {/if}
                 </div>
+              
                 <div class="flex space-x-4">
                   {#if $user.id == advert.user.id}
                     <button
@@ -535,6 +539,7 @@
                   {/if}
                 </div>
               </div>
+              
 
               <p
                 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"

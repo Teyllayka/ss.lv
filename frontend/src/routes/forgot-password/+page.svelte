@@ -6,7 +6,6 @@
   let email = "";
   let isLoading = false;
   let isSubmitted = false;
-  let error = "";
 
   import { enhance } from "$app/forms";
   export let form;
