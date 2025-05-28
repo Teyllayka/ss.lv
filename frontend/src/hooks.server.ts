@@ -9,6 +9,8 @@ const PRIVATE_ROUTES = [
   /^\/chats\/.*$/
 ];
 
+const SKIP_REFRESH = ['/backend'];
+
 export const handle: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
   let accessToken    = event.cookies.get('accessToken');
@@ -16,6 +18,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   const refreshToken = event.cookies.get('refreshToken');
 
   console.log('Incoming request:', { path: pathname, accessToken, expiresAt, refreshToken });
+
+  if (SKIP_REFRESH.includes(pathname)) {
+    setSession(event, { accessToken });
+    return resolve(event);
+  }
+
   setSession(event, { accessToken });
   const tokenExpired = expiresAt && parseInt(expiresAt, 10) < Date.now();
   const needsRefresh = !accessToken || tokenExpired;
