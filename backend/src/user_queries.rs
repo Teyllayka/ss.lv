@@ -11,7 +11,7 @@ use chrono::Utc;
 use deadpool_redis::redis::cmd;
 use entity::{
     advert::{self, Entity as Advert},
-    chat::{self, Entity as Chat},
+    chat::{self},
     favorites::{self},
     reviews::{self, Entity as Reviews},
     user::{self, Entity as User},
@@ -26,11 +26,6 @@ use argon2::{
     Argon2,
 };
 use serde_json::json;
-// use stripe::{
-//     Client, CreatePaymentLink, CreatePaymentLinkLineItems, CreatePrice, CreateProduct, Currency,
-//     IdOrCreate, PaymentLink, Price, Product,
-// };
-
 const ACCESS_EXPIRATION: usize = 100;
 const REFRESH_EXPIRATION: usize = 180;
 
@@ -858,163 +853,6 @@ impl UserMutation {
         return Ok("Email sent".to_string());
     }
 
-    // async fn top_up_balance(
-    //     &self,
-    //     ctx: &async_graphql::Context<'_>,
-    //     amount: i32,
-    // ) -> Result<String, async_graphql::Error> {
-    //     let my_ctx = ctx.data::<Context>().unwrap();
-
-    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
-    //         Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
-    //         None => {
-    //             return Err(async_graphql::Error::new(
-    //                 "you are not logged in".to_string(),
-    //             ));
-    //         }
-    //     };
-
-    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-    //         Ok(claims) => claims,
-    //         Err(err) => return Err(err),
-    //     };
-
-    //     let id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
-    //         id_str.parse().map_err(|_| {
-    //             async_graphql::Error::new("Invalid user ID in token: failed to parse string")
-    //         })?
-    //     } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
-    //         id_num as i32
-    //     } else {
-    //         return Err(async_graphql::Error::new(
-    //             "Invalid user ID in token: missing id",
-    //         ));
-    //     };
-    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-    //     let user = match user {
-    //         Some(user) => user,
-    //         None => return Err(async_graphql::Error::new("Wrong token".to_string())),
-    //     };
-
-    //     let client = Client::new(my_ctx.stripe_secret.clone());
-
-    //     let product = {
-    //         let create_product = CreateProduct::new("Top up");
-    //         Product::create(&client, create_product).await.unwrap()
-    //     };
-
-    //     let price = {
-    //         let mut create_price = CreatePrice::new(Currency::EUR);
-    //         create_price.product = Some(IdOrCreate::Id(&product.id));
-    //         create_price.unit_amount = Some((amount * 100).into());
-    //         create_price.expand = &["product"];
-    //         create_price.metadata = Some(std::collections::HashMap::from([(
-    //             String::from("user_id"),
-    //             user.id.to_string(),
-    //         )]));
-    //         Price::create(&client, create_price).await.unwrap()
-    //     };
-
-    //     let payment_link = PaymentLink::create(
-    //         &client,
-    //         CreatePaymentLink::new(vec![CreatePaymentLinkLineItems {
-    //             quantity: 1,
-    //             price: price.id.to_string(),
-    //             ..Default::default()
-    //         }]),
-    //     )
-    //     .await
-    //     .unwrap();
-
-    //     let payment = payment::ActiveModel {
-    //         order_id: Set(payment_link.id.to_string()),
-    //         user_id: Set(user.id),
-    //         amount: Set(amount as f32),
-    //         status: Set(payment::Status::Pending),
-    //         ..Default::default()
-    //     };
-
-    //     let _: payment::Model = payment.insert(&my_ctx.db).await?;
-
-    //     return Ok(payment_link.url);
-    // }
-
-    // async fn connect_account(
-    //     &self,
-    //     ctx: &async_graphql::Context<'_>,
-    //     code: String,
-    // ) -> Result<String, async_graphql::Error> {
-    //     let my_ctx = ctx.data::<Context>().unwrap();
-
-    //     let access_token = match ctx.data_opt::<Token>().map(|token| token.0.clone()) {
-    //         Some(token) => token.split(' ').collect::<Vec<&str>>()[1].to_string(),
-    //         None => {
-    //             return Err(async_graphql::Error::new(
-    //                 "you are not logged in".to_string(),
-    //             ));
-    //         }
-    //     };
-
-    //     let claims = match verify_access_token(access_token, &my_ctx.access_key) {
-    //         Ok(claims) => claims,
-    //         Err(err) => return Err(err),
-    //     };
-
-    //     let id: i32 = if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
-    //         id_str.parse().map_err(|_| {
-    //             async_graphql::Error::new("Invalid user ID in token: failed to parse string")
-    //         })?
-    //     } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
-    //         id_num as i32
-    //     } else {
-    //         return Err(async_graphql::Error::new(
-    //             "Invalid user ID in token: missing id",
-    //         ));
-    //     };
-    //     let user: Option<user::Model> = User::find_by_id(id).one(&my_ctx.db).await?;
-
-    //     match user {
-    //         Some(_) => (),
-    //         None => return Err(async_graphql::Error::new("Wrong token".to_string())),
-    //     };
-
-    //     let mut conn = my_ctx.redis_pool.get().await.unwrap();
-    //     let redis_code: Result<String, RedisError> =
-    //         cmd("GET").arg(&[code.clone()]).query_async(&mut conn).await;
-
-    //     match redis_code {
-    //         Ok(_) => (),
-    //         Err(_) => return Err(async_graphql::Error::new("Wrong code".to_string())),
-    //     };
-
-    //     let _: () = cmd("DEL")
-    //         .arg(&[code])
-    //         .query_async(&mut conn)
-    //         .await
-    //         .map_err(|_| async_graphql::Error::new("Failed to delete the previous code"))?;
-
-    //     let new_code: String = rand::thread_rng()
-    //         .sample_iter(&Alphanumeric)
-    //         .take(6)
-    //         .map(char::from)
-    //         .collect();
-
-    //     let _: () = cmd("SET")
-    //         .arg(&[&new_code, &id.to_string()])
-    //         .query_async(&mut conn)
-    //         .await
-    //         .map_err(|_| async_graphql::Error::new("Failed to set new code in Redis"))?;
-
-    //     let _: () = cmd("EXPIRE")
-    //         .arg(&[&new_code, "300"])
-    //         .query_async(&mut conn)
-    //         .await
-    //         .map_err(|_| async_graphql::Error::new("Failed to set expiration for new code"))?;
-
-    //     return Ok(new_code);
-    // }
-
     async fn ban_user(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -1051,13 +889,13 @@ impl UserMutation {
 
         match caller {
             Some(u) => {
-                (if u.role == user::Role::Admin {
+                if u.role == user::Role::Admin {
                     ()
                 } else {
                     return Err(async_graphql::Error::new(
                         "You are not authorized to ban users".to_string(),
                     ));
-                })
+                }
             }
             None => return Err(async_graphql::Error::new("Wrong token".to_string())),
         };
@@ -1091,5 +929,80 @@ impl UserMutation {
         println!("Deleted {:?} chats", chat_delete_result);
 
         return Ok(updated_user);
+    }
+
+    async fn forgot_password(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        email: String,
+    ) -> Result<String, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+        let user_opt = User::find_by_email(email.clone()).one(&my_ctx.db).await?;
+        let user = user_opt.ok_or_else(|| async_graphql::Error::new("No user found with that email"))?;
+
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as usize;
+        let exp = now + 60 * 60; 
+        let mut claims = BTreeMap::new();
+        claims.insert("sub", json!("reset"));
+        claims.insert("email", json!(email));
+        claims.insert("exp", json!(exp));
+        let token = claims.sign_with_key(&my_ctx.email_key)
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+        let reset_link = format!("https://ad-ee.tech/reset_password/{}", token);
+        let payload = json!({
+            "from": { "email": "info@ad-ee.tech", "name": "Adee" },
+            "to": [{ "email": user.email.clone().unwrap() }],
+            "subject": "Reset your password",
+            "text": format!("Click here to reset your password: {}", reset_link),
+            "html": format!("<p>Click <a href=\"{}\">here</a> to reset your password.</p>", reset_link)
+        });
+        let client = reqwest::Client::new();
+        client.post("https://api.mailersend.com/v1/email")
+            .bearer_auth(&my_ctx.mailersend_token)
+            .json(&payload)
+            .send().await
+            .map_err(|e| async_graphql::Error::new(format!("Email send error: {}", e)))?;
+
+        Ok("Password reset email sent".to_string())
+    }
+
+    async fn reset_password(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        token: String,
+        new_password: String,
+    ) -> Result<String, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+        let claims: BTreeMap<String, serde_json::Value> = token.verify_with_key(&my_ctx.email_key)
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        if claims.get("sub").and_then(|v| v.as_str()) != Some("reset") {
+            return Err(async_graphql::Error::new("Invalid reset token"));
+        }
+        let exp = claims.get("exp").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as usize;
+        if exp < now {
+            return Err(async_graphql::Error::new("Reset token has expired"));
+        }
+        let email = claims.get("email").and_then(|v| v.as_str()).ok_or_else(|| async_graphql::Error::new("Token missing email"))?;
+        let user_opt = User::find_by_email(email.to_string()).one(&my_ctx.db).await?;
+        let user = user_opt.ok_or_else(|| async_graphql::Error::new("User not found"))?;
+
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let hash = argon2
+            .hash_password(new_password.as_bytes(), &salt)
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        let hash_string = hash.to_string();
+        let parsed = PasswordHash::new(&hash_string)
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+        let now_naive = Utc::now().naive_utc();
+        let mut active: user::ActiveModel = user.into();
+        active.password_hash = Set(Some(parsed.to_string()));
+        active.updated_at = Set(now_naive);
+        active.update(&my_ctx.db).await?;
+
+        Ok("Password has been reset successfully".to_string())
     }
 }
