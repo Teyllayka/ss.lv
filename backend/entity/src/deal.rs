@@ -11,7 +11,7 @@ pub struct Model {
     pub chat_id: i32,
     pub price: f32,
     pub created_at: NaiveDateTime,
-    pub request_id: i32,
+    pub requester_id: i32,
     pub status: String,
 }
 

@@ -299,6 +299,37 @@ impl UserQuery {
 
         Ok(user)
     }
+
+    async fn validate_reset_token(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        token: String,
+    ) -> Result<bool, async_graphql::Error> {
+        let my_ctx = ctx.data::<Context>().unwrap();
+        let claims: BTreeMap<String, Value> = token
+            .verify_with_key(&my_ctx.email_key)
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        if claims.get("sub").and_then(|v| v.as_str()) != Some("reset") {
+            return Ok(false);
+        }
+        let exp = claims.get("exp").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        if exp <= now {
+            return Ok(false);
+        }
+        let email = claims
+            .get("email")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| async_graphql::Error::new("Token missing email"))?;
+        let user_exists = User::find_by_email(email.to_string())
+            .one(&my_ctx.db)
+            .await?
+            .is_some();
+        Ok(user_exists)
+    }
 }
 
 #[derive(Default)]
@@ -354,7 +385,7 @@ impl UserMutation {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs() as usize;
-        let expiration = now + (ACCESS_EXPIRATION * 60); 
+        let expiration = now + (ACCESS_EXPIRATION * 60);
         let mut email_verif: BTreeMap<&str, Value> = BTreeMap::new();
         email_verif.insert("sub", json!("someone"));
         email_verif.insert(
@@ -901,10 +932,9 @@ impl UserMutation {
         };
 
         let target = user::Entity::find_by_id(user_id)
-        .one(&my_ctx.db)
-        .await?
-        .ok_or_else(|| async_graphql::Error::new("User not found"))?;
-
+            .one(&my_ctx.db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("User not found"))?;
 
         let active_user = user::ActiveModel {
             id: Set(user_id),
@@ -938,18 +968,23 @@ impl UserMutation {
     ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
         let user_opt = User::find_by_email(email.clone()).one(&my_ctx.db).await?;
-        let user = user_opt.ok_or_else(|| async_graphql::Error::new("No user found with that email"))?;
+        let user =
+            user_opt.ok_or_else(|| async_graphql::Error::new("No user found with that email"))?;
 
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as usize;
-        let exp = now + 60 * 60; 
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
+        let exp = now + 60 * 60;
         let mut claims = BTreeMap::new();
         claims.insert("sub", json!("reset"));
         claims.insert("email", json!(email));
         claims.insert("exp", json!(exp));
-        let token = claims.sign_with_key(&my_ctx.email_key)
+        let token = claims
+            .sign_with_key(&my_ctx.email_key)
             .map_err(|e| async_graphql::Error::new(e.to_string()))?;
 
-        let reset_link = format!("https://ad-ee.tech/reset_password/{}", token);
+        let reset_link = format!("https://ad-ee.tech/reset/{}", token);
         let payload = json!({
             "from": { "email": "info@ad-ee.tech", "name": "Adee" },
             "to": [{ "email": user.email.clone().unwrap() }],
@@ -958,10 +993,12 @@ impl UserMutation {
             "html": format!("<p>Click <a href=\"{}\">here</a> to reset your password.</p>", reset_link)
         });
         let client = reqwest::Client::new();
-        client.post("https://api.mailersend.com/v1/email")
+        client
+            .post("https://api.mailersend.com/v1/email")
             .bearer_auth(&my_ctx.mailersend_token)
             .json(&payload)
-            .send().await
+            .send()
+            .await
             .map_err(|e| async_graphql::Error::new(format!("Email send error: {}", e)))?;
 
         Ok("Password reset email sent".to_string())
@@ -974,18 +1011,27 @@ impl UserMutation {
         new_password: String,
     ) -> Result<String, async_graphql::Error> {
         let my_ctx = ctx.data::<Context>().unwrap();
-        let claims: BTreeMap<String, serde_json::Value> = token.verify_with_key(&my_ctx.email_key)
+        let claims: BTreeMap<String, serde_json::Value> = token
+            .verify_with_key(&my_ctx.email_key)
             .map_err(|e| async_graphql::Error::new(e.to_string()))?;
         if claims.get("sub").and_then(|v| v.as_str()) != Some("reset") {
             return Err(async_graphql::Error::new("Invalid reset token"));
         }
         let exp = claims.get("exp").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as usize;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize;
         if exp < now {
             return Err(async_graphql::Error::new("Reset token has expired"));
         }
-        let email = claims.get("email").and_then(|v| v.as_str()).ok_or_else(|| async_graphql::Error::new("Token missing email"))?;
-        let user_opt = User::find_by_email(email.to_string()).one(&my_ctx.db).await?;
+        let email = claims
+            .get("email")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| async_graphql::Error::new("Token missing email"))?;
+        let user_opt = User::find_by_email(email.to_string())
+            .one(&my_ctx.db)
+            .await?;
         let user = user_opt.ok_or_else(|| async_graphql::Error::new("User not found"))?;
 
         let salt = SaltString::generate(&mut OsRng);

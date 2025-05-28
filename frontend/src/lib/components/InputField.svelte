@@ -71,7 +71,7 @@
   >
   {#if e}
     <p
-      class="text-red-500 text-xs mt-1"
+      class="text-red-500 text-xs mt-1 text-left"
       in:fly={{ y: 10, duration: 300, easing: cubicOut }}
     >
       {capitalizeFirstLetter(e?.message) || ""}

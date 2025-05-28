@@ -92,6 +92,20 @@ export let contactSchema = object({
   subject: string().required(),
 });
 
+export let resetPasswordSchema = object({
+  password: string()
+    .required("Password is required")
+    .min(8, "Password must be at least 8 characters long"),
+
+  confirmPassword: string()
+    .oneOf([ref("password")], "Passwords must match")
+    .required("Please confirm your password"),
+});
+
+export let forgotPasswordSchema = object({
+  email: string().email("Invalid email format").required("Email is required"),
+});
+
 export let advertCarSchema = object({
   engineFuelType: string().required(),
   engineVolume: number().required(),

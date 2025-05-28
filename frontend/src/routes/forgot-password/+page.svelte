@@ -3,7 +3,6 @@
   import { cubicOut } from "svelte/easing";
   import * as m from "$lib/paraglide/messages.js";
 
-  let email = "";
   let isLoading = false;
   let isSubmitted = false;
 
@@ -26,7 +25,16 @@
     </h2>
 
     {#if !isSubmitted}
-      <form method="POST" use:enhance class="space-y-6">
+      <form
+        method="POST"
+        use:enhance={() => {
+          return async ({ update }) => {
+            isSubmitted = true;
+            update();
+          };
+        }}
+        class="space-y-6"
+      >
         <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
 
         <div
@@ -98,7 +106,7 @@
           {m.check_your_email()}
         </h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {m.reset_link({ email })}
+          {m.reset_link()}
         </p>
       </div>
     {/if}
