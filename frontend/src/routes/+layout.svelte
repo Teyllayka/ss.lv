@@ -12,7 +12,6 @@
 
   export let data: LayoutData;
 
-  const region = writable("Select Region");
   const areUnreadMessages = writable({
     unreadMessages: 0,
   });
@@ -44,10 +43,6 @@
       );
     }
 
-    const storedRegion = localStorage.getItem("region");
-    region.set(storedRegion || "Select Region");
-    region.subscribe((value) => localStorage.setItem("region", value));
-
     const storedTheme = localStorage.getItem("theme");
     let isDarkMode = false;
     if (storedTheme === "dark") {
@@ -56,7 +51,6 @@
     }
   });
 
-  setContext("region", region);
   setContext("location", location);
   setContext("areUnreadMessages", areUnreadMessages);
 </script>

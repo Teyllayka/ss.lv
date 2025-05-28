@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { getContext, onMount } from "svelte";
+  import { getContext, onDestroy, onMount, tick } from "svelte";
   import { graphql } from "$houdini";
   import Advert from "$lib/components/Advert.svelte";
   import type { Writable } from "svelte/store";
+  import { categories, categoryFields } from "$lib/consts.js";
+  import { page } from "$app/stores";
+  import { browser } from "$app/environment";
+  import { afterNavigate } from "$app/navigation";
 
   const advertsQuery = graphql(`
     query SearchAdverts(
@@ -53,36 +57,87 @@
     }
   `);
 
-  type Category = {
-    id: string;
-    name: string;
-    fields: AdvertField[];
-  };
-
-  type AdvertField = {
-    id: string;
-    name: string;
-    type: "text" | "number" | "boolean";
-  };
-
-  let categories: Category[] = [];
-  let selectedCategory: Category | null = null;
-  let minPrice = 0;
-  let maxPrice = 1000;
-  let locationRange = 50;
+  let selectedCategory: string = "";
   let searchTerm = "";
+  let minPrice = 0;
+  let maxPrice: any = null;
   let minRating = 0;
-  let customFields: Record<string, string | number | boolean> = {};
+  let locationRange = 50;
   let sortOption = "price";
   let sortOrder = "asc";
   let offset = 0;
   let adverts: Advert[] = [];
+  let customFields: Record<string, string | number | boolean> = {};
+  let initialized = false;
+  let rangeDebounceTimeout: ReturnType<typeof setTimeout>;
+
+  onDestroy(() => {
+    clearTimeout(rangeDebounceTimeout);
+  });
 
   const locationStore = getContext<Writable<[number, number]>>("location");
 
+  function parseQueryParams() {
+    const params = $page.url.searchParams;
+    selectedCategory = params.get("category") || "";
+    searchTerm = params.get("title") || "";
+    minPrice = params.has("minPrice")
+      ? Number(params.get("minPrice"))
+      : minPrice;
+    maxPrice = params.has("maxPrice")
+      ? Number(params.get("maxPrice"))
+      : maxPrice;
+    minRating = params.has("minRating")
+      ? Number(params.get("minRating"))
+      : minRating;
+    locationRange = params.has("locationRange")
+      ? Number(params.get("locationRange"))
+      : locationRange;
+    sortOption = params.get("sortField") || sortOption;
+    sortOrder = params.get("sortOrder") || sortOrder;
+    customFields = {};
+    if (selectedCategory && categoryFields[selectedCategory]) {
+      categoryFields[selectedCategory].forEach((field) => {
+        const value = params.get(field.name);
+        customFields[field.name] =
+          value != null
+            ? field.type === "number"
+              ? Number(value)
+              : value
+            : "";
+      });
+    }
+  }
+
+  function updateQueryParams() {
+    const params = new URLSearchParams();
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (searchTerm) params.set("title", searchTerm);
+    if (minPrice) params.set("minPrice", String(minPrice));
+    if (maxPrice) params.set("maxPrice", String(maxPrice));
+    if (minRating) params.set("minRating", String(minRating));
+    if (locationRange !== 50)
+      params.set("locationRange", String(locationRange));
+    if (sortOption !== "price") params.set("sortField", sortOption);
+    if (sortOrder !== "asc") params.set("sortOrder", sortOrder);
+    if (selectedCategory && categoryFields[selectedCategory]) {
+      categoryFields[selectedCategory].forEach((field) => {
+        const val = customFields[field.name];
+        if (val !== "" && val != null) params.set(field.name, String(val));
+      });
+    }
+    if (browser) {
+      history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}?${params.toString()}`,
+      );
+    }
+  }
+
   function getVariables() {
     return {
-      category: selectedCategory ? selectedCategory.id : null,
+      category: selectedCategory || null,
       offset,
       title: searchTerm,
       minPrice,
@@ -90,63 +145,70 @@
       minRating,
       sortField: sortOption,
       sortOrder,
-      centerLat: $locationStore[0] === 0 ? null : $locationStore[0],
-      centerLon: $locationStore[1] === 0 ? null : $locationStore[1],
+      centerLat: $locationStore[0] || null,
+      centerLon: $locationStore[1] || null,
       locationRange,
-      customFields,
+      customFields: Object.keys(customFields).length ? customFields : null,
     };
   }
 
   async function performSearch() {
+    updateQueryParams();
     const result = await advertsQuery.fetch({ variables: getVariables() });
-    if (result.data && result.data.searchAdverts) {
-      adverts = result.data.searchAdverts;
-    } else {
-      adverts = [];
-    }
+    adverts = result.data?.searchAdverts || [];
   }
-
-  onMount(() => {
-    categories = [
-      {
-        id: "1",
-        name: "Electronics",
-        fields: [
-          { id: "brand", name: "Brand", type: "text" },
-          { id: "condition", name: "Condition", type: "text" },
-        ],
-      },
-      {
-        id: "2",
-        name: "Vehicles",
-        fields: [
-          { id: "make", name: "Make", type: "text" },
-          { id: "model", name: "Model", type: "text" },
-          { id: "year", name: "Year", type: "number" },
-        ],
-      },
-    ];
-
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get("q");
-    if (q) {
-      searchTerm = q;
-      performSearch();
-    }
-  });
 
   function handleCategoryChange(event: Event) {
-    const categoryId = (event.target as HTMLSelectElement).value;
-    selectedCategory = categories.find((c) => c.id === categoryId) || null;
+    selectedCategory = (event.target as HTMLSelectElement).value;
     customFields = {};
+    if (selectedCategory && categoryFields[selectedCategory]) {
+      categoryFields[selectedCategory].forEach((field) => {
+        customFields[field.name] = "";
+      });
+    }
   }
 
-  function handleCustomFieldChange(field: AdvertField, event: Event) {
+  function handleCustomFieldChange(
+    field: { name: any; type: string },
+    event: Event,
+  ) {
     const value = (event.target as HTMLInputElement).value;
     customFields = {
       ...customFields,
-      [field.id]: field.type === "number" ? Number(value) : value,
+      [field.name]: field.type === "number" ? Number(value) : value,
     };
+  }
+
+  onMount(async () => {
+    parseQueryParams();
+    await tick();
+    performSearch();
+    initialized = true;
+  });
+
+  afterNavigate(async () => {
+    parseQueryParams();
+    await tick();
+  });
+
+  $: if (initialized) {
+    selectedCategory;
+    searchTerm;
+    minPrice;
+    maxPrice;
+    minRating;
+    sortOption;
+    sortOrder;
+    customFields;
+    performSearch();
+  }
+
+  $: if (initialized) {
+    const _ = locationRange;
+    clearTimeout(rangeDebounceTimeout);
+    rangeDebounceTimeout = setTimeout(() => {
+      performSearch();
+    }, 300);
   }
 </script>
 
@@ -162,110 +224,90 @@
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
       Search Adverts
     </h1>
-
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <aside class="md:col-span-1">
         <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
             Filters
           </h2>
-
           <div class="mb-4">
-            <label
-              for="category"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Category
-            </label>
+            <label for="category" class="block mb-2">Category</label>
             <select
               id="category"
-              class="w-full p-2 border border-gray-300 rounded-md"
               on:change={handleCategoryChange}
+              bind:value={selectedCategory}
+              class="w-full p-2 border rounded-md"
             >
               <option value="">All Categories</option>
-              {#each categories as category}
-                <option value={category.id}>{category.name}</option>
+              {#each categories as cat}
+                <option value={cat.value}>{cat.label}</option>
               {/each}
             </select>
           </div>
-
-          {#if selectedCategory}
-            {#each selectedCategory.fields as field}
+          {#if selectedCategory && categoryFields[selectedCategory]}
+            {#each categoryFields[selectedCategory] as field}
               <div class="mb-4">
-                <label
-                  for={field.id}
-                  class="block mb-2 font-medium text-gray-900 dark:text-white"
-                >
-                  {field.name}
-                </label>
-                <input
-                  type={field.type === "number" ? "number" : "text"}
-                  id={field.id}
-                  class="w-full p-2 border border-gray-300 rounded-md"
-                  on:input={(event) => handleCustomFieldChange(field, event)}
-                />
+                <label for={field.name} class="block mb-2">{field.label}</label>
+                {#if field.type === "select"}
+                  <select
+                    id={field.name}
+                    on:change={(e) => handleCustomFieldChange(field, e)}
+                    class="w-full p-2 border rounded-md"
+                  >
+                    <option value="">Any</option>
+                    {#each field.options as option}
+                      <option value={option}>{option}</option>
+                    {/each}
+                  </select>
+                {:else}
+                  <input
+                    id={field.name}
+                    type={field.type}
+                    class="w-full p-2 border rounded-md"
+                    on:input={(e) => handleCustomFieldChange(field, e)}
+                    bind:value={customFields[field.name]}
+                  />
+                {/if}
               </div>
             {/each}
           {/if}
-
           <div class="mb-4">
-            <label
-              for="minPrice"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Min Price
-            </label>
+            <label for="minPrice" class="block mb-2">Min Price</label>
             <input
-              type="number"
               id="minPrice"
+              type="number"
               bind:value={minPrice}
-              class="w-full p-2 border border-gray-300 rounded-md"
+              class="w-full p-2 border rounded-md"
             />
           </div>
-
           <div class="mb-4">
-            <label
-              for="maxPrice"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Max Price
-            </label>
+            <label for="maxPrice" class="block mb-2">Max Price</label>
             <input
-              type="number"
               id="maxPrice"
+              type="number"
               bind:value={maxPrice}
-              class="w-full p-2 border border-gray-300 rounded-md"
+              class="w-full p-2 border rounded-md"
             />
           </div>
-
           <div class="mb-4">
-            <label
-              for="minRating"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Min Rating
-            </label>
+            <label for="minRating" class="block mb-2">Min Rating</label>
             <input
-              type="number"
               id="minRating"
-              bind:value={minRating}
+              type="number"
               min="0"
               max="5"
               step="0.1"
-              class="w-full p-2 border border-gray-300 rounded-md"
+              bind:value={minRating}
+              class="w-full p-2 border rounded-md"
             />
           </div>
-
           <div class="mb-4">
-            <label
-              for="locationRange"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
+            <label for="locationRange" class="block mb-2"
+              >Location Range (km): {locationRange}</label
             >
-              Location Range (km): {locationRange}
-            </label>
             <input
-              type="range"
               id="locationRange"
+              type="range"
               min="0"
               max="2000"
               step="10"
@@ -273,36 +315,24 @@
               class="w-full"
             />
           </div>
-
           <div class="mb-4">
-            <label
-              for="sortOption"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Sort By
-            </label>
+            <label for="sortOption" class="block mb-2">Sort By</label>
             <select
               id="sortOption"
               bind:value={sortOption}
-              class="w-full p-2 border border-gray-300 rounded-md"
+              class="w-full p-2 border rounded-md"
             >
               <option value="price">Price</option>
               <option value="rating">Rating</option>
               <option value="dateCreated">Date Created</option>
             </select>
           </div>
-
           <div class="mb-4">
-            <label
-              for="sortOrder"
-              class="block mb-2 font-medium text-gray-900 dark:text-white"
-            >
-              Sort Order
-            </label>
+            <label for="sortOrder" class="block mb-2">Sort Order</label>
             <select
               id="sortOrder"
               bind:value={sortOrder}
-              class="w-full p-2 border border-gray-300 rounded-md"
+              class="w-full p-2 border rounded-md"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -310,26 +340,22 @@
           </div>
         </div>
       </aside>
-
       <div class="md:col-span-3">
         <div class="mb-6 flex gap-2">
           <input
             type="text"
             placeholder="Search adverts..."
             bind:value={searchTerm}
-            class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-800 dark:text-white"
+            class="w-full p-2 border rounded-md"
           />
           <button
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            on:click={performSearch}
+            class="px-4 py-2 bg-blue-600 text-white rounded-md"
+            on:click={performSearch}>Search</button
           >
-            Search
-          </button>
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {#if adverts.length === 0}
-            <div class="col-span-full text-center py-4 dark:text-gray-400">
+            <div class="col-span-full text-center py-4">
               No adverts found matching your criteria.
             </div>
           {:else}

@@ -65,7 +65,6 @@
   }
   const areUnreadMessages: Writable<UnreadMessages> =
     getContext("areUnreadMessages");
-  const region: Writable<string> = getContext("region");
   const locationStore: Writable<[number, number]> = getContext("location");
 
   let isMenuOpen = false;
@@ -86,9 +85,7 @@
   }
 
   async function handleSearch() {
-    const url = `/search?q=${encodeURIComponent(
-      searchQuery.trim(),
-    )}&region=${encodeURIComponent($region)}`;
+    const url = `/search?title=${encodeURIComponent(searchQuery.trim())}`;
     await goto(url, { keepFocus: true });
     isSearchExpanded = false;
   }
@@ -209,6 +206,27 @@
   function confirmLocation() {
     showLocationModal = false;
     mapInitialized = false;
+  }
+
+  function resetLocation() {
+    if (!browser || !navigator.geolocation) {
+      console.warn("Geolocation not available");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude: lat, longitude: lon } = coords;
+        locationStore.set([lat, lon]);
+        localStorage.setItem("location", JSON.stringify([lat, lon]));
+        if (marker) {
+          marker.setLatLng([lat, lon]);
+          map.panTo([lat, lon]);
+        }
+      },
+      (err) => {
+        console.error("Failed to get browser location:", err);
+      },
+    );
   }
 </script>
 
@@ -555,6 +573,13 @@
           class="w-full h-64 rounded overflow-hidden"
         ></div>
         <div class="mt-4 flex justify-end space-x-2">
+          <button
+            on:click={resetLocation}
+            class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            type="button"
+          >
+            Reset to browser location
+          </button>
           <button
             on:click={() => (showLocationModal = false)}
             class="px-4 py-2 bg-gray-300 text-black rounded"
