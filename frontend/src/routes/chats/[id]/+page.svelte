@@ -219,7 +219,7 @@
         photos = photos.filter((_, i) => i !== index);
     }
 
-    let sending = false; 
+    let sending = false;
 </script>
 
 <svelte:window bind:innerHeight={windowHeight} />
@@ -649,6 +649,7 @@
                                     photos = [];
                                     photoFiles = [];
                                     photoInput.value = "";
+                                    sending = false;
                                 }
                                 update();
                             };
