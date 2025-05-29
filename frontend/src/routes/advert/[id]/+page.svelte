@@ -175,13 +175,13 @@
   </div>
 `;
 
-L.marker([advert.lat, advert.lon])
-  .addTo(map)
-  .bindPopup(popupContent, {
-    maxWidth: 200,
-    className: 'custom-popup'
-  })
-  .openPopup();
+    L.marker([advert.lat, advert.lon])
+      .addTo(map)
+      .bindPopup(popupContent, {
+        maxWidth: 200,
+        className: "custom-popup",
+      })
+      .openPopup();
   });
 
   onDestroy(() => {
@@ -502,24 +502,30 @@ L.marker([advert.lat, advert.lon])
             <div class="md:w-1/2 p-6 space-y-6">
               <div class="space-y-4">
                 <div class="flex flex-col flex-1 min-w-0">
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white truncate">
+                  <h1
+                    class="text-3xl font-bold text-gray-900 dark:text-white truncate"
+                  >
                     {advert.title}
                   </h1>
                   {#if !advert.available}
-                    <div class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit">
+                    <div
+                      class="inline-flex items-center mt-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium w-fit"
+                    >
                       <CheckCircle class="w-4 h-4 mr-1" />
                       {m.sold()}
                     </div>
                   {:else}
-                    <div class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit">
+                    <div
+                      class="inline-flex items-center mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium w-fit"
+                    >
                       <Tag class="w-4 h-4 mr-1" />
                       {m.available()}
                     </div>
                   {/if}
                 </div>
-              
+
                 <div class="flex space-x-4">
-                  {#if $user.id == advert.user.id}
+                  {#if $user.id == advert.user.id && advert.available}
                     <button
                       on:click={toggleEditMode}
                       class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
@@ -528,7 +534,7 @@ L.marker([advert.lat, advert.lon])
                       {m.edit()}
                     </button>
                   {/if}
-                  {#if $user.role == "ADMIN" || $user.role == "MODERATOR" || $user.id == advert.user.id}
+                  {#if $user.role == "ADMIN" || $user.role == "MODERATOR" || ($user.id == advert.user.id && advert.available)}
                     <button
                       on:click={handleDelete}
                       class="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
@@ -539,7 +545,6 @@ L.marker([advert.lat, advert.lon])
                   {/if}
                 </div>
               </div>
-              
 
               <p
                 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
@@ -715,7 +720,7 @@ L.marker([advert.lat, advert.lon])
                     {/if}
                   </div>
                   <div class="flex items-center">
-                    {#each renderStars(advert.review.rating) as star}
+                    {#each renderStars(advert.user.rating) as star}
                       <Star
                         class={star.isFilled
                           ? "text-yellow-400 fill-current"
