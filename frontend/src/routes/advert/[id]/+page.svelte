@@ -720,7 +720,7 @@
                     {/if}
                   </div>
                   <div class="flex items-center">
-                    {#each renderStars(advert.user.rating) as star}
+                    {#each renderStars(advert.review.rating) as star}
                       <Star
                         class={star.isFilled
                           ? "text-yellow-400 fill-current"
