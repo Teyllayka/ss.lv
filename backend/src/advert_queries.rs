@@ -54,23 +54,17 @@ impl AdvertQuery {
         updated_advert.specs = specs;
 
         let mut is_favorited = false;
-        let mut user_rating = 0.0;
-
         if let Some(token) = ctx.data_opt::<Token>() {
             if let Ok(claims) = verify_access_token(token.0.clone(), &my_ctx.access_key) {
                 let req_user_id: i32 =
                     if let Some(id_str) = claims.get("id").and_then(|v| v.as_str()) {
-                        id_str.parse().map_err(|_| {
-                            async_graphql::Error::new(
-                                "Invalid user ID in token: failed to parse string",
-                            )
-                        })?
+                        id_str
+                            .parse()
+                            .map_err(|_| async_graphql::Error::new("Invalid user ID in token"))?
                     } else if let Some(id_num) = claims.get("id").and_then(|v| v.as_i64()) {
                         id_num as i32
                     } else {
-                        return Err(async_graphql::Error::new(
-                            "Invalid user ID in token: missing id",
-                        ));
+                        return Err(async_graphql::Error::new("Invalid user ID in token"));
                     };
 
                 is_favorited = Favorites::find()
@@ -79,25 +73,31 @@ impl AdvertQuery {
                     .one(&my_ctx.db)
                     .await?
                     .is_some();
-
-                let user_reviews = Reviews::find()
-                    .filter(reviews::Column::AdvertId.eq(id))
-                    .all(&my_ctx.db)
-                    .await?;
-
-                let (total, count) = user_reviews.iter().fold((0.0, 0), |acc, review| {
-                    (acc.0 + review.rating as f32, acc.1 + 1)
-                });
-
-                if count > 0 {
-                    user_rating = total / count as f32;
-                }
             }
         }
-
         updated_advert.is_favorited = is_favorited;
         updated_advert.user = user.clone();
-        updated_advert.user.rating = user_rating;
+
+        let seller_advert_ids = Advert::find()
+            .filter(advert::Column::UserId.eq(user.id))
+            .select_only()
+            .column(advert::Column::Id)
+            .into_query();
+
+        let seller_reviews = Reviews::find()
+            .filter(reviews::Column::AdvertId.is_in_subquery(seller_advert_ids))
+            .all(&my_ctx.db)
+            .await?;
+
+        let (total_seller, count_seller) = seller_reviews.iter().fold((0.0, 0), |acc, review| {
+            (acc.0 + review.rating as f32, acc.1 + 1)
+        });
+        let seller_rating = if count_seller > 0 {
+            total_seller / count_seller as f32
+        } else {
+            0.0
+        };
+        updated_advert.user.rating = seller_rating;
 
         let review = Reviews::find()
             .filter(reviews::Column::AdvertId.eq(id))
@@ -111,7 +111,6 @@ impl AdvertQuery {
                 .ok_or_else(|| async_graphql::Error::new("User not found"))?;
 
             review.user = review_user;
-
             updated_advert.review = Some(review.clone());
         } else {
             updated_advert.review = None;
@@ -535,7 +534,7 @@ impl AdvertQuery {
                         adverts.sort_by(|a, b| b.title.cmp(&a.title));
                     }
                 }
-                _ => {} 
+                _ => {}
             }
         }
 
