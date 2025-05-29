@@ -85,7 +85,7 @@ impl AdvertQuery {
             .into_query();
 
         let seller_reviews = Reviews::find()
-            .filter(reviews::Column::AdvertId.is_in_subquery(seller_advert_ids))
+            .filter(reviews::Column::AdvertId.in_subquery(seller_advert_ids))
             .all(&my_ctx.db)
             .await?;
 
