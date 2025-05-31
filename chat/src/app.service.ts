@@ -179,6 +179,14 @@ export class AppService {
       throw new UnauthorizedException('Advert not found');
     }
 
+
+    const advertOwner = await this.db
+      .selectFrom('user')
+      .selectAll()
+      .where('user.id', '=', advert.user_id)
+      .executeTakeFirst();
+    
+
     if (
       advert.user_id !== parseInt(s.user.id) &&
       chat.participant_id !== parseInt(s.user.id)
@@ -205,7 +213,7 @@ export class AppService {
       .execute();
 
     const partnerId =
-      advert.user_id === s.user.id ? chat.participant_id : advert.user_id;
+      advert.user_id !== s.user.id ? chat.participant_id : advert.user_id;
 
     const partner = await this.db
       .selectFrom('user')
@@ -241,7 +249,10 @@ export class AppService {
             voteCount,
           }
         : null,
-      advert,
+      advert: {
+        ...advert,
+        owner: advertOwner
+      },
       chat: chatInfo,
     };
   }
@@ -249,7 +260,6 @@ export class AppService {
   async getChats(s) {
     const userId = s.id;
 
-    // First, get all the chats with their related data
     const results = await this.db
       .selectFrom('chat')
       .leftJoin('advert', 'advert.id', 'chat.advert_id')

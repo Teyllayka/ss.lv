@@ -35,7 +35,6 @@
     let showDealModal = false;
     let dealPrice: number | null = null;
     let showAdditionalInfo = false;
-    let showActionsMenu = false;
     let photos: string[] = [];
     let photoFiles: File[] = [];
     let photoInput: HTMLInputElement;
@@ -103,12 +102,23 @@
     }
 
     function getOtherUserInfo() {
-        return {
-            name: partner.name,
-            surname: partner.surname,
-            avatar: partner.avatar_url,
-        };
+        console.log("item", advert, partner, $user?.id);
+        if ($user?.id === advert.user_id) {
+            return {
+                name: partner.name,
+                surname: partner.surname,
+                avatar: partner.avatar_url,
+            };
+        } else {
+            return {
+                id: advert.owner.id,
+                name: advert.owner.name,
+                surname: advert.owner.surname,
+                avatar_url: advert.owner.avatar_url,
+            };
+        }
     }
+
     function toggleAdditionalInfo() {
         showAdditionalInfo = !showAdditionalInfo;
     }
@@ -248,6 +258,7 @@
             </div>
         {:else if advert}
             {@const otherUser = getOtherUserInfo()}
+            {JSON.stringify(otherUser)}
 
             <div class="bg-white dark:bg-gray-800 shadow-md p-3 flex flex-col">
                 <div class="flex items-center justify-between">

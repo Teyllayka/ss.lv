@@ -13,12 +13,10 @@
     users: {
       today: 0,
       total: 0,
-      percentChange: 0,
     },
     adverts: {
       today: 0,
       total: 0,
-      percentChange: 0,
     },
     isLoading: true,
   };
@@ -31,12 +29,10 @@
         users: {
           today: $stats.data?.stats.todayUserCount || 0,
           total: $stats.data?.stats.userCount || 0,
-          percentChange: 8.2,
         },
         adverts: {
           today: $stats.data?.stats.todayAdvertCount || 0,
           total: $stats.data?.stats.advertCount || 0,
-          percentChange: 12.5,
         },
         isLoading: false,
       };
@@ -101,11 +97,6 @@
                   <p class="text-3xl font-bold text-gray-900 dark:text-white">
                     {formatNumber(dataStats.users.today)}
                   </p>
-                  <div class="ml-2 mb-1 flex items-center text-green-500">
-                    <TrendingUp class="w-4 h-4 mr-1" />
-                    <span class="text-sm">{dataStats.users.percentChange}%</span
-                    >
-                  </div>
                 </div>
               </div>
 
@@ -155,12 +146,6 @@
                   <p class="text-3xl font-bold text-gray-900 dark:text-white">
                     {formatNumber(dataStats.adverts.today)}
                   </p>
-                  <div class="ml-2 mb-1 flex items-center text-green-500">
-                    <TrendingUp class="w-4 h-4 mr-1" />
-                    <span class="text-sm"
-                      >{dataStats.adverts.percentChange}%</span
-                    >
-                  </div>
                 </div>
               </div>
 

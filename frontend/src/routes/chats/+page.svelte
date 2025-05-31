@@ -172,10 +172,6 @@
         });
     }
 
-    function navigateToChat(chatId: number) {
-        goto(`/chats/${chatId}`);
-    }
-
     function isCurrentUserOwner(item: StructuredChat): boolean {
         return $user?.id === item.advert.owner.id;
     }

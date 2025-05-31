@@ -21,7 +21,6 @@ export async function load({ cookies, params, fetch }: any) {
   const data = await res.json();
 
   const duration = Date.now() - start;
-  console.log(`load() for chat ${params.id} took ${duration}ms`);
 
   return {
     ...data,
