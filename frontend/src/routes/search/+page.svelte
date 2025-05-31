@@ -136,7 +136,6 @@
   }
 
   function getVariables() {
-    // build a new object containing only fields with non‐empty values
     const filteredCustom: Record<string, string | number | boolean> = {};
     Object.keys(customFields).forEach((key) => {
       const val = customFields[key];
