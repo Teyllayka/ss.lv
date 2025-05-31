@@ -48,6 +48,10 @@
         );
 
         allAdverts = [...allAdverts, ...newAdverts];
+
+        if (newAdverts.length < 12) {
+          isMore = false;
+        }
       }
     } catch (error) {
       console.error("Error loading more adverts:", error);
