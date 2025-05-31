@@ -32,8 +32,6 @@
   let isLoadingMore = false;
   let isMore = true;
 
-  $: isMore = allAdverts.length > 0 && allAdverts.length % 12 === 0;
-
   const loadMore = async () => {
     if (isLoadingMore || !$adverts.data) return;
     if (!isMore) return;
@@ -79,7 +77,8 @@
     if (
       scrollPosition > pageHeight * 0.6 &&
       !isLoadingMore &&
-      !$adverts.fetching
+      !$adverts.fetching &&
+      isMore
     ) {
       loadMore();
     }
