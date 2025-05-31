@@ -4,6 +4,7 @@
   import Advert from "$lib/components/Advert.svelte";
   import { browser } from "$app/environment";
   import * as m from "$lib/paraglide/messages.js";
+  import { user } from "$lib/userStore.js";
 
   const adverts = graphql(`
     query Adverts($offset: Int!) @cache(policy: NoCache) {
@@ -31,6 +32,13 @@
   let allAdverts: any[] = [];
   let isLoadingMore = false;
   let isMore = true;
+
+  $: if (!$user.isLoggedIn) {
+    allAdverts = allAdverts.map((advert) => ({
+      ...advert,
+      isFavorited: false,
+    }));
+  }
 
   const loadMore = async () => {
     if (isLoadingMore || !$adverts.data) return;
@@ -86,17 +94,23 @@
 
   const throttledScroll = throttle(handleScroll, 200);
 
-  onMount(() => {
-    (async () => {
-      try {
-        await adverts.fetch({ variables: { offset: 0 } });
-        if ($adverts.data?.getAdverts) {
-          allAdverts = $adverts.data.getAdverts;
-        }
-      } catch (err) {
-        console.error("Error fetching adverts on mount:", err);
+  async function loadInitial() {
+    try {
+      await adverts.fetch({ variables: { offset: 0 } });
+      if ($adverts.data?.getAdverts) {
+        allAdverts = $adverts.data.getAdverts;
       }
-    })();
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        setTimeout(loadInitial, 100);
+        return;
+      }
+      console.error("Error fetching adverts on mount:", err);
+    }
+  }
+
+  onMount(() => {
+    loadInitial();
 
     if (browser) {
       window.addEventListener("scroll", throttledScroll);

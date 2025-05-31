@@ -26,7 +26,7 @@
     userPage = false,
   }: Props = $props();
 
-  let isFavorited = $state(advert.isFavorited);
+  let isFavorited = $derived(advert.isFavorited as boolean);
 
   let allPhotos = [advert.photoUrl, ...(advert.additionalPhotos || [])];
 
