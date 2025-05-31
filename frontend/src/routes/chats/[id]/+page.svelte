@@ -102,7 +102,6 @@
     }
 
     function getOtherUserInfo() {
-        console.log("item", advert, partner, $user?.id);
         if ($user?.id === advert.user_id) {
             return {
                 name: partner.name,
@@ -258,8 +257,6 @@
             </div>
         {:else if advert}
             {@const otherUser = getOtherUserInfo()}
-            {JSON.stringify(otherUser)}
-
             <div class="bg-white dark:bg-gray-800 shadow-md p-3 flex flex-col">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
