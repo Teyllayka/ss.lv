@@ -136,6 +136,15 @@
   }
 
   function getVariables() {
+    // build a new object containing only fields with non‐empty values
+    const filteredCustom: Record<string, string | number | boolean> = {};
+    Object.keys(customFields).forEach((key) => {
+      const val = customFields[key];
+      if (val !== "" && val != null) {
+        filteredCustom[key] = val;
+      }
+    });
+
     return {
       category: selectedCategory || null,
       offset,
@@ -148,7 +157,7 @@
       centerLat: $locationStore[0] || null,
       centerLon: $locationStore[1] || null,
       locationRange,
-      customFields: Object.keys(customFields).length ? customFields : null,
+      customFields: Object.keys(filteredCustom).length ? filteredCustom : null,
     };
   }
 
