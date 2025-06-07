@@ -121,7 +121,11 @@ export let advertCarSchema = object({
   brand: string().required(),
   model: string().required(),
   VIN: string().length(17, "VIN must be 17 characters").required(),
-  registrationDate: number().max(4).required(),
+  registrationDate: number()
+  .integer('Registration year must be an integer')
+  .min(1000, 'Year must be a 4-digit number')
+  .max(9999, 'Year must be a 4-digit number')
+  .required('Registration date is required'),
 });
 
 export let advertElectronicsSchema = object({
@@ -129,7 +133,11 @@ export let advertElectronicsSchema = object({
   modelNumber: string().required(),
   serialNumber: string().required(),
   warrantyPeriod: string().required(),
-  releaseDate: number().max(4).required(),
+  releaseDate: number()
+  .integer('Release Date must be an integer')
+  .min(1000, 'Year must be a 4-digit number')
+  .max(9999, 'Year must be a 4-digit number')
+  .required('Release date is required'),
   condition: string()
     .oneOf(["New","Like New","Used","For Parts"],"Invalid condition")
     .required(),
