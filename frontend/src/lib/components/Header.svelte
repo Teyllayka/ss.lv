@@ -96,6 +96,10 @@
   let marker: any = null;
   let mapInitialized = false;
 
+  $: if ($user.isLoggedIn) {
+    socket.connect();
+  }
+
   onMount(() => {
     const saved = localStorage.getItem("location");
     if (saved) {
