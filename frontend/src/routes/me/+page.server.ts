@@ -87,6 +87,12 @@ query me {
 
   console.log("me", me);
 
+  if(me.errors && me.errors.length > 0) {
+    event.cookies.delete("accessToken", { path: "/" });
+    event.cookies.delete("refreshToken", { path: "/" });
+    return redirect(302, "/login");
+  }
+
   return {
     me,
   }

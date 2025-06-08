@@ -549,7 +549,7 @@
               <p
                 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
               >
-                ${advert.price.toFixed(2)}
+                €{advert.price.toFixed(2)}
               </p>
               <p class="text-gray-600 dark:text-gray-400 mb-4 break-words">
                 {advert.description}
