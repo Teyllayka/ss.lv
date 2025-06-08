@@ -97,6 +97,7 @@
   let mapInitialized = false;
 
   $: if ($user.isLoggedIn) {
+    socket.close();
     socket.connect();
   }
 
