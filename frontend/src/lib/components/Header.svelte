@@ -96,9 +96,19 @@
   let marker: any = null;
   let mapInitialized = false;
 
+  function handleNewMessage(data: any) {
+    if (!$page.url.pathname.includes(`/chats${data.chat_id}`)) {
+      areUnreadMessages.update((prev) => ({
+        unreadMessages: prev.unreadMessages + 1,
+      }));
+    }
+  }
+
   $: if ($user.isLoggedIn) {
+    socket.off("user-" + $user.id, handleNewMessage);
     socket.close();
     socket.connect();
+    socket.on("user-" + $user.id, handleNewMessage);
   }
 
   onMount(() => {
@@ -136,23 +146,10 @@
       }
     });
 
-    csrfToken = "aa";
-
-    function handleNewMessage(data: any) {
-      if (!$page.url.pathname.includes(`/chats${data.chat_id}`)) {
-        areUnreadMessages.update((prev) => ({
-          unreadMessages: prev.unreadMessages + 1,
-        }));
-      }
-    }
-
-    socket.on("user-" + $user.id, handleNewMessage);
-
     fetch("/api/are-unread", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${csrfToken}`,
       },
     })
       .then((response) => response.json())
