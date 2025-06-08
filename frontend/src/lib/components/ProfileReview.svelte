@@ -68,7 +68,7 @@
             {advert.title}
           </h4>
           <p class="text-xs text-gray-500 dark:text-gray-400">
-            ${advert.price.toFixed(2)}
+            €{advert.price.toFixed(2)}
           </p>
         </div>
       </div>

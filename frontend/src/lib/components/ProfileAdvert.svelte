@@ -37,7 +37,7 @@
     </h3>
     <div class="flex justify-between items-center">
       <p class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-        ${advert.price.toFixed(2)}
+        €{advert.price.toFixed(2)}
       </p>
 
       {#if advert.available}

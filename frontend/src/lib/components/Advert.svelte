@@ -103,14 +103,14 @@
     <div class="flex items-end mb-2">
       {#if advert.price !== advert.oldPrice}
         <p class="text-xl font-bold text-green-600 dark:text-green-400 mr-2">
-          ${advert.price.toFixed(2)}
+          €{advert.price.toFixed(2)}
         </p>
         <p class="text-lg text-gray-500 dark:text-gray-400 line-through">
           ${advert.oldPrice.toFixed(2)}
         </p>
       {:else}
         <p class="text-xl font-bold text-gray-900 dark:text-white">
-          ${advert.price.toFixed(2)}
+          €{advert.price.toFixed(2)}
         </p>
       {/if}
     </div>
