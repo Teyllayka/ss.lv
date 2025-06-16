@@ -236,7 +236,9 @@
                         </p>
                     </div>
                 {:else}
-                    <div class="flex justify-between items-center mb-6">
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-center mb-6"
+                    >
                         <h1
                             class="text-2xl font-bold text-gray-900 dark:text-white"
                         >
@@ -345,9 +347,11 @@
                                         >
                                             <a
                                                 href={`/chats/${item.chat.id}`}
-                                                class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition duration-150 ease-in-out"
+                                                class="flex flex-col sm:flex-row sm:items-center justify-between p-4 space-y-2 sm:space-y-0 sm:space-x-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition duration-150 ease-in-out"
                                             >
-                                                <div class="flex items-center">
+                                                <div
+                                                    class="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2"
+                                                >
                                                     {#if other.avatar_url}
                                                         <img
                                                             src={other.avatar_url}
@@ -406,7 +410,7 @@
                                                     </div>
                                                 </div>
                                                 <div
-                                                    class="flex flex-col items-end"
+                                                    class="flex flex-col sm:flex-row sm:items-center items-end space-y-1 sm:space-y-0 sm:space-x-2"
                                                 >
                                                     {#if item.chat.last_message}
                                                         <p
