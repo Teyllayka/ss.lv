@@ -583,8 +583,8 @@
             Reset to browser location
           </button>
           <button
-            on:click={() => (showLocationModal = false)}
-            class="px-4 py-2 bg-gray-300 text-black rounded"
+          on:click={() => { showLocationModal = false; mapInitialized = false; }}
+          class="px-4 py-2 bg-gray-300 text-black rounded"
           >
             {m.cancel()}
           </button>
