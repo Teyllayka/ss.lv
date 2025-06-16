@@ -227,12 +227,14 @@ export const actions: Actions = {
     `);
 
     //let location_json = JSON.parse(data.location_json);
+    let lat = data.lat;
+    let lon = data.lon;
 
     let res = await edit.mutate(
       {
         description: baseData.description,
-        lat: 1,
-        lon: 2,
+        lat: parseFloat(lat),
+    lon: parseFloat(lon),
         photos,
         price: parseFloat(baseData.price),
         title: baseData.title,

@@ -25,6 +25,7 @@
   import { enhance } from "$app/forms";
   import Advert from "$lib/components/Advert.svelte";
   import * as m from "$lib/paraglide/messages.js";
+  import { tick } from 'svelte';
 
   export let data: PageData;
   export let form;
@@ -65,6 +66,33 @@
 
   function toggleEditMode() {
     isEditMode = !isEditMode;
+    if (!isEditMode) {
+      tick().then(initMap);
+    }
+  }
+
+  async function initMap() {
+    if (!advert?.lat || !advert?.lon) return;
+    if (map) {
+      map.remove();
+    }
+    const L = (await import("leaflet")).default;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "/images/marker-icon-2x.png",
+      iconUrl: "/images/marker-icon.png",
+      shadowUrl: "/images/marker-shadow.png",
+    });
+    map = L.map("map", { attributionControl: false }).setView([advert.lat, advert.lon], 13);
+    L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(map);
+    const popupContent = `
+      <div style="max-width:200px; word-wrap:break-word; white-space:normal;">
+        ${advert.title}
+      </div>
+    `;
+    L.marker([advert.lat, advert.lon])
+      .addTo(map)
+      .bindPopup(popupContent, { maxWidth:200, className:"custom-popup" })
+      .openPopup();
   }
 
   function handleEditMainPhotoChange(event: Event) {
@@ -156,33 +184,7 @@
 
   let map: any;
 
-  onMount(async () => {
-    if (!advert?.lat || !advert?.lon) return;
-    const L = (await import("leaflet")).default;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "/images/marker-icon-2x.png",
-      iconUrl: "/images/marker-icon.png",
-      shadowUrl: "/images/marker-shadow.png",
-    });
-    map = L.map("map", {
-      attributionControl: false,
-    }).setView([advert.lat, advert.lon], 13);
-
-    L.tileLayer("http://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}").addTo(map);
-    const popupContent = `
-  <div style="max-width: 200px; word-wrap: break-word; white-space: normal;">
-    ${advert.title}
-  </div>
-`;
-
-    L.marker([advert.lat, advert.lon])
-      .addTo(map)
-      .bindPopup(popupContent, {
-        maxWidth: 200,
-        className: "custom-popup",
-      })
-      .openPopup();
-  });
+  onMount(initMap);
 
   onDestroy(() => {
     if (map) {
@@ -190,11 +192,21 @@
     }
   });
 
+
   let isIOS = false;
   onMount(() => {
     // @ts-ignore
     isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   });
+
+
+  $: loc = advert
+    ? { lat: advert.lat, lon: advert.lon }
+    : { lat: null, lon: null };
+
+  let locationJson = '';
+  $: locationJson = JSON.stringify(loc);
+
 </script>
 
 {#if advert}
@@ -229,7 +241,7 @@
 
               // @ts-ignore
               if (result && result.data && result.type === "success") {
-                isEditMode = false;
+                toggleEditMode();
 
                 if (!result?.data.advert) {
                   return;
@@ -277,6 +289,10 @@
           enctype="multipart/form-data"
           class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden space-y-6"
         >
+        <input type="hidden" name="lat" bind:value={advert.lat} />
+        <input type="hidden" name="lon" bind:value={advert.lon} />
+
+
           <div class="md:flex">
             <div class="md:w-1/2 p-4 space-y-6">
               <div class="relative">
